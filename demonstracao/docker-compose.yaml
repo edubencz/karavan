@@ -1,8 +1,9 @@
 services:
   demonstracao:
-    image: demonstracao
-    restart: always
-    ports:
-      - "8081:8080"
+    container_name: demonstracao
+    image: localhost:5555/karavan/demonstracao:86acd53e4dabe0ba64f36a492340c0b76602fac1
     networks:
-      - karavan
+    - karavan
+    ports:
+    - 8081:8080
+    restart: always
