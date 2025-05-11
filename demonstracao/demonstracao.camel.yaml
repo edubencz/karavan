@@ -1,0 +1,15 @@
+- route:
+    id: route-a73b
+    nodePrefixId: route-6aa
+    from:
+      id: from-cb99
+      uri: rest
+      parameters:
+        method: post
+        path: /teste
+      steps:
+        - to:
+            id: to-236e
+            uri: log
+            parameters:
+              loggerName: teste
