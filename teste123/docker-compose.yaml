@@ -1,8 +1,9 @@
 services:
   teste123:
-    image: teste123
-    restart: always
-    ports:
-      - "8082:8080"
+    container_name: teste123
+    image: localhost:5555/karavan/teste123:latest
     networks:
-      - karavan
+    - karavan
+    ports:
+    - 8082:8080
+    restart: always
