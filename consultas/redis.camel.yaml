@@ -25,11 +25,11 @@
                   - removeHeaders:
                       id: removeHeaders-e5b3
                       pattern: CamelHttp*
-                  - to:
+                  - toD:
                       id: to-49be
                       uri: https
                       parameters:
-                        httpUri: viacep.com.br/ws/01001000/json
+                        httpUri: viacep.com.br/ws/${body[cep]}/json
                         httpMethod: GET
             otherwise:
               id: otherwise-6b28
@@ -37,11 +37,11 @@
                 - removeHeaders:
                     id: removeHeaders-a103
                     pattern: CamelHttp*
-                - to:
+                - toD:
                     id: to-787d
                     uri: https
                     parameters:
-                      httpUri: viacep.com.br/ws/89223300/json
+                      httpUri: viacep.com.br/ws/${body[cep]}/json
                       httpMethod: GET
         - unmarshal:
             id: unmarshal-c053
