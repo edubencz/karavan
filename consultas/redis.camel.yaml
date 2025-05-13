@@ -20,17 +20,8 @@
                 expression:
                   simple:
                     id: simple-571c
-                    expression: ${body[cep]} == '01001000'
+                    expression: ${body[cep]} == '89223300'
                 steps:
-                  - log:
-                      id: log-ffa9
-                      message: Chamando API do CEP 01001000
-                  - setBody:
-                      id: setBody-6532
-                      expression:
-                        constant:
-                          id: constant-22ec
-                          expression: "null"
                   - removeHeaders:
                       id: removeHeaders-e5b3
                       pattern: CamelHttp*
@@ -43,15 +34,6 @@
             otherwise:
               id: otherwise-6b28
               steps:
-                - log:
-                    id: log-c67b
-                    message: Chamando API do CEP 89223300
-                - setBody:
-                    id: setBody-bd8b
-                    expression:
-                      constant:
-                        id: constant-be41
-                        expression: "null"
                 - removeHeaders:
                     id: removeHeaders-a103
                     pattern: CamelHttp*
@@ -141,6 +123,9 @@
         - setBody:
             id: setBody-7cd7
             expression:
-              constant:
-                id: constant-af3b
-                expression: Token armazenado com sucesso
+              simple:
+                id: simple-0e19
+                expression: |
+                  {
+                    "endereço": "${exchangeProperty.enderecoCompleto}"
+                  }
