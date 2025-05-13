@@ -1,0 +1,8 @@
+services:
+  consultas:
+    image: consultas
+    restart: always
+    ports:
+      - "8083:8080"
+    networks:
+      - karavan

@@ -1,0 +1,146 @@
+- route:
+    id: consulta-endereco
+    from:
+      id: from-4671
+      uri: platform-http
+      parameters:
+        path: /consulta-endereco?httpMethodRestrict=POST
+      steps:
+        - log:
+            id: log-f5e0
+            message: "Recebido payload: ${body}"
+        - unmarshal:
+            id: unmarshal-e548
+            json:
+              id: json-45fb
+        - choice:
+            id: choice-66e1
+            when:
+              - id: when-bb42
+                expression:
+                  simple:
+                    id: simple-571c
+                    expression: ${body[cep]} == '01001000'
+                steps:
+                  - log:
+                      id: log-ffa9
+                      message: Chamando API do CEP 01001000
+                  - setBody:
+                      id: setBody-6532
+                      expression:
+                        constant:
+                          id: constant-22ec
+                          expression: "null"
+                  - removeHeaders:
+                      id: removeHeaders-e5b3
+                      pattern: CamelHttp*
+                  - to:
+                      id: to-49be
+                      uri: https
+                      parameters:
+                        httpUri: viacep.com.br/ws/01001000/json
+                        httpMethod: GET
+            otherwise:
+              id: otherwise-6b28
+              steps:
+                - log:
+                    id: log-c67b
+                    message: Chamando API do CEP 89223300
+                - setBody:
+                    id: setBody-bd8b
+                    expression:
+                      constant:
+                        id: constant-be41
+                        expression: "null"
+                - removeHeaders:
+                    id: removeHeaders-a103
+                    pattern: CamelHttp*
+                - to:
+                    id: to-787d
+                    uri: https
+                    parameters:
+                      httpUri: viacep.com.br/ws/89223300/json
+                      httpMethod: GET
+        - unmarshal:
+            id: unmarshal-c053
+            json:
+              id: json-4fcd
+        - choice:
+            id: choice-fe9e
+            when:
+              - id: when-f81a
+                expression:
+                  simple:
+                    id: simple-b82c
+                    expression: ${body[uf]} == 'SC'
+                steps:
+                  - log:
+                      id: log-4e3e
+                      message: Endereço localizado em Santa Catarina!
+            otherwise:
+              id: otherwise-79be
+              steps:
+                - log:
+                    id: log-0889
+                    message: Endereço localizado fora de Santa Catarina.
+        - setProperty:
+            id: setProperty-64f3
+            name: enderecoCompleto
+            expression:
+              simple:
+                id: simple-d9e3
+                expression: ${body[localidade]} - ${body[bairro]} - ${body[logradouro]}
+        - setBody:
+            id: setBody-7b1c
+            expression:
+              simple:
+                id: simple-d79e
+                expression: |
+                  {
+                    "endereço": "${exchangeProperty.enderecoCompleto}"
+                  }
+        - unmarshal:
+            id: unmarshal-3f71
+            json:
+              id: json-2309
+              library: Jackson
+        - setHeader:
+            id: setHeader-04aa
+            name: CamelRedis.Command
+            expression:
+              constant:
+                id: constant-5042
+                expression: HSET
+        - setHeader:
+            id: setHeader-e5e6
+            name: CamelRedis.Key
+            expression:
+              constant:
+                id: constant-0117
+                expression: Endereco
+        - setHeader:
+            id: setHeader-a65b
+            name: CamelRedis.Field
+            expression:
+              constant:
+                id: constant-616e
+                expression: Primeiro
+        - setHeader:
+            id: setHeader-ab05
+            name: CamelRedis.Value
+            expression:
+              simple:
+                id: simple-9034
+                expression: ${body[endereço]}
+        - to:
+            id: to-29f3
+            uri: spring-redis
+            parameters:
+              host: host.docker.internal
+              port: "6379"
+        - setBody:
+            id: setBody-7cd7
+            expression:
+              constant:
+                id: constant-af3b
+                expression: Token armazenado com sucesso
