@@ -5,7 +5,7 @@ services:
     networks:
         - karavan
     environment:
-        JAVA_TOOL_OPTIONS: "-Dotel.java.global-autoconfigure.enabled=true -Dotel.metrics.exporter=none -Dotel.traces.exporter=otlp -Dotel.logs.exporter=none -Dotel.exporter.otlp.endpoint=http://otel-collector:4317 -Dotel.service.name=consultas"
+        JAVA_TOOL_OPTIONS: "-Dotel.java.global-autoconfigure.enabled=true -Dotel.metrics.exporter=none -Dotel.traces.exporter=otlp -Dotel.logs.exporter=otlp -Dotel.exporter.otlp.endpoint=http://otel-collector:4317 -Dotel.service.name=consultas"
     ports:
      - 8083:8080
     restart: always
