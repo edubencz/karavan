@@ -2,19 +2,10 @@ services:
   consultas:
     container_name: consultas
     image: localhost:5555/karavan/consultas:latest
-    entrypoint:
-      - /bin/bash
-      - -c
-      - |
-        curl -L -H 'Accept:application/zip' https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar -o otel-javaagent.jar
-        java -javaagent:otel-javaagent.jar -jar app.jar
     networks:
         - karavan
     environment:
-      - OTEL_SERVICE_NAME=camel
-      - JAVA_TOOL_OPTIONS=-Dotel.java.global-autoconfigure.enabled=true -Dotel.metrics.exporter=none -Dotel.traces.exporter=none -Dotel.logs.exporter=none
-      - TESTE=benx
+        JAVA_TOOL_OPTIONS: "-Dotel.java.global-autoconfigure.enabled=true -Dotel.metrics.exporter=otlp -Dotel.traces.exporter=otlp -Dotel.logs.exporter=otlp"
     ports:
      - 8083:8080
-     - 8084:8080
     restart: always
