@@ -1,8 +1,10 @@
 services:
   consultas:
-    image: consultas
-    restart: always
-    ports:
-      - "8083:8080"
+    container_name: consultas
+    image: localhost:5555/karavan/consultas:latest
     networks:
-      - karavan
+    - karavan
+    ports:
+    - 8083:8080
+    - 15000:1500
+    restart: always
