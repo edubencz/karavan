@@ -12,6 +12,8 @@ services:
         - karavan
     environment:
       - OTEL_SERVICE_NAME=camel
+      - JAVA_TOOL_OPTIONS=-Dotel.java.global-autoconfigure.enabled=true -Dotel.metrics.exporter=none -Dotel.traces.exporter=none -Dotel.logs.exporter=none
+      - TESTE=benx
     ports:
      - 8083:8080
      - 8084:8080
