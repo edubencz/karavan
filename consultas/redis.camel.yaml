@@ -59,6 +59,9 @@
                   - log:
                       id: log-4e3e
                       message: Endereço localizado em Santa Catarina!
+                  - log:
+                      id: log-5396
+                      message: ${body}
             otherwise:
               id: otherwise-79be
               steps:
@@ -86,34 +89,33 @@
             json:
               id: json-2309
               library: Jackson
-        - setHeader:
-            id: setHeader-04aa
-            name: CamelRedis.Command
-            expression:
-              constant:
-                id: constant-5042
-                expression: HSET
-        - setHeader:
-            id: setHeader-e5e6
-            name: CamelRedis.Key
-            expression:
-              constant:
-                id: constant-0117
-                expression: Endereco
-        - setHeader:
-            id: setHeader-a65b
-            name: CamelRedis.Field
-            expression:
-              constant:
-                id: constant-616e
-                expression: Primeiro
-        - setHeader:
-            id: setHeader-ab05
-            name: CamelRedis.Value
-            expression:
-              simple:
-                id: simple-9034
-                expression: ${body[endereço]}
+        - setHeaders:
+            id: setHeaders-8eef
+            headers:
+              - id: setHeader-23d7
+                name: CamelRedis.Command
+                expression:
+                  constant:
+                    id: constant-16a2
+                    expression: HSET
+              - id: setHeader-953a
+                name: CamelRedis.Key
+                expression:
+                  constant:
+                    id: constant-931a
+                    expression: Endereco
+              - id: setHeader-d346
+                name: CamelRedis.Field
+                expression:
+                  constant:
+                    id: constant-4863
+                    expression: Primeiro
+              - id: setHeader-44da
+                name: CamelRedis.Value
+                expression:
+                  simple:
+                    id: simple-c1a6
+                    expression: ${body[endereço]}
         - to:
             id: to-29f3
             uri: spring-redis
