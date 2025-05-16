@@ -9,15 +9,3 @@ services:
     ports:
      - 8083:8080
     restart: always
-  promtail:
-    container_name: promtail
-    image: grafana/promtail:2.9.3
-    volumes:
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/log:/var/log:ro
-      - /etc/machine-id:/etc/machine-id:ro
-      - ./promtail-config.yaml:/etc/promtail/config.yaml
-    command: -config.file=/etc/promtail/config.yaml
-    networks:
-      - karavan
-      
