@@ -31,6 +31,9 @@
                       parameters:
                         httpUri: viacep.com.br/ws/${body[cep]}/json
                         httpMethod: GET
+                  - log:
+                      id: log-5565
+                      message: ${body}
             otherwise:
               id: otherwise-6b28
               steps:
@@ -43,6 +46,9 @@
                     parameters:
                       httpUri: viacep.com.br/ws/${body[cep]}/json
                       httpMethod: GET
+                - log:
+                    id: log-1cac
+                    message: ${body}
         - unmarshal:
             id: unmarshal-c053
             json:
@@ -59,15 +65,12 @@
                   - log:
                       id: log-4e3e
                       message: Endereço localizado em Santa Catarina!
-                  - log:
-                      id: log-5396
-                      message: ${body}
             otherwise:
               id: otherwise-79be
               steps:
                 - log:
                     id: log-0889
-                    message: Endereço localizado fora de Santa Catarina.
+                    message: Endereço em outro estado
         - setProperty:
             id: setProperty-64f3
             name: enderecoCompleto
@@ -122,6 +125,9 @@
             parameters:
               host: host.docker.internal
               port: "6379"
+        - log:
+            id: log-be7d
+            message: ${body}
         - setBody:
             id: setBody-7cd7
             expression:
