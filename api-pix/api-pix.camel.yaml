@@ -1,5 +1,79 @@
 - rest:
     id: rest-15dc
+    path: /pix
     post:
       - id: post-5ac2
-        description: Cria ordem de pagamento
+        description: Criação de cobrança dinâmica com QR Code
+        path: /cobranca-dinamica
+        to: direct:criar-cobranca-dinamica
+        consumes: application/json
+        produces: application/json
+- route:
+    id: criar-cobranca-dinamica
+    from:
+      id: from-7c6a
+      uri: direct
+      parameters:
+        name: criar-cobranca-dinamica
+      steps:
+        - log:
+            id: log-ea73
+            message: ${body}
+        - unmarshal:
+            id: unmarshal-2b0c
+            json:
+              id: json-4738
+        - choice:
+            id: choice-30c4
+            when:
+              - id: when-4da1
+                expression:
+                  simple:
+                    id: simple-dcf9
+                    expression: ${body[banco]} == 'bb'
+                steps:
+                  - to:
+                      id: to-0138
+                      uri: direct
+                      parameters:
+                        name: bb-cobranca
+              - id: when-0de0
+                expression:
+                  simple:
+                    id: simple-a625
+                    expression: ${body[banco]} == 'santander'
+                steps:
+                  - to:
+                      id: to-8156
+                      uri: direct
+                      parameters:
+                        name: santander-cobranca
+            otherwise:
+              id: otherwise-f30e
+              steps:
+                - setBody:
+                    id: setBody-59c1
+                    expression:
+                      constant:
+                        id: constant-0d01
+                        expression: >-
+                          {"erro": "Banco não suportado. Informe bb ou
+                          santander"}
+                - marshal:
+                    id: marshal-32d8
+                    json:
+                      id: json-1565
+                - setHeader:
+                    id: setHeader-6a8f
+                    name: Content-Type
+                    expression:
+                      constant:
+                        id: constant-6edf
+                        expression: application/json
+                - setHeader:
+                    id: setHeader-c5f4
+                    name: CamelHttpResponseCode
+                    expression:
+                      constant:
+                        id: constant-0700
+                        expression: "400"
