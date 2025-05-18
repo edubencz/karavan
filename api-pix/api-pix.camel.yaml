@@ -77,3 +77,106 @@
                       constant:
                         id: constant-0700
                         expression: "400"
+- route:
+    id: bb-cobranca
+    nodePrefixId: route-ecf
+    from:
+      id: from-4b02
+      uri: direct
+      parameters:
+        name: bb-cobranca
+      steps:
+        - log:
+            id: log-5b27
+            message: Roteando para Banco do Brasil
+        - setHeader:
+            id: setHeader-93e9
+            name: Content-Type
+            expression:
+              constant:
+                id: constant-ee85
+                expression: application/json
+        - setBody:
+            id: setBody-ccf3
+            expression:
+              simple:
+                id: simple-3ca6
+                expression: >
+                  {
+
+                  "calendario": { "expiracao": 3600 },
+
+                  "devedor": { "cpf": "${body[pagador][cpf]}", "nome":
+                  "${body[pagador][nome]}" },
+
+                  "valor": { "original": "${body[valor]}" },
+
+                  "chave": "SUA_CHAVE_PIX_AQUI",
+
+                  "solicitacaoPagador": "Cobrança PIX gerada via barramento"
+
+                  }
+        - to:
+            id: to-9ee8
+            uri: https
+            parameters:
+              httpUri: api.bb.com.br/pix/v2/cob
+        - log:
+            id: log-1bed
+            message: "Resposta do BB: ${body}"
+        - marshal:
+            id: marshal-99a0
+            json:
+              id: json-f7ab
+- route:
+    id: " criar-cobranca-santander"
+    nodePrefixId: route-8a6
+    from:
+      id: from-c865
+      uri: direct
+      parameters:
+        name: santander-cobranca
+      steps:
+        - log:
+            id: log-e6ab
+            message: Roteando para Santander
+        - setHeader:
+            id: setHeader-5616
+            name: Authorization
+            expression:
+              constant:
+                id: constant-146e
+                expression: Bearer SEU_TOKEN_AQUI
+        - setHeader:
+            id: setHeader-20a0
+            name: Content-Type
+            expression:
+              constant:
+                id: constant-f284
+                expression: application/json
+        - setBody:
+            id: setBody-55db
+            expression:
+              simple:
+                id: simple-8906
+                expression: >
+                  {
+
+                  "valor": { "original": "${body[valor]}" },
+
+                  "devedor": { "cpf": "${body[pagador][cpf]}", "nome":
+                  "${body[pagador][nome]}" },
+
+                  "chave": "SUA_CHAVE_PIX_AQUI"
+
+                  }
+        - to:
+            id: to-f1c1
+            uri: https
+            parameters:
+              httpUri: api.santander.com.br/pix/v1/cob
+        - log:
+            id: log-3113
+            message: "Resposta do Santander: ${body}"
+        - marshal:
+            id: marshal-3a4f
