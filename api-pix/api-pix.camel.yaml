@@ -206,7 +206,7 @@
                 expression: |-
                   {
                     "calendario": {
-                      "dataDeVencimento": "2025-05-30"
+                      "dataDeVencimento": "2025-06-10"
                     },
                     "devedor": {
                       "cpf": "12345678909",
