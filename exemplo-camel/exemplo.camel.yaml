@@ -1,0 +1,129 @@
+- route:
+    id: multi-api-integrator
+    from:
+      id: from-619e
+      uri: timer
+      parameters:
+        timerName: demo-timer?delay=0&period=60000
+      steps:
+        - log:
+            id: log-e045
+            message: Iniciando integração com múltiplas APIs
+        - setProperty:
+            id: setProperty-11fa
+            name: startTime
+            expression:
+              simple:
+                id: simple-fbcf
+                expression: ${date:now:yyyy-MM-dd'T'HH:mm:ss}
+        - to:
+            id: to-42c7
+            uri: direct
+            parameters:
+              name: get-exchange
+        - to:
+            id: to-4e78
+            uri: direct
+            parameters:
+              name: get-weather
+        - to:
+            id: to-1efc
+            uri: direct
+            parameters:
+              name: get-news
+        - setBody:
+            id: setBody-91cc
+            expression:
+              simple:
+                id: simple-f96e
+                expression: |
+                  {
+                    "timestamp": "${exchangeProperty.startTime}",
+                    "exchangeRate": ${exchangeProperty.exchange},
+                    "weather": ${exchangeProperty.weather},
+                    "news": ${exchangeProperty.news}
+                  }
+        - marshal:
+            id: marshal-4c3d
+            json:
+              id: json-22da
+              library: Jackson
+        - log:
+            id: log-3ffb
+            message: "Payload final unificado: ${body}"
+- route:
+    id: get-exchange
+    from:
+      id: from-6f35
+      uri: direct
+      parameters:
+        name: get-exchange
+      steps:
+        - to:
+            id: to-aadd
+            uri: https
+            parameters:
+              httpUri: api.exchangerate-api.com/v4/latest/USD
+        - unmarshal:
+            id: unmarshal-5019
+            json:
+              id: json-0551
+              library: Jackson
+        - setProperty:
+            id: setProperty-d765
+            name: exchange
+            expression:
+              jsonpath:
+                id: jsonpath-f99a
+                expression: $.rates.BRL
+- route:
+    id: get-weather
+    from:
+      id: from-a1a7
+      uri: direct
+      parameters:
+        name: get-weather
+      steps:
+        - to:
+            id: to-a46f
+            uri: https
+            parameters:
+              httpUri: >-
+                api.open-meteo.com/v1/forecast?latitude=-23.55&longitude=-46.63&current_weather=true
+        - unmarshal:
+            id: unmarshal-01ae
+            json:
+              id: json-37df
+              library: Jackson
+        - setProperty:
+            id: setProperty-3b00
+            name: weather
+            expression:
+              jsonpath:
+                id: jsonpath-41ee
+                expression: $.current_weather.temperature
+- route:
+    id: get-news
+    from:
+      id: from-6581
+      uri: direct
+      parameters:
+        name: get-news
+      steps:
+        - to:
+            id: to-c525
+            uri: https
+            parameters:
+              httpUri: hn.algolia.com/api/v1/search?query=technology
+        - unmarshal:
+            id: unmarshal-176c
+            json:
+              id: json-1550
+              library: Jackson
+        - setProperty:
+            id: setProperty-e295
+            name: news
+            expression:
+              jsonpath:
+                id: jsonpath-5388
+                expression: $.hits[0].title
