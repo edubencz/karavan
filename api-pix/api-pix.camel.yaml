@@ -112,6 +112,24 @@
               bridgeEndpoint: true
               oauth2CacheTokens: true
               oauth2CachedTokensDefaultExpirySeconds: "180"
+        - toD:
+            id: toD-c5bf
+            uri: https
+            parameters:
+              httpUri: >-
+                api.hm.bb.com.br/pix/v2/cobv/f47ac10b58cc4372a5670e02b2c3d479?gw-dev-app-key=e70957892a7a4283994c6d1dae602d12
+              httpMethod: PUT
+              logHttpActivity: true
+              oauth2ClientId: >-
+                eyJpZCI6IjEzYWJhYjUtOTA2Mi00ODBkLTliZWUtIiwiY29kaWdvUHVibGljYWRvciI6MCwiY29kaWdvU29mdHdhcmUiOjEzNTU1Mywic2VxdWVuY2lhbEluc3RhbGFjYW8iOjF9
+              oauth2ClientSecret: >-
+                eyJpZCI6IjNlMzBjOTgtYTQxYS00ZDk4LWI4ZGItNDdhOGJlNzJmYTM0MDRlMmFlMGUtIiwiY29kaWdvUHVibGljYWRvciI6MCwiY29kaWdvU29mdHdhcmUiOjEzNTU1Mywic2VxdWVuY2lhbEluc3RhbGFjYW8iOjEsInNlcXVlbmNpYWxDcmVkZW5jaWFsIjoxMSwiYW1iaWVudGUiOiJob21vbG9nYWNhbyIsImlhdCI6MTc0ODI2NzIxNTk2Mn0
+              oauth2Scope: cobv.write
+              oauth2TokenEndpoint: https://oauth.hm.bb.com.br/oauth/token
+              bridgeEndpoint: true
+              oauth2CacheTokens: true
+              oauth2CachedTokensDefaultExpirySeconds: "180"
+              throwExceptionOnFailure: false
         - setBody:
             id: setBody-4cc1
             expression:
@@ -153,6 +171,7 @@
               bridgeEndpoint: true
               httpUri: sandbox.devportal.itau.com.br/api/oauth/jwt
               logHttpActivity: true
+              throwExceptionOnFailure: true
         - unmarshal:
             id: unmarshal-1d3f
             json:
