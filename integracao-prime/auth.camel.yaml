@@ -1,0 +1,199 @@
+- rest:
+    id: rest-9f43
+    consumes: application/json
+    produces: application/json
+    post:
+      - id: post-0988
+        path: /atualiza_status
+        to: direct:inicio
+- route:
+    id: valida-payload
+    from:
+      id: from-9a4a
+      uri: direct
+      parameters:
+        name: inicio
+      steps:
+        - unmarshal:
+            id: unmarshal-json
+            json:
+              id: json-jackson
+              library: Jackson
+        - choice:
+            id: choice-validacao
+            when:
+              - id: when-5b8a
+                expression:
+                  simple:
+                    id: simple-8532
+                    expression: ${body[linkAutoriz]} == null || ${body[linkAutoriz]} == ''
+                steps:
+                  - setHeader:
+                      id: set-400-header-1
+                      name: CamelHttpResponseCode
+                      expression:
+                        constant:
+                          id: constant-c400-1
+                          expression: "400"
+                  - setBody:
+                      id: set-body-erro-1
+                      expression:
+                        simple:
+                          id: erro-1
+                          expression: Campo linkAutoriz é obrigatório.
+                  - stop:
+                      id: stop-c44c
+              - id: when-f461
+                expression:
+                  simple:
+                    id: simple-8f0b
+                    expression: ${body[linkRetorno]} == null || ${body[linkRetorno]} == ''
+                steps:
+                  - setHeader:
+                      id: set-400-header-2
+                      name: CamelHttpResponseCode
+                      expression:
+                        constant:
+                          id: constant-c400-2
+                          expression: "400"
+                  - setBody:
+                      id: set-body-erro-2
+                      expression:
+                        simple:
+                          id: erro-2
+                          expression: Campo linkRetorno é obrigatório.
+                  - stop:
+                      id: stop-c7a5
+              - id: when-aea6
+                expression:
+                  simple:
+                    id: simple-ab24
+                    expression: ${body[chaveCript]} == null || ${body[chaveCript]} == ''
+                steps:
+                  - setHeader:
+                      id: set-400-header-3
+                      name: CamelHttpResponseCode
+                      expression:
+                        constant:
+                          id: constant-c400-3
+                          expression: "400"
+                  - setBody:
+                      id: set-body-erro-3
+                      expression:
+                        simple:
+                          id: erro-3
+                          expression: Campo chaveCript é obrigatório.
+                  - stop:
+                      id: stop-fa19
+              - id: when-aea7
+                expression:
+                  simple:
+                    id: simple-ab25
+                    expression: ${body[userPass]} == null || ${body[userPass]} == ''
+                steps:
+                  - setHeader:
+                      id: set-400-header-5
+                      name: CamelHttpResponseCode
+                      expression:
+                        constant:
+                          id: constant-c400-5
+                          expression: "400"
+                  - setBody:
+                      id: set-body-erro-5
+                      expression:
+                        simple:
+                          id: erro-5
+                          expression: Campo userPass é obrigatório.
+                  - stop:
+                      id: stop-fa18
+            otherwise:
+              id: otherwise-validado
+              steps:
+                - to:
+                    id: to-cripto
+                    uri: direct
+                    parameters:
+                      name: cripto
+- route:
+    id: cripto-route
+    from:
+      id: from-4e57
+      uri: direct
+      parameters:
+        name: cripto
+      steps:
+        - unmarshal:
+            id: unmarshal-auth
+            json:
+              id: json-auth
+              library: Jackson
+        - setHeader:
+            id: setHeader-emailSenha
+            name: emailSenha
+            expression:
+              simple:
+                id: simple-userPass
+                expression: ${body[userPass]}
+        - setHeader:
+            id: setHeader-chaveCript
+            name: chaveCript
+            expression:
+              simple:
+                id: simple-chaveCript
+                expression: ${body[chaveCript]}
+        - process:
+            id: process-faa7
+            description: Cripto
+            ref: processor
+        - log:
+            id: log-1413
+            message: ${body}
+        - to:
+            id: to-f708
+            uri: direct
+            parameters:
+              name: autenticar-prime
+- route:
+    id: rota-autenticacao-prime
+    from:
+      id: from-autenticacao
+      uri: direct
+      parameters:
+        name: autenticar-prime
+      steps:
+        - unmarshal:
+            id: unmarshal-auth-data
+            json:
+              id: json-lib-auth
+              library: Jackson
+        - setHeader:
+            id: set-form-content-type
+            name: Content-Type
+            expression:
+              simple:
+                id: simple-bfd6
+                expression: application/x-www-form-urlencoded
+        - setBody:
+            id: set-body-token-solicitante
+            expression:
+              simple:
+                id: simple-body-token
+                expression: token_solicitante=${exchangeProperty.tokenSolicitante}
+        - toD:
+            id: to-autorizacao
+            uri: https
+            parameters:
+              bridgeEndpoint: true
+              throwExceptionOnFailure: false
+              httpUri: "{{body.LinkAutoriz}}"
+              httpMethod: POST
+        - setHeader:
+            id: set-header-token
+            name: Authorization
+            expression:
+              xpath:
+                id: xpath-token
+                expression: //TokenValido/text()
+        - log:
+            id: log-token
+            message: Token obtido- ${header.Authorization}
