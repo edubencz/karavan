@@ -42,7 +42,7 @@
                       expression:
                         simple:
                           id: erro-1
-                          expression: "{ \"erro\": \"Campo linkAutoriz é obrigatório.\" }"
+                          expression: "{ \"mensagem\": \"Campo linkAutoriz é obrigatório.\" }"
                   - stop:
                       id: stop-c44c
               - id: when-f461
@@ -65,7 +65,7 @@
                       expression:
                         simple:
                           id: erro-2
-                          expression: "{ \"erro\": \"Campo linkRetorno é obrigatório.\" }"
+                          expression: "{ \"mensagem\": \"Campo linkRetorno é obrigatório.\" }"
                   - stop:
                       id: stop-c7a5
               - id: when-aea6
@@ -88,7 +88,7 @@
                       expression:
                         simple:
                           id: erro-3
-                          expression: "{ \"erro\": \"Campo chaveCript é obrigatório.\" }"
+                          expression: "{ \"mensagem\": \"Campo chaveCript é obrigatório.\" }"
                   - stop:
                       id: stop-fa19
               - id: when-aea7
@@ -111,7 +111,7 @@
                       expression:
                         simple:
                           id: erro-5
-                          expression: "{ \"erro\": \"Campo userPass é obrigatório.\" }"
+                          expression: "{ \"mensagem\": \"Campo userPass é obrigatório.\" }"
                   - stop:
                       id: stop-fa18
             otherwise:
@@ -151,10 +151,35 @@
               simple:
                 id: simple-chaveCript
                 expression: ${body[cabecalhoIntegracao][chaveCript]}
-        - process:
-            id: process-faa7
-            description: Cripto
-            ref: processor
+        - doTry:
+            id: doTry-27dd
+            doCatch:
+              - id: doCatch-8d490
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setHeader:
+                      id: set-header-status90
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-6d8390
+                          expression: "500"
+                  - setBody:
+                      id: set-body-error90
+                      expression:
+                        simple:
+                          id: simple-ddae
+                          expression: >-
+                            { "mensagem": "Erro no processo de criptografia.
+                            Revise a chave pública." }
+                  - stop:
+                      id: stop-d5c2
+            steps:
+              - process:
+                  id: process-faa7
+                  description: Cripto
+                  ref: processor
         - to:
             id: to-f708
             uri: direct
@@ -232,7 +257,9 @@
                       expression:
                         constant:
                           id: constant-7166
-                          expression: Erro na autenticação - status inválido
+                          expression: >-
+                            { "mensagem": "Erro na autenticação - status
+                            inválido." }
             otherwise:
               id: otherwise-380c
               steps:
@@ -290,18 +317,51 @@
                   simple:
                     id: simple-ac37
                     expression: application/json
-        - toD:
-            id: to-f2bf
-            description: Atualiza status PRIME
-            uri: https
-            parameters:
-              logHttpActivity: true
-              httpMethod: POST
-              httpUri: ${exchangeProperty.linkRetorno}
-              bridgeEndpoint: true
-        - setBody:
-            id: setBody-d12e
-            expression:
-              simple:
-                id: simple-6ec3
-                expression: ${body}
+        - doTry:
+            id: doTry-atualiza-status
+            doCatch:
+              - id: doCatch-f9de
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setHeader:
+                      id: set-header-status
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-6d83
+                          expression: "500"
+                  - setBody:
+                      id: set-body-error
+                      expression:
+                        simple:
+                          id: simple-ddae
+                          expression: >-
+                            { "mensagem": "Erro ao atualizar status PRIME. Tente
+                            novamente mais tarde." }
+            steps:
+              - toD:
+                  id: to-f2bf
+                  description: Atualiza status PRIME
+                  uri: https
+                  parameters:
+                    logHttpActivity: true
+                    httpMethod: POST
+                    httpUri: ${exchangeProperty.linkRetorno}
+                    bridgeEndpoint: true
+              - unmarshal:
+                  id: unmarshal-9acb
+                  gzipDeflater:
+                    id: gzipDeflater-7147
+              - removeHeader:
+                  id: removeHeader-8157
+                  name: Content-Encoding
+              - setBody:
+                  id: setBody-b83a
+                  expression:
+                    simple:
+                      id: simple-3778
+                      expression: "{ \"mensagem\": \"${body}\" }"
+              - log:
+                  id: log-final-body
+                  message: ${body}
