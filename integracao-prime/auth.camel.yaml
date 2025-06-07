@@ -26,7 +26,9 @@
                 expression:
                   simple:
                     id: simple-8532
-                    expression: ${body[linkAutoriz]} == null || ${body[linkAutoriz]} == ''
+                    expression: >-
+                      ${body[cabecalhoIntegracao][linkAutoriz]} == null ||
+                      ${body[cabecalhoIntegracao][linkAutoriz]} == ''
                 steps:
                   - setHeader:
                       id: set-400-header-1
@@ -47,7 +49,9 @@
                 expression:
                   simple:
                     id: simple-8f0b
-                    expression: ${body[linkRetorno]} == null || ${body[linkRetorno]} == ''
+                    expression: >-
+                      ${body[cabecalhoIntegracao][linkRetorno]} == null ||
+                      ${body[cabecalhoIntegracao][linkRetorno]} == ''
                 steps:
                   - setHeader:
                       id: set-400-header-2
@@ -68,7 +72,9 @@
                 expression:
                   simple:
                     id: simple-ab24
-                    expression: ${body[chaveCript]} == null || ${body[chaveCript]} == ''
+                    expression: >-
+                      ${body[cabecalhoIntegracao][chaveCript]} == null ||
+                      ${body[cabecalhoIntegracao][chaveCript]} == ''
                 steps:
                   - setHeader:
                       id: set-400-header-3
@@ -89,7 +95,9 @@
                 expression:
                   simple:
                     id: simple-ab25
-                    expression: ${body[userPass]} == null || ${body[userPass]} == ''
+                    expression: >-
+                      ${body[cabecalhoIntegracao][userPass]} == null ||
+                      ${body[cabecalhoIntegracao][userPass]} == ''
                 steps:
                   - setHeader:
                       id: set-400-header-5
@@ -109,6 +117,13 @@
             otherwise:
               id: otherwise-validado
               steps:
+                - setProperty:
+                    id: setProperty-add0
+                    name: corpoMensagem
+                    expression:
+                      simple:
+                        id: simple-3737
+                        expression: ${body[corpoMensagem]}
                 - to:
                     id: to-cripto
                     uri: direct
@@ -128,14 +143,14 @@
             expression:
               simple:
                 id: simple-userPass
-                expression: ${body[userPass]}
+                expression: ${body[cabecalhoIntegracao][userPass]}
         - setProperty:
             id: setProperty-chaveCript
             name: chaveCript
             expression:
               simple:
                 id: simple-chaveCript
-                expression: ${body[chaveCript]}
+                expression: ${body[cabecalhoIntegracao][chaveCript]}
         - process:
             id: process-faa7
             description: Cripto
@@ -159,7 +174,14 @@
             expression:
               simple:
                 id: simple-fe46
-                expression: ${body[linkAutoriz]}
+                expression: ${body[cabecalhoIntegracao][linkAutoriz]}
+        - setProperty:
+            id: setProperty-eefd
+            name: linkRetorno
+            expression:
+              simple:
+                id: simple-3656
+                expression: ${body[cabecalhoIntegracao][linkRetorno]}
         - setHeader:
             id: set-form-content-type
             name: Content-type
@@ -175,6 +197,7 @@
                 expression: "--X-INSOMNIA-BOUNDARY\r\nContent-Disposition: form-data; name=\"token_solicitante\"\r\n\r\n${exchangeProperty.tokenSolicitante}\r\n--X-INSOMNIA-BOUNDARY--"
         - toD:
             id: to-autorizacao
+            description: Requisita token
             uri: https
             parameters:
               bridgeEndpoint: true
@@ -221,13 +244,63 @@
                       xpath:
                         id: xpath-token
                         expression: //TokenValido/text()
-                - setHeader:
-                    id: set-header-token
-                    name: Authorization
-                    expression:
-                      simple:
-                        id: simple-token
-                        expression: ${exchangeProperty.tokenSolicitante}
-                - log:
-                    id: log-token
-                    message: Token obtido- ${header.Authorization}
+                - to:
+                    id: to-6d46
+                    disabled: false
+                    uri: direct
+                    parameters:
+                      name: atualiza-status
+- route:
+    id: rota-atualiza-status
+    nodePrefixId: route-d84
+    from:
+      id: from-b47d
+      uri: direct
+      parameters:
+        name: atualiza-status
+      steps:
+        - setBody:
+            id: setBody-785a
+            expression:
+              simple:
+                id: simple-6bab
+                expression: ${exchangeProperty.corpoMensagem}
+        - marshal:
+            id: marshal-ee6a
+            json:
+              id: json-cc2b
+              library: Jackson
+        - removeHeaders:
+            id: removeHeaders-fe2a
+            pattern: "*"
+        - setHeaders:
+            id: setHeaders-e707
+            headers:
+              - id: setHeader-821f
+                name: Authorization
+                expression:
+                  simple:
+                    id: simple-8d6a
+                    expression: ${exchangeProperty.tokenSolicitante}
+              - id: setHeader-2371
+                name: Content-Type
+                expression:
+                  simple:
+                    id: simple-ac37
+                    expression: application/json
+        - toD:
+            id: to-f2bf
+            uri: https
+            parameters:
+              logHttpActivity: true
+              httpMethod: POST
+              httpUri: ${exchangeProperty.linkRetorno}
+              bridgeEndpoint: true
+              skipRequestHeaders: false
+              copyHeaders: true
+        - setBody:
+            id: setBody-d12e
+            expression:
+              simple:
+                id: simple-6ec3
+                expression: ${body}
