@@ -42,7 +42,7 @@
                       expression:
                         simple:
                           id: erro-1
-                          expression: Campo linkAutoriz é obrigatório.
+                          expression: "{ \"erro\": \"Campo linkAutoriz é obrigatório.\" }"
                   - stop:
                       id: stop-c44c
               - id: when-f461
@@ -65,7 +65,7 @@
                       expression:
                         simple:
                           id: erro-2
-                          expression: Campo linkRetorno é obrigatório.
+                          expression: "{ \"erro\": \"Campo linkRetorno é obrigatório.\" }"
                   - stop:
                       id: stop-c7a5
               - id: when-aea6
@@ -88,7 +88,7 @@
                       expression:
                         simple:
                           id: erro-3
-                          expression: Campo chaveCript é obrigatório.
+                          expression: "{ \"erro\": \"Campo chaveCript é obrigatório.\" }"
                   - stop:
                       id: stop-fa19
               - id: when-aea7
@@ -111,7 +111,7 @@
                       expression:
                         simple:
                           id: erro-5
-                          expression: Campo userPass é obrigatório.
+                          expression: "{ \"erro\": \"Campo userPass é obrigatório.\" }"
                   - stop:
                       id: stop-fa18
             otherwise:
@@ -174,14 +174,16 @@
             expression:
               simple:
                 id: simple-fe46
-                expression: ${body[cabecalhoIntegracao][linkAutoriz]}
+                expression: >-
+                  ${body[cabecalhoIntegracao].[linkAutoriz].replaceAll('https://','')}
         - setProperty:
             id: setProperty-eefd
             name: linkRetorno
             expression:
               simple:
                 id: simple-3656
-                expression: ${body[cabecalhoIntegracao][linkRetorno]}
+                expression: >-
+                  ${body[cabecalhoIntegracao][linkRetorno].replaceAll('https://','')}
         - setHeader:
             id: set-form-content-type
             name: Content-type
@@ -197,7 +199,7 @@
                 expression: "--X-INSOMNIA-BOUNDARY\r\nContent-Disposition: form-data; name=\"token_solicitante\"\r\n\r\n${exchangeProperty.tokenSolicitante}\r\n--X-INSOMNIA-BOUNDARY--"
         - toD:
             id: to-autorizacao
-            description: Requisita token
+            description: Requisita token PRIME
             uri: https
             parameters:
               bridgeEndpoint: true
@@ -290,14 +292,13 @@
                     expression: application/json
         - toD:
             id: to-f2bf
+            description: Atualiza status PRIME
             uri: https
             parameters:
               logHttpActivity: true
               httpMethod: POST
               httpUri: ${exchangeProperty.linkRetorno}
               bridgeEndpoint: true
-              skipRequestHeaders: false
-              copyHeaders: true
         - setBody:
             id: setBody-d12e
             expression:
