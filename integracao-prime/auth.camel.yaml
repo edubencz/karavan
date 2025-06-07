@@ -8,6 +8,7 @@
         to: direct:inicio
 - route:
     id: valida-payload
+    trace: true
     from:
       id: from-9a4a
       uri: direct
@@ -131,6 +132,7 @@
                       name: cripto
 - route:
     id: cripto-route
+    trace: true
     from:
       id: from-4e57
       uri: direct
@@ -187,6 +189,7 @@
               name: autenticar-prime
 - route:
     id: rota-autenticacao-prime
+    trace: true
     from:
       id: from-autenticacao
       uri: direct
@@ -282,6 +285,7 @@
 - route:
     id: rota-atualiza-status
     nodePrefixId: route-d84
+    trace: true
     from:
       id: from-b47d
       uri: direct
@@ -317,20 +321,32 @@
                   simple:
                     id: simple-ac37
                     expression: application/json
-        - doTry:
-            id: doTry-atualiza-status
-            doCatch:
-              - id: doCatch-f9de
-                exception:
-                  - java.lang.Exception
+        - toD:
+            id: to-f2bf
+            description: Atualiza status PRIME
+            uri: https
+            parameters:
+              logHttpActivity: true
+              httpMethod: POST
+              httpUri: ${exchangeProperty.linkRetorno}
+              bridgeEndpoint: true
+              throwExceptionOnFailure: false
+        - choice:
+            id: choice-f39e
+            when:
+              - id: when-84ea
+                expression:
+                  simple:
+                    id: simple-8dbc
+                    expression: ${header.CamelHttpResponseCode} != 200
                 steps:
-                  - setHeader:
-                      id: set-header-status
-                      name: CamelHttpResponseCode
-                      expression:
-                        simple:
-                          id: simple-6d83
-                          expression: "500"
+                  - log:
+                      id: log-05e2
+                      message: ${body}
+                      logName: ERRO 500
+                  - removeHeaders:
+                      id: removeHeaders-5853
+                      pattern: "*"
                   - setBody:
                       id: set-body-error
                       expression:
@@ -339,29 +355,26 @@
                           expression: >-
                             { "mensagem": "Erro ao atualizar status PRIME. Tente
                             novamente mais tarde." }
-            steps:
-              - toD:
-                  id: to-f2bf
-                  description: Atualiza status PRIME
-                  uri: https
-                  parameters:
-                    logHttpActivity: true
-                    httpMethod: POST
-                    httpUri: ${exchangeProperty.linkRetorno}
-                    bridgeEndpoint: true
-              - unmarshal:
-                  id: unmarshal-9acb
-                  gzipDeflater:
-                    id: gzipDeflater-7147
-              - removeHeader:
-                  id: removeHeader-8157
-                  name: Content-Encoding
-              - setBody:
-                  id: setBody-b83a
-                  expression:
-                    simple:
-                      id: simple-3778
-                      expression: "{ \"mensagem\": \"${body}\" }"
-              - log:
-                  id: log-final-body
-                  message: ${body}
+            otherwise:
+              id: otherwise-c59b
+              steps:
+                - unmarshal:
+                    id: unmarshal-9acb
+                    gzipDeflater:
+                      id: gzipDeflater-7147
+                - removeHeader:
+                    id: removeHeader-8157
+                    name: Content-Encoding
+                - setHeader:
+                    id: setHeader-1f74
+                    name: Content-Type
+                    expression:
+                      simple:
+                        id: simple-982e
+                        expression: application/json
+                - setBody:
+                    id: setBody-b83a
+                    expression:
+                      simple:
+                        id: simple-3778
+                        expression: "{ \"mensagem\": \"${body}\" }"
