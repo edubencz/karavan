@@ -122,11 +122,6 @@
       parameters:
         name: cripto
       steps:
-        - unmarshal:
-            id: unmarshal-auth
-            json:
-              id: json-auth
-              library: Jackson
         - setHeader:
             id: setHeader-emailSenha
             name: emailSenha
@@ -161,39 +156,95 @@
       parameters:
         name: autenticar-prime
       steps:
-        - unmarshal:
-            id: unmarshal-auth-data
-            json:
-              id: json-lib-auth
-              library: Jackson
+        - setProperty:
+            id: setProperty-9249
+            name: linkAutoriz
+            expression:
+              simple:
+                id: simple-fe46
+                expression: ${body[linkAutoriz]}
+        - removeHeaders:
+            id: removeHeaders-d75d
+            pattern: "*"
         - setHeader:
             id: set-form-content-type
-            name: Content-Type
+            name: Content-type
             expression:
               simple:
                 id: simple-bfd6
-                expression: application/x-www-form-urlencoded
+                expression: multipart/form-data; boundary=X-INSOMNIA-BOUNDARY
         - setBody:
-            id: set-body-token-solicitante
+            id: set-body-form
             expression:
               simple:
-                id: simple-body-token
-                expression: token_solicitante=${exchangeProperty.tokenSolicitante}
+                id: simple-9360
+                expression: "--X-INSOMNIA-BOUNDARY\r\nContent-Disposition: form-data; name=\"token_solicitante\"\r\n\r\n${exchangeProperty.tokenSolicitante}\r\n--X-INSOMNIA-BOUNDARY--"
+        - log:
+            id: log-e675
+            message: ${headers}
+            logName: HEADERS$$$$$$
+        - log:
+            id: log-be56
+            message: ${body}
+            logName: Antes do REQUEST
         - toD:
             id: to-autorizacao
             uri: https
             parameters:
               bridgeEndpoint: true
               throwExceptionOnFailure: false
-              httpUri: "{{body.LinkAutoriz}}"
               httpMethod: POST
-        - setHeader:
-            id: set-header-token
-            name: Authorization
-            expression:
-              xpath:
-                id: xpath-token
-                expression: //TokenValido/text()
+              httpUri: ${exchangeProperty.linkAutoriz}
+              logHttpActivity: true
+        - unmarshal:
+            id: unmarshal-529a
+            gzipDeflater:
+              id: gzipDeflater-7d8a
         - log:
-            id: log-token
-            message: Token obtido- ${header.Authorization}
+            id: log-0034
+            message: ${body}
+        - choice:
+            id: verifica-status
+            when:
+              - id: when-65e0
+                expression:
+                  simple:
+                    id: simple-3d74
+                    expression: ${header.CamelHttpResponseCode} != 200
+                steps:
+                  - setHeader:
+                      id: setHeader-b81c
+                      name: CamelHttpResponseCode
+                      expression:
+                        constant:
+                          id: constant-3fe3
+                          expression: "400"
+                  - setBody:
+                      id: setBody-122a
+                      expression:
+                        constant:
+                          id: constant-7166
+                          expression: Erro na autenticação - status inválido
+            otherwise:
+              id: otherwise-380c
+              steps:
+                - convertBodyTo:
+                    id: convert-body-xml
+                    type: java.lang.String
+                - setProperty:
+                    id: set-token-prop
+                    name: tokenSolicitante
+                    expression:
+                      xpath:
+                        id: xpath-token
+                        expression: //TokenValido/text()
+                - setHeader:
+                    id: set-header-token
+                    name: Authorization
+                    expression:
+                      simple:
+                        id: simple-token
+                        expression: ${exchangeProperty.tokenSolicitante}
+                - log:
+                    id: log-token
+                    message: Token obtido- ${header.Authorization}
