@@ -140,9 +140,6 @@
             id: process-faa7
             description: Cripto
             ref: processor
-        - log:
-            id: log-1413
-            message: ${body}
         - to:
             id: to-f708
             uri: direct
@@ -176,14 +173,6 @@
               simple:
                 id: simple-9360
                 expression: "--X-INSOMNIA-BOUNDARY\r\nContent-Disposition: form-data; name=\"token_solicitante\"\r\n\r\n${exchangeProperty.tokenSolicitante}\r\n--X-INSOMNIA-BOUNDARY--"
-        - log:
-            id: log-e675
-            message: ${headers}
-            logName: HEADERS$$$$$$
-        - log:
-            id: log-be56
-            message: ${body}
-            logName: Antes do REQUEST
         - toD:
             id: to-autorizacao
             uri: https
@@ -197,9 +186,6 @@
             id: unmarshal-529a
             gzipDeflater:
               id: gzipDeflater-7d8a
-        - log:
-            id: log-0034
-            message: ${body}
         - choice:
             id: verifica-status
             when:
