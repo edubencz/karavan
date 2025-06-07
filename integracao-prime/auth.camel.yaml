@@ -122,15 +122,15 @@
       parameters:
         name: cripto
       steps:
-        - setHeader:
-            id: setHeader-emailSenha
+        - setProperty:
+            id: setProperty-emailSenha
             name: emailSenha
             expression:
               simple:
                 id: simple-userPass
                 expression: ${body[userPass]}
-        - setHeader:
-            id: setHeader-chaveCript
+        - setProperty:
+            id: setProperty-chaveCript
             name: chaveCript
             expression:
               simple:
@@ -163,9 +163,6 @@
               simple:
                 id: simple-fe46
                 expression: ${body[linkAutoriz]}
-        - removeHeaders:
-            id: removeHeaders-d75d
-            pattern: "*"
         - setHeader:
             id: set-form-content-type
             name: Content-type

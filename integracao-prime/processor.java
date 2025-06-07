@@ -20,8 +20,8 @@ import java.util.Base64;
 public class processor implements Processor {
 
     public void process(Exchange exchange) throws Exception {
-        String emailSenha = exchange.getIn().getHeader("emailSenha", String.class);
-        String chaveBase64 = exchange.getIn().getHeader("chaveCript", String.class);
+        String emailSenha = exchange.getProperty("emailSenha", String.class);
+        String chaveBase64 = exchange.getProperty("chaveCript", String.class);
 
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         PublicKey publicKey = keyFactory.generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(chaveBase64)));
