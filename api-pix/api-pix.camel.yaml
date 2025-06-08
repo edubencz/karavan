@@ -15,6 +15,10 @@
       parameters:
         name: criar-cobranca-dinamica
       steps:
+        - log:
+            id: log-2f58
+            message: ${body}
+            logName: LOGGEr
         - unmarshal:
             id: unmarshal-2b0c
             json:
@@ -53,11 +57,6 @@
                       simple:
                         id: simple-66c3
                         expression: "{ \"mensagem\": \"Banco não implementado\" }"
-                - marshal:
-                    id: marshal-32d8
-                    json:
-                      id: json-1565
-                      library: Jackson
                 - setHeader:
                     id: setHeader-6a8f
                     name: Content-Type
