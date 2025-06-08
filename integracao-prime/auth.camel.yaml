@@ -5,134 +5,66 @@
     post:
       - id: post-0988
         path: /atualiza_status
-        to: direct:inicio
+        to: direct:valida-payload
 - route:
     id: valida-payload
-    trace: true
     from:
       id: from-9a4a
       uri: direct
       parameters:
-        name: inicio
+        name: valida-payload
+        bridgeErrorHandler: false
       steps:
-        - unmarshal:
-            id: unmarshal-json
-            json:
-              id: json-jackson
-              library: Jackson
-        - choice:
-            id: choice-validacao
-            when:
-              - id: when-5b8a
-                expression:
-                  simple:
-                    id: simple-8532
-                    expression: >-
-                      ${body[cabecalhoIntegracao][linkAutoriz]} == null ||
-                      ${body[cabecalhoIntegracao][linkAutoriz]} == ''
+        - doTry:
+            id: doTry-dfa0
+            doCatch:
+              - id: doCatch-b058
+                exception:
+                  - java.lang.Exception
                 steps:
                   - setHeader:
-                      id: set-400-header-1
+                      id: setHeader-1c75
                       name: CamelHttpResponseCode
                       expression:
-                        constant:
-                          id: constant-c400-1
+                        simple:
+                          id: simple-e958
                           expression: "400"
                   - setBody:
-                      id: set-body-erro-1
+                      id: setBody-0a21
                       expression:
                         simple:
-                          id: erro-1
-                          expression: "{ \"mensagem\": \"Campo linkAutoriz é obrigatório.\" }"
+                          id: simple-4330
+                          expression: >-
+                            { "mensagem": "Erro no
+                            payload:${exception.message.replaceAll('\\r?\\n', '
+                            ')}" }
                   - stop:
-                      id: stop-c44c
-              - id: when-f461
-                expression:
-                  simple:
-                    id: simple-8f0b
-                    expression: >-
-                      ${body[cabecalhoIntegracao][linkRetorno]} == null ||
-                      ${body[cabecalhoIntegracao][linkRetorno]} == ''
-                steps:
-                  - setHeader:
-                      id: set-400-header-2
-                      name: CamelHttpResponseCode
-                      expression:
-                        constant:
-                          id: constant-c400-2
-                          expression: "400"
-                  - setBody:
-                      id: set-body-erro-2
-                      expression:
-                        simple:
-                          id: erro-2
-                          expression: "{ \"mensagem\": \"Campo linkRetorno é obrigatório.\" }"
-                  - stop:
-                      id: stop-c7a5
-              - id: when-aea6
-                expression:
-                  simple:
-                    id: simple-ab24
-                    expression: >-
-                      ${body[cabecalhoIntegracao][chaveCript]} == null ||
-                      ${body[cabecalhoIntegracao][chaveCript]} == ''
-                steps:
-                  - setHeader:
-                      id: set-400-header-3
-                      name: CamelHttpResponseCode
-                      expression:
-                        constant:
-                          id: constant-c400-3
-                          expression: "400"
-                  - setBody:
-                      id: set-body-erro-3
-                      expression:
-                        simple:
-                          id: erro-3
-                          expression: "{ \"mensagem\": \"Campo chaveCript é obrigatório.\" }"
-                  - stop:
-                      id: stop-fa19
-              - id: when-aea7
-                expression:
-                  simple:
-                    id: simple-ab25
-                    expression: >-
-                      ${body[cabecalhoIntegracao][userPass]} == null ||
-                      ${body[cabecalhoIntegracao][userPass]} == ''
-                steps:
-                  - setHeader:
-                      id: set-400-header-5
-                      name: CamelHttpResponseCode
-                      expression:
-                        constant:
-                          id: constant-c400-5
-                          expression: "400"
-                  - setBody:
-                      id: set-body-erro-5
-                      expression:
-                        simple:
-                          id: erro-5
-                          expression: "{ \"mensagem\": \"Campo userPass é obrigatório.\" }"
-                  - stop:
-                      id: stop-fa18
-            otherwise:
-              id: otherwise-validado
-              steps:
-                - setProperty:
-                    id: setProperty-add0
-                    name: corpoMensagem
-                    expression:
-                      simple:
-                        id: simple-3737
-                        expression: ${body[corpoMensagem]}
-                - to:
-                    id: to-cripto
-                    uri: direct
-                    parameters:
-                      name: cripto
+                      id: stop-2f34
+            steps:
+              - to:
+                  id: to-9d51
+                  uri: json-validator
+                  parameters:
+                    resourceUri: file:jsonschema.json
+              - unmarshal:
+                  id: unmarshal-json
+                  json:
+                    id: json-jackson
+                    library: Jackson
+              - setProperty:
+                  id: setProperty-add0
+                  name: corpoMensagem
+                  expression:
+                    simple:
+                      id: simple-3737
+                      expression: ${body[corpoMensagem]}
+        - to:
+            id: to-f7dc
+            uri: direct
+            parameters:
+              name: cripto
 - route:
     id: cripto-route
-    trace: true
     from:
       id: from-4e57
       uri: direct
@@ -173,8 +105,8 @@
                         simple:
                           id: simple-ddae
                           expression: >-
-                            { "mensagem": "Erro no processo de criptografia.
-                            Revise a chave pública." }
+                            { "mensagem": "Erro no processo de criptografia:
+                            ${exception.message}" }
                   - stop:
                       id: stop-d5c2
             steps:
@@ -189,7 +121,6 @@
               name: autenticar-prime
 - route:
     id: rota-autenticacao-prime
-    trace: true
     from:
       id: from-autenticacao
       uri: direct
@@ -278,14 +209,12 @@
                         expression: //TokenValido/text()
                 - to:
                     id: to-6d46
-                    disabled: false
                     uri: direct
                     parameters:
                       name: atualiza-status
 - route:
     id: rota-atualiza-status
     nodePrefixId: route-d84
-    trace: true
     from:
       id: from-b47d
       uri: direct
@@ -340,10 +269,6 @@
                     id: simple-8dbc
                     expression: ${header.CamelHttpResponseCode} != 200
                 steps:
-                  - log:
-                      id: log-05e2
-                      message: ${body}
-                      logName: ERRO 500
                   - removeHeaders:
                       id: removeHeaders-5853
                       pattern: "*"

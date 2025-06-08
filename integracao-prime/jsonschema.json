@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "cabecalhoIntegracao": {
+      "type": "object",
+      "properties": {
+        "linkAutoriz": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1
+        },
+        "linkRetorno": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 1
+        },
+        "chaveCript": {
+          "type": "string",
+          "minLength": 1
+        },
+        "userPass": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "linkAutoriz",
+        "linkRetorno",
+        "chaveCript",
+        "userPass"
+      ],
+      "additionalProperties": false
+    },
+    "corpoMensagem": {
+      "type": "object",
+      "properties": {
+        "situacao": {
+          "type": "string",
+          "minLength": 1
+        },
+        "msg_erro": {
+          "type": "string"
+        },
+        "fig_cod": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "situacao",
+        "msg_erro",
+        "fig_cod"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "cabecalhoIntegracao",
+    "corpoMensagem"
+  ],
+  "additionalProperties": false
+}
