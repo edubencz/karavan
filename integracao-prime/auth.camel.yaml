@@ -272,14 +272,34 @@
                   - removeHeaders:
                       id: removeHeaders-5853
                       pattern: "*"
+                  - setHeaders:
+                      id: setHeaders-0ec2
+                      headers:
+                        - id: setHeader-6a41
+                          name: Content-Type
+                          expression:
+                            simple:
+                              id: simple-5440
+                              expression: application/json
+                        - id: setHeader-9b55
+                          name: CamelHttpResponseCode
+                          expression:
+                            simple:
+                              id: simple-3c2f
+                              expression: "500"
+                  - convertBodyTo:
+                      id: convertBodyTo-1b00
+                      type: java.lang.String
                   - setBody:
                       id: set-body-error
                       expression:
                         simple:
                           id: simple-ddae
                           expression: >-
-                            { "mensagem": "Erro ao atualizar status PRIME. Tente
-                            novamente mais tarde." }
+                            { "mensagem": "Erro no destino da requisição.
+                            Retorno PRIME: ${body.replaceAll('\\r?\\n', '
+                            ').replaceAll('[\\\\\"]', ' ').replaceAll('<[^>]+>',
+                            '')}" }
             otherwise:
               id: otherwise-c59b
               steps:
