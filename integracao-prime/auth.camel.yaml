@@ -170,6 +170,10 @@
             id: unmarshal-529a
             gzipDeflater:
               id: gzipDeflater-7d8a
+        - log:
+            id: log-4277
+            message: ${body}
+            logName: após deflater
         - choice:
             id: verifica-status
             when:
@@ -194,9 +198,50 @@
                           expression: >-
                             { "mensagem": "Erro na autenticação - status
                             inválido." }
+              - id: when-90d1
+                expression:
+                  simple:
+                    id: simple-4975
+                    expression: ${body} regex '.*(critica|erro).*'
+                steps:
+                  - removeHeaders:
+                      id: removeHeaders-12ba
+                      pattern: "*"
+                  - setHeaders:
+                      id: setHeaders-cb10
+                      headers:
+                        - id: setHeader-d5bd
+                          name: Content-Type
+                          expression:
+                            simple:
+                              id: simple-9591
+                              expression: application/json
+                        - id: setHeader-c263
+                          name: CamelHttpResponseCode
+                          expression:
+                            simple:
+                              id: simple-4a97
+                              expression: "401"
+                  - convertBodyTo:
+                      id: convertBodyTo-6406
+                      type: java.lang.String
+                  - setBody:
+                      id: setBody-fa26
+                      expression:
+                        simple:
+                          id: simple-98f8
+                          expression: >-
+                            { "mensagem": "Erro na autenticação - 401 - Retorno
+                            PRIME: ${body.replaceAll('\\r?\\n', '
+                            ').replaceAll('[\\\\\"]', ' ').replaceAll('<[^>]+>',
+                            '')}" }
             otherwise:
               id: otherwise-380c
               steps:
+                - log:
+                    id: log-e8b4
+                    message: ${body}
+                    logName: após auth
                 - convertBodyTo:
                     id: convert-body-xml
                     type: java.lang.String
