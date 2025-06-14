@@ -1,10 +1,9 @@
 - rest:
     id: rest-15dc
-    path: /pix
     post:
       - id: post-5ac2
         description: Criação de cobrança dinâmica com QR Code
-        path: /cobranca-dinamica
+        path: /gerar-qrcode
         to: direct:criar-cobranca-dinamica
         consumes: application/json
         produces: application/json
@@ -16,6 +15,10 @@
       parameters:
         name: criar-cobranca-dinamica
       steps:
+        - log:
+            id: log-2f58
+            message: ${body}
+            logName: LOGGEr
         - unmarshal:
             id: unmarshal-2b0c
             json:
@@ -53,12 +56,7 @@
                     expression:
                       simple:
                         id: simple-66c3
-                        expression: "Erro: Banco não suportado. Contate suporte"
-                - marshal:
-                    id: marshal-32d8
-                    json:
-                      id: json-1565
-                      library: Jackson
+                        expression: "{ \"mensagem\": \"Banco não implementado\" }"
                 - setHeader:
                     id: setHeader-6a8f
                     name: Content-Type
@@ -153,6 +151,7 @@
               bridgeEndpoint: true
               httpUri: sandbox.devportal.itau.com.br/api/oauth/jwt
               logHttpActivity: true
+              throwExceptionOnFailure: true
         - unmarshal:
             id: unmarshal-1d3f
             json:
@@ -206,7 +205,7 @@
                 expression: |-
                   {
                     "calendario": {
-                      "dataDeVencimento": "2025-05-30"
+                      "dataDeVencimento": "2025-06-10"
                     },
                     "devedor": {
                       "cpf": "12345678909",
