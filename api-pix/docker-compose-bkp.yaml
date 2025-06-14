@@ -1,0 +1,12 @@
+services:
+  api-pix:
+    image: api-pix
+    environment:
+      JAVA_TOOL_OPTIONS: -Dotel.java.global-autoconfigure.enabled=true -Dotel.metrics.exporter=none
+        -Dotel.traces.exporter=otlp -Dotel.logs.exporter=otlp -Dotel.exporter.otlp.endpoint=http://otel-collector:4317
+        -Dotel.service.name=api-pix
+    restart: always
+    ports:
+      - "8084:8080"
+    networks:
+      - karavan

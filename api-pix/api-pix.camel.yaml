@@ -4,9 +4,65 @@
       - id: post-5ac2
         description: Criação de cobrança dinâmica com QR Code
         path: /gerar-qrcode
-        to: direct:criar-cobranca-dinamica
+        to: direct:validar-payload
         consumes: application/json
         produces: application/json
+- route:
+    id: validar-payload
+    from:
+      id: from-9a4a
+      uri: direct
+      parameters:
+        name: validar-payload
+        bridgeErrorHandler: false
+      steps:
+        - doTry:
+            id: doTry-dfa0
+            doCatch:
+              - id: doCatch-b058
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setHeader:
+                      id: setHeader-1c75
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-e958
+                          expression: "400"
+                  - setBody:
+                      id: setBody-0a21
+                      expression:
+                        simple:
+                          id: simple-4330
+                          expression: >-
+                            { "mensagem": "Erro no payload:
+                            ${exception.message.replaceAll('\\r?\\n', ' ')}" }
+                  - stop:
+                      id: stop-6f88
+            steps:
+              - to:
+                  id: to-9d51
+                  uri: json-validator
+                  parameters:
+                    resourceUri: file:payload-schema.json
+              - unmarshal:
+                  id: unmarshal-json
+                  json:
+                    id: json-jackson
+                    library: Jackson
+              - setProperty:
+                  id: setProperty-add0
+                  name: payload
+                  expression:
+                    simple:
+                      id: simple-3737
+                      expression: ${body[payload]}
+        - to:
+            id: to-f7dc
+            uri: direct
+            parameters:
+              name: criar-cobranca-dinamica
 - route:
     id: criar-cobranca-dinamica
     from:
@@ -15,14 +71,6 @@
       parameters:
         name: criar-cobranca-dinamica
       steps:
-        - log:
-            id: log-2f58
-            message: ${body}
-            logName: LOGGEr
-        - unmarshal:
-            id: unmarshal-2b0c
-            json:
-              id: json-4738
         - choice:
             id: choice-30c4
             when:
@@ -30,7 +78,7 @@
                 expression:
                   simple:
                     id: simple-dcf9
-                    expression: ${body[banco]} == 'BANCODOBRASIL'
+                    expression: ${body[rota][bancoDestino]} == 'BANCODOBRASIL'
                 steps:
                   - to:
                       id: to-0138
@@ -41,7 +89,7 @@
                 expression:
                   simple:
                     id: simple-a625
-                    expression: ${body[banco]} == 'ITAU'
+                    expression: ${body[rota][bancoDestino]} == 'ITAU'
                 steps:
                   - to:
                       id: to-8156
