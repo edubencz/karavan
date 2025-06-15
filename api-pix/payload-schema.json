@@ -8,10 +8,18 @@
         "bancoDestino": {
           "type": "string",
           "minLength": 1
+        },
+        "credencial": {
+          "type": "string",
+          "minLength": 1
+        },
+        "txid": {
+          "type": "string",
+          "minLength": 1
         }
       },
-      "required": ["bancoDestino"],
-      "additionalProperties": false
+      "required": ["bancoDestino", "credencial", "txid"],
+      "additionalProperties": true
     },
     "payload": {
       "type": "object",
@@ -140,5 +148,5 @@
     }
   },
   "required": ["rota", "payload"],
-  "additionalProperties": false
+  "additionalProperties": true
 }
