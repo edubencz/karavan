@@ -4,9 +4,90 @@
       - id: post-5ac2
         description: Criação de cobrança dinâmica com QR Code
         path: /gerar-qrcode
-        to: direct:criar-cobranca-dinamica
+        to: direct:validar-payload
         consumes: application/json
         produces: application/json
+- route:
+    id: validar-payload
+    from:
+      id: from-9a4a
+      uri: direct
+      parameters:
+        name: validar-payload
+        bridgeErrorHandler: false
+      steps:
+        - doTry:
+            id: doTry-dfa0
+            doCatch:
+              - id: doCatch-b058
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setHeader:
+                      id: setHeader-1c75
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-e958
+                          expression: "400"
+                  - setBody:
+                      id: setBody-0a21
+                      expression:
+                        simple:
+                          id: simple-4330
+                          expression: >-
+                            { "mensagem": "Erro no payload:
+                            ${exception.message.replaceAll('\\r?\\n', ' ')}" }
+                  - stop:
+                      id: stop-6f88
+            steps:
+              - to:
+                  id: to-9d51
+                  uri: json-validator
+                  parameters:
+                    resourceUri: file:payload-schema.json
+              - unmarshal:
+                  id: unmarshal-json
+                  json:
+                    id: json-jackson
+                    library: Jackson
+              - setProperty:
+                  id: setProperty-add0
+                  name: payload
+                  expression:
+                    simple:
+                      id: simple-3737
+                      expression: ${body[payload]}
+              - setProperty:
+                  id: setProperty-7d75
+                  name: rota
+                  expression:
+                    simple:
+                      id: simple-7f4c
+                      expression: ${body[rota]}
+              - setProperty:
+                  id: setProperty-b73c
+                  name: txid
+                  expression:
+                    simple:
+                      id: simple-05fe
+                      expression: ${body[rota][txid]}
+              - setProperty:
+                  id: setProperty-d334
+                  name: appKey
+                  expression:
+                    simple:
+                      id: simple-db3a
+                      expression: ${body[rota][appKey]}
+              - process:
+                  id: process-87df
+                  description: CredentialDecoder
+                  ref: CredentialDecoder
+        - to:
+            id: to-f7dc
+            uri: direct
+            parameters:
+              name: criar-cobranca-dinamica
 - route:
     id: criar-cobranca-dinamica
     from:
@@ -15,14 +96,6 @@
       parameters:
         name: criar-cobranca-dinamica
       steps:
-        - log:
-            id: log-2f58
-            message: ${body}
-            logName: LOGGEr
-        - unmarshal:
-            id: unmarshal-2b0c
-            json:
-              id: json-4738
         - choice:
             id: choice-30c4
             when:
@@ -30,7 +103,7 @@
                 expression:
                   simple:
                     id: simple-dcf9
-                    expression: ${body[banco]} == 'BANCODOBRASIL'
+                    expression: ${body[rota][bancoDestino]} == 'BANCODOBRASIL'
                 steps:
                   - to:
                       id: to-0138
@@ -41,7 +114,7 @@
                 expression:
                   simple:
                     id: simple-a625
-                    expression: ${body[banco]} == 'ITAU'
+                    expression: ${body[rota][bancoDestino]} == 'ITAU'
                 steps:
                   - to:
                       id: to-8156
@@ -92,30 +165,60 @@
             expression:
               simple:
                 id: simple-3ca6
-                expression: "{\n\t\"calendario\": {\n\t\t\"dataDeVencimento\": \"2035-06-24\",\n\t\t\"validadeAposVencimento\":30\n\t},\n\t\n\t\"devedor\": {\n\t\t\"logradouro\": \"Alameda Souza, Numero 80, Bairro Braz\",\n\t\t\"cidade\": \"Recife\",\n\t\t\"uf\": \"PE\",\n\t\t\"cep\": \"70011750\",\n\t\t\"cpf\": \"12345678909\",\n\t\t\"nome\": \"Francisco da Silva\"\n\t},\n\t\n\t\"valor\": {\n\t\t\"original\": \"123.45\",\n\t\t\"multa\": {\n\t\t\t\"modalidade\":\"2\",\n\t\t\t\"valorPerc\":\"15.00\"\n\t\t},\n\t\t\"juros\": {\n\t\t\t\"modalidade\":\"2\",\n\t\t\t\"valorPerc\":\"2.00\"\n\t\t},\n\t\t\"desconto\":{\n\t\t\t\"modalidade\": \"1\",\n\t\t\t\"descontoDataFixa\": [\n\t\t\t\t{\n\t\t\t\t\t\"data\":\"2030-06-24\",\n\t\t\t\t\t\"valorPerc\":\"30.00\"\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t\t\n\t\t},\n\t\"chave\": \"95127446000198\",\n\t\"solicitacaoPagador\": \"Cobrança dos serviços prestados.\"\n}"
-        - toD:
-            id: to-bb
-            uri: https
-            parameters:
-              httpUri: >-
-                api.hm.bb.com.br/pix/v2/cobv/f47ac10b58cc4372a5670e02b2c3d479?gw-dev-app-key=e70957892a7a4283994c6d1dae602d12
-              httpMethod: PUT
-              logHttpActivity: true
-              oauth2ClientId: >-
-                eyJpZCI6IjEzYWJhYjUtOTA2Mi00ODBkLTliZWUtIiwiY29kaWdvUHVibGljYWRvciI6MCwiY29kaWdvU29mdHdhcmUiOjEzNTU1Mywic2VxdWVuY2lhbEluc3RhbGFjYW8iOjF9
-              oauth2ClientSecret: >-
-                eyJpZCI6IjNlMzBjOTgtYTQxYS00ZDk4LWI4ZGItNDdhOGJlNzJmYTM0MDRlMmFlMGUtIiwiY29kaWdvUHVibGljYWRvciI6MCwiY29kaWdvU29mdHdhcmUiOjEzNTU1Mywic2VxdWVuY2lhbEluc3RhbGFjYW8iOjEsInNlcXVlbmNpYWxDcmVkZW5jaWFsIjoxMSwiYW1iaWVudGUiOiJob21vbG9nYWNhbyIsImlhdCI6MTc0ODI2NzIxNTk2Mn0
-              oauth2Scope: cobv.write
-              oauth2TokenEndpoint: https://oauth.hm.bb.com.br/oauth/token
-              bridgeEndpoint: true
-              oauth2CacheTokens: true
-              oauth2CachedTokensDefaultExpirySeconds: "180"
-        - setBody:
-            id: setBody-4cc1
-            expression:
-              simple:
-                id: simple-dc9b
-                expression: ${body}
+                expression: ${exchangeProperty.payload}
+        - marshal:
+            id: marshal-846e
+            json:
+              id: json-9278
+              library: Jackson
+        - log:
+            id: log-f281
+            message: ${body}
+            logName: body antes do envio
+        - doTry:
+            id: doTry-0325
+            doCatch:
+              - id: doCatch-e8de
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setHeader:
+                      id: setHeader-f6fc
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-1fc2
+                          expression: ${exception.statusCode}
+                  - setBody:
+                      id: setBody-117a
+                      expression:
+                        simple:
+                          id: simple-910c
+                          expression: "{\r\n    \"mensagem\": \"Erro na comunicação com BB: ${exception.message.replaceAll('\\\\r?\\\\n', ' ')}\",\r\n    \"resposta\": ${exception.responseBody}\r\n}"
+                  - stop:
+                      id: stop-8420
+            steps:
+              - toD:
+                  id: to-bb
+                  uri: https
+                  parameters:
+                    httpUri: >-
+                      api.hm.bb.com.br/pix/v2/cobv/${exchangeProperty.txid}?gw-dev-app-key=${exchangeProperty.appKey}
+                    httpMethod: PUT
+                    logHttpActivity: true
+                    oauth2ClientId: ${exchangeProperty.client_id}
+                    oauth2Scope: cobv.write
+                    oauth2TokenEndpoint: https://oauth.hm.bb.com.br/oauth/token
+                    bridgeEndpoint: true
+                    oauth2CacheTokens: false
+                    oauth2CachedTokensDefaultExpirySeconds: "180"
+                    oauth2ClientSecret: ${exchangeProperty.client_secret}
+              - setBody:
+                  id: setBody-4cc1
+                  expression:
+                    simple:
+                      id: simple-dc9b
+                      expression: ${body}
         - to:
             id: to-extrair-bb
             uri: direct
@@ -123,6 +226,7 @@
               name: extrair-pix-copiaecola
 - route:
     id: token-itau
+    group: itau
     from:
       id: from-264b
       uri: direct
@@ -139,19 +243,42 @@
         - setBody:
             id: setBody-9f2b
             expression:
-              constant:
-                id: constant-7cf4
+              simple:
+                id: simple-2bb6
                 expression: >-
-                  grant_type=client_credentials&client_id=88fd252e-a748-37b8-8f93-306aeec6d9b9&client_secret=ef9e08fa-cf9a-4825-b539-22ce3f2ab5b4&scope=cob.read
+                  grant_type=client_credentials&client_id=${exchangeProperty.client_id}&client_secret=${exchangeProperty.client_secret}&scope=cob.read
                   cob.write
-        - toD:
-            id: to-5495
-            uri: https
-            parameters:
-              bridgeEndpoint: true
-              httpUri: sandbox.devportal.itau.com.br/api/oauth/jwt
-              logHttpActivity: true
-              throwExceptionOnFailure: true
+        - doTry:
+            id: doTry-f9c6
+            doCatch:
+              - id: doCatch-91be
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setHeader:
+                      id: setHeader-700f
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-7bfa
+                          expression: ${exception.statusCode}
+                  - setBody:
+                      id: setBody-c3db
+                      expression:
+                        simple:
+                          id: simple-39cd
+                          expression: "{\r\n    \"mensagem\": \"Erro na comunicação com autenticação ITAU: ${exception.message.replaceAll('\\\\r?\\\\n', ' ')}\",\r\n    \"resposta\": ${exception.responseBody}\r\n}"
+                  - stop:
+                      id: stop-3f51
+            steps:
+              - toD:
+                  id: to-5495
+                  uri: https
+                  parameters:
+                    bridgeEndpoint: true
+                    httpUri: sandbox.devportal.itau.com.br/api/oauth/jwt
+                    logHttpActivity: true
+                    throwExceptionOnFailure: true
         - unmarshal:
             id: unmarshal-1d3f
             json:
@@ -159,19 +286,14 @@
               library: Jackson
         - setHeader:
             id: setHeader-cb81
-            name: itauAccessToken
+            name: Authorization
             expression:
               simple:
                 id: simple-87c3
                 expression: Bearer ${body[access_token]}
-        - setBody:
-            id: setBody-b90d
-            expression:
-              simple:
-                id: simple-6e53
-                expression: ${header.itauAccessToken}
 - route:
     id: itau-cobranca
+    group: itau
     from:
       id: from-6e82
       uri: direct
@@ -184,13 +306,6 @@
             parameters:
               name: token-itau
         - setHeader:
-            id: setHeader-793b
-            name: Authorization
-            expression:
-              simple:
-                id: simple-9fc8
-                expression: ${body}
-        - setHeader:
             id: setHeader-334a
             name: Content-Type
             expression:
@@ -202,32 +317,44 @@
             expression:
               simple:
                 id: simple-92e1
-                expression: |-
-                  {
-                    "calendario": {
-                      "dataDeVencimento": "2025-06-10"
-                    },
-                    "devedor": {
-                      "cpf": "12345678909",
-                      "nome": "Francisco da Silva"
-                    },
-                    "valor": {
-                      "original": "22.50"
-                    },
-                    "chave": "5f84a4c5-c5cb-4599-9f13-7eb4d419dacc"
-                  }
-        - toD:
-            id: to-29a1
-            uri: https
-            parameters:
-              logHttpActivity: true
-              bridgeEndpoint: true
-              httpUri: >-
-                sandbox.devportal.itau.com.br/itau-ep9-gtw-pix-recebimentos-ext-v2/v2/cobv/88ba8ec675e044178d434908d9b2a30a
-              httpMethod: PUT
-        - convertBodyTo:
-            id: convertBodyTo-1c91
-            type: java.lang.String
+                expression: ${exchangeProperty.payload}
+        - marshal:
+            id: marshal-725a
+            json:
+              id: json-48df
+              library: Jackson
+        - doTry:
+            id: doTry-05be
+            doCatch:
+              - id: doCatch-31c9
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setHeader:
+                      id: setHeader-4a36
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-3d09
+                          expression: ${exception.statusCode}
+                  - setBody:
+                      id: setBody-d4fb
+                      expression:
+                        simple:
+                          id: simple-f7f7
+                          expression: "{\r\n    \"mensagem\": \"Erro na comunicação com ITAU: ${exception.message.replaceAll('\\\\r?\\\\n', ' ')}\",\r\n    \"resposta\": ${exception.responseBody}\r\n}"
+                  - stop:
+                      id: stop-724c
+            steps:
+              - toD:
+                  id: to-29a1
+                  uri: https
+                  parameters:
+                    logHttpActivity: true
+                    bridgeEndpoint: true
+                    httpUri: >-
+                      sandbox.devportal.itau.com.br/itau-ep9-gtw-pix-recebimentos-ext-v2/v2/cobv/88ba8ec675e044178d434908d9b2a30a
+                    httpMethod: PUT
         - to:
             id: to-extrair-itau
             uri: direct
@@ -254,5 +381,4 @@
             expression:
               simple:
                 id: simple-map
-                expression: |
-                  {"pixCopiaECola":"${body[pixCopiaECola]}"}
+                expression: "{\r\n    \"txid\":\"${body[txid]}\"\r\n    \"pixCopiaECola\":\"${body[pixCopiaECola]}\"\r\n}\r\n"

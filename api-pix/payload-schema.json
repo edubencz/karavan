@@ -1,0 +1,152 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "rota": {
+      "type": "object",
+      "properties": {
+        "bancoDestino": {
+          "type": "string",
+          "minLength": 1
+        },
+        "credencial": {
+          "type": "string",
+          "minLength": 1
+        },
+        "txid": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["bancoDestino", "credencial", "txid"],
+      "additionalProperties": true
+    },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "calendario": {
+          "type": "object",
+          "properties": {
+            "dataDeVencimento": {
+              "type": "string",
+              "format": "date"
+            },
+            "validadeAposVencimento": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": ["dataDeVencimento"],
+          "additionalProperties": false
+        },
+        "devedor": {
+          "type": "object",
+          "properties": {
+            "logradouro": {
+              "type": "string"
+            },
+            "cidade": {
+              "type": "string"
+            },
+            "uf": {
+              "type": "string",
+              "pattern": "^[A-Z]{2}$"
+            },
+            "cep": {
+              "type": "string",
+              "pattern": "^\\d{8}$"
+            },
+            "cpf": {
+              "type": "string",
+              "pattern": "^\\d{11}$"
+            },
+            "nome": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": ["cpf", "nome"],
+          "additionalProperties": false
+        },
+        "valor": {
+          "type": "object",
+          "properties": {
+            "original": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d{2}$"
+            },
+            "multa": {
+              "type": "object",
+              "properties": {
+                "modalidade": {
+                  "type": "string"
+                },
+                "valorPerc": {
+                  "type": "string",
+                  "pattern": "^\\d+\\.\\d{2}$"
+                }
+              },
+              "required": ["modalidade", "valorPerc"],
+              "additionalProperties": false
+            },
+            "juros": {
+              "type": "object",
+              "properties": {
+                "modalidade": {
+                  "type": "string"
+                },
+                "valorPerc": {
+                  "type": "string",
+                  "pattern": "^\\d+\\.\\d{2}$"
+                }
+              },
+              "required": ["modalidade", "valorPerc"],
+              "additionalProperties": false
+            },
+            "desconto": {
+              "type": "object",
+              "properties": {
+                "modalidade": {
+                  "type": "string"
+                },
+                "descontoDataFixa": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "data": {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      "valorPerc": {
+                        "type": "string",
+                        "pattern": "^\\d+\\.\\d{2}$"
+                      }
+                    },
+                    "required": ["data", "valorPerc"],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": ["modalidade", "descontoDataFixa"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["original"],
+          "additionalProperties": false
+        },
+        "chave": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9-]{11,36}$"
+        },
+        "solicitacaoPagador": {
+          "type": "string"
+        }
+      },
+      "required": ["calendario", "devedor", "valor", "chave"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["rota", "payload"],
+  "additionalProperties": true
+}
