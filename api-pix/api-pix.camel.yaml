@@ -243,19 +243,42 @@
         - setBody:
             id: setBody-9f2b
             expression:
-              constant:
-                id: constant-7cf4
+              simple:
+                id: simple-2bb6
                 expression: >-
-                  grant_type=client_credentials&client_id=88fd252e-a748-37b8-8f93-306aeec6d9b9&client_secret=ef9e08fa-cf9a-4825-b539-22ce3f2ab5b4&scope=cob.read
+                  grant_type=client_credentials&client_id=${exchangeProperty.client_id}&client_secret=${exchangeProperty.client_secret}&scope=cob.read
                   cob.write
-        - toD:
-            id: to-5495
-            uri: https
-            parameters:
-              bridgeEndpoint: true
-              httpUri: sandbox.devportal.itau.com.br/api/oauth/jwt
-              logHttpActivity: true
-              throwExceptionOnFailure: true
+        - doTry:
+            id: doTry-f9c6
+            doCatch:
+              - id: doCatch-91be
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setHeader:
+                      id: setHeader-700f
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-7bfa
+                          expression: ${exception.statusCode}
+                  - setBody:
+                      id: setBody-c3db
+                      expression:
+                        simple:
+                          id: simple-39cd
+                          expression: "{\r\n    \"mensagem\": \"Erro na comunicação com autenticação ITAU: ${exception.message.replaceAll('\\\\r?\\\\n', ' ')}\",\r\n    \"resposta\": ${exception.responseBody}\r\n}"
+                  - stop:
+                      id: stop-3f51
+            steps:
+              - toD:
+                  id: to-5495
+                  uri: https
+                  parameters:
+                    bridgeEndpoint: true
+                    httpUri: sandbox.devportal.itau.com.br/api/oauth/jwt
+                    logHttpActivity: true
+                    throwExceptionOnFailure: true
         - unmarshal:
             id: unmarshal-1d3f
             json:
@@ -263,17 +286,11 @@
               library: Jackson
         - setHeader:
             id: setHeader-cb81
-            name: itauAccessToken
+            name: Authorization
             expression:
               simple:
                 id: simple-87c3
                 expression: Bearer ${body[access_token]}
-        - setBody:
-            id: setBody-b90d
-            expression:
-              simple:
-                id: simple-6e53
-                expression: ${header.itauAccessToken}
 - route:
     id: itau-cobranca
     group: itau
@@ -289,13 +306,6 @@
             parameters:
               name: token-itau
         - setHeader:
-            id: setHeader-793b
-            name: Authorization
-            expression:
-              simple:
-                id: simple-9fc8
-                expression: ${body}
-        - setHeader:
             id: setHeader-334a
             name: Content-Type
             expression:
@@ -307,32 +317,44 @@
             expression:
               simple:
                 id: simple-92e1
-                expression: |-
-                  {
-                    "calendario": {
-                      "dataDeVencimento": "2025-06-10"
-                    },
-                    "devedor": {
-                      "cpf": "12345678909",
-                      "nome": "Francisco da Silva"
-                    },
-                    "valor": {
-                      "original": "22.50"
-                    },
-                    "chave": "5f84a4c5-c5cb-4599-9f13-7eb4d419dacc"
-                  }
-        - toD:
-            id: to-29a1
-            uri: https
-            parameters:
-              logHttpActivity: true
-              bridgeEndpoint: true
-              httpUri: >-
-                sandbox.devportal.itau.com.br/itau-ep9-gtw-pix-recebimentos-ext-v2/v2/cobv/88ba8ec675e044178d434908d9b2a30a
-              httpMethod: PUT
-        - convertBodyTo:
-            id: convertBodyTo-1c91
-            type: java.lang.String
+                expression: ${exchangeProperty.payload}
+        - marshal:
+            id: marshal-725a
+            json:
+              id: json-48df
+              library: Jackson
+        - doTry:
+            id: doTry-05be
+            doCatch:
+              - id: doCatch-31c9
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setHeader:
+                      id: setHeader-4a36
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-3d09
+                          expression: ${exception.statusCode}
+                  - setBody:
+                      id: setBody-d4fb
+                      expression:
+                        simple:
+                          id: simple-f7f7
+                          expression: "{\r\n    \"mensagem\": \"Erro na comunicação com ITAU: ${exception.message.replaceAll('\\\\r?\\\\n', ' ')}\",\r\n    \"resposta\": ${exception.responseBody}\r\n}"
+                  - stop:
+                      id: stop-724c
+            steps:
+              - toD:
+                  id: to-29a1
+                  uri: https
+                  parameters:
+                    logHttpActivity: true
+                    bridgeEndpoint: true
+                    httpUri: >-
+                      sandbox.devportal.itau.com.br/itau-ep9-gtw-pix-recebimentos-ext-v2/v2/cobv/88ba8ec675e044178d434908d9b2a30a
+                    httpMethod: PUT
         - to:
             id: to-extrair-itau
             uri: direct
@@ -359,5 +381,4 @@
             expression:
               simple:
                 id: simple-map
-                expression: |
-                  {"pixCopiaECola":"${body[pixCopiaECola]}"}
+                expression: "{\r\n    \"txid\":\"${body[txid]}\"\r\n    \"pixCopiaECola\":\"${body[pixCopiaECola]}\"\r\n}\r\n"
