@@ -2,4 +2,4 @@ spec:
   replicas: 1
   template:
     spec:
-      serviceAccount: karavan
+      serviceAccount: karavan-integration
