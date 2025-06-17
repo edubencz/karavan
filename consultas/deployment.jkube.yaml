@@ -1,5 +1,8 @@
 spec:
   replicas: 1
   template:
+    metadata:
+        labels:
+            org.apache.camel.karavan/type: devservice
     spec:
       serviceAccount: karavan-integration
