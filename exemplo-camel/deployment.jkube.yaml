@@ -1,5 +1,11 @@
+metadata:
+    labels:
+        org.apache.camel.karavan/type: project
 spec:
   replicas: 1
   template:
+    metadata:
+      labels:
+        org.apache.camel.karavan/type: project
     spec:
       serviceAccount: karavan-integration
