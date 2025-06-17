@@ -18,9 +18,9 @@ jbang -Dcamel.jbang.version=$CAMEL_VERSION camel@apache/camel export --local-kam
 mvn package jib:build k8s:resource k8s:apply \
   -Djkube.namespace=${NAMESPACE} \
   -Djib.allowInsecureRegistries=true \
+  -Djib.container.labels=org.apache.camel.karavan/type=project,org.apache.camel.karavan/projectId=$PROJECT_ID \
   -Djib.to.image=${IMAGE_REGISTRY}/${IMAGE_GROUP}/${PROJECT_ID}:${TAG} \
   -Djib.to.auth.username=${IMAGE_REGISTRY_USERNAME} \
   -Djib.to.auth.password=${IMAGE_REGISTRY_PASSWORD}
   #  -Djib.from.platforms=linux/arm64 \
   #  -Djib.platform.architecture=arm64 \
-  
