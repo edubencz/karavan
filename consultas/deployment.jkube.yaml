@@ -3,6 +3,6 @@ spec:
   template:
     metadata:
         labels:
-            org.apache.camel.karavan/type: devservice
+            org.apache.camel.karavan/type: packaged
     spec:
       serviceAccount: karavan-integration
