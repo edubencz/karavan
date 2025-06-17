@@ -20,7 +20,7 @@ import java.util.Base64;
 public class processor implements Processor {
 
     public void process(Exchange exchange) throws Exception {
-        String emailSenha = exchange.getProperty("emailSenha", String.class);
+        String emailSenha = Base64.getDecoder().decode(exchange.getProperty("emailSenha", String.class));
         String chaveBase64 = exchange.getProperty("chaveCript", String.class);
 
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
