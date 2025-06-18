@@ -10,10 +10,6 @@ spec:
     spec:
       serviceAccount: karavan-integration
       containers:
-        - name: api-pix
-          image: api-pix
-          ports:
-            - containerPort: 8080
           env:
             - name: JAVA_TOOL_OPTIONS
               value: >
