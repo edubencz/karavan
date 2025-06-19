@@ -11,9 +11,6 @@ spec:
       serviceAccount: karavan-integration
       containers:
         - name: integracao-prime
-          image: integracao-prime
-          ports:
-            - containerPort: 8080
           env:
             - name: JAVA_TOOL_OPTIONS
               value: >
