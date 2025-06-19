@@ -45,7 +45,7 @@
                   id: to-9d51
                   uri: json-validator
                   parameters:
-                    resourceUri: resourceUri:jsonschema.json
+                    resourceUri: "resourceUri: jsonschema.json"
               - unmarshal:
                   id: unmarshal-json
                   json:
