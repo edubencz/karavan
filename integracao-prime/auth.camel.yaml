@@ -35,7 +35,7 @@
                         simple:
                           id: simple-4330
                           expression: >-
-                            { "mensagem": "Erro no
+                            { "message": "Erro no
                             payload:${exception.message.replaceAll('\\r?\\n', '
                             ')}" }
                   - stop:
@@ -105,7 +105,7 @@
                         simple:
                           id: simple-ddae
                           expression: >-
-                            { "mensagem": "Erro no processo de criptografia:
+                            { "message": "Erro no processo de criptografia:
                             ${exception.message}" }
                   - stop:
                       id: stop-d5c2
@@ -196,7 +196,7 @@
                         constant:
                           id: constant-7166
                           expression: >-
-                            { "mensagem": "Erro na autenticação - status
+                            { "message": "Erro na autenticação - status
                             inválido." }
               - id: when-90d1
                 expression:
@@ -231,7 +231,7 @@
                         simple:
                           id: simple-98f8
                           expression: >-
-                            { "mensagem": "Erro na autenticação - 401 - Retorno
+                            { "message": "Erro na autenticação - 401 - Retorno
                             PRIME: ${body.replaceAll('\\r?\\n', '
                             ').replaceAll('[\\\\\"]', ' ').replaceAll('<[^>]+>',
                             '')}" }
@@ -341,8 +341,8 @@
                         simple:
                           id: simple-ddae
                           expression: >-
-                            { "mensagem": "Erro no destino da requisição.
-                            Retorno PRIME: ${body.replaceAll('\\r?\\n', '
+                            { "message": "Erro no destino da requisição. Retorno
+                            PRIME: ${body.replaceAll('\\r?\\n', '
                             ').replaceAll('[\\\\\"]', ' ').replaceAll('<[^>]+>',
                             '')}" }
             otherwise:
@@ -367,4 +367,4 @@
                     expression:
                       simple:
                         id: simple-3778
-                        expression: "{ \"mensagem\": \"${body}\" }"
+                        expression: "{ \"message\": \"${body}\" }"
