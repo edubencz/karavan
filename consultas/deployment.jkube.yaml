@@ -9,3 +9,16 @@ spec:
         org.apache.camel.karavan/type: project
     spec:
       serviceAccount: karavan-integration
+      containers:
+        - name: consultas
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: >
+                -Dotel.java.global-autoconfigure.enabled=true
+                -Dotel.metrics.exporter=otlp
+                -Dotel.traces.exporter=otlp
+                -Dotel.logs.exporter=otlp
+                -Dotel.exporter.otlp.endpoint=http://otel-collector.monitoring:4317
+                -Dotel.service.name=consultas
+                -Dotel.instrumentation.runtime-metrics.enabled=true
+                -Dotel.instrumentation.jvm-metrics.enabled=true
