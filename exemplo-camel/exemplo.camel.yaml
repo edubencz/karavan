@@ -4,7 +4,8 @@
       id: from-619e
       uri: timer
       parameters:
-        timerName: demo-timer?delay=0&period=60000
+        timerName: demo-timer
+        period: "30000"
       steps:
         - log:
             id: log-e045
