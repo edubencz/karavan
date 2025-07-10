@@ -1,0 +1,18 @@
+- rest:
+    id: rest-86d8
+    post:
+      - id: post-f4a3
+        path: /teste
+        to: direct:teste
+- route:
+    id: route-d673
+    nodePrefixId: route-283
+    from:
+      id: from-ab90
+      uri: direct
+      parameters:
+        name: teste
+      steps:
+        - log:
+            id: log-e859
+            message: ${body}
