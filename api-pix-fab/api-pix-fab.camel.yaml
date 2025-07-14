@@ -1,18 +1,241 @@
 - rest:
-    id: rest-86d8
+    id: rest-api-pix
     post:
-      - id: post-f4a3
+      - id: post-api-pix
         path: /teste
-        to: direct:teste
+        to: direct:validar-payload
+        consumes: application/json
+        produces: application/json
 - route:
-    id: route-d673
-    nodePrefixId: route-283
+    id: route-valida-payload
+    nodePrefixId: route-valida-payload
     from:
-      id: from-ab90
+      id: from-api-pix
       uri: direct
       parameters:
-        name: teste
+        name: validar-payload
       steps:
-        - log:
-            id: log-e859
-            message: ${body}
+        - doTry:
+            id: doTry-valida-payload
+            doCatch:
+              - id: doCatch-valida-payload
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - convertBodyTo:
+                      id: convertBodyTo-payload
+                      type: java.lang.String
+                  - setHeader:
+                      id: setHeader-payload
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-payload
+                          expression: "400"
+                  - setHeader:
+                      id: setHeader-json
+                      name: Content-Type
+                      expression:
+                        constant:
+                          id: constant-payload
+                          expression: application/json
+                  - setBody:
+                      id: setBody-payload-erro
+                      expression:
+                        simple:
+                          id: simple-payload-erro
+                          expression: >-
+                            { "mensagem": "Erro no payload:
+                            ${exception.message.replaceAll('\\r?\\n', ' ')}" }
+                  - stop:
+                      id: stop-payload-erro
+            steps:
+              - to:
+                  id: to-b50e
+                  uri: json-validator
+                  parameters:
+                    resourceUri: file:nexdom-schema.json
+              - unmarshal:
+                  id: unmarshal-2c6a
+                  json:
+                    id: json-928a
+              - setProperty:
+                  id: setProperty-9c75
+                  name: rota
+                  expression:
+                    simple:
+                      id: simple-8499
+                      expression: ${body[rota]}
+              - setProperty:
+                  id: setProperty-efbe
+                  name: payload
+                  expression:
+                    simple:
+                      id: simple-6a7b
+                      expression: ${body[payload]}
+              - marshal:
+                  id: marshal-body
+                  json:
+                    id: json-convertido
+              - to:
+                  id: to-ea11
+                  uri: direct
+                  parameters:
+                    name: valida-banco
+- route:
+    id: route-valida-banco
+    nodePrefixId: route-valida-banco
+    from:
+      id: from-725a
+      uri: direct
+      parameters:
+        name: valida-banco
+      steps:
+        - choice:
+            id: choice-banco
+            when:
+              - id: when-bb
+                expression:
+                  simple:
+                    id: simple-bb
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 1
+                steps:
+                  - to:
+                      id: to-d6f7
+                      description: banco-brasil
+                      uri: direct
+                      parameters:
+                        name: banco-brasil
+              - id: when-bradesco
+                expression:
+                  simple:
+                    id: simple-bradesco
+                    expression: ${exchangeProperty.rota[codigoBanco].intValue} == 234
+                steps:
+                  - to:
+                      id: to-cff8
+                      uri: direct
+                      parameters:
+                        name: banco-bradesco
+              - id: when-sicoob
+                expression:
+                  simple:
+                    id: simple-sicoob
+                    expression: ${exchangeProperty.rota[codigoBanco].intValue} == 756
+                steps:
+                  - to:
+                      id: to-d5ed
+                      uri: direct
+                      parameters:
+                        name: banco-sicoob
+              - id: when-unicred
+                expression:
+                  simple:
+                    id: simple-unicred
+                    expression: ${exchangeProperty.rota[codigoBanco].intValue} == 748
+                steps:
+                  - to:
+                      id: to-04c5
+                      uri: direct
+                      parameters:
+                        name: banco-unicred
+              - id: when-santander
+                expression:
+                  simple:
+                    id: simple-santander
+                    expression: ${exchangeProperty.rota[codigoBanco].intValue} == 33
+                steps:
+                  - to:
+                      id: to-3945
+                      uri: direct
+                      parameters:
+                        name: banco-santander
+              - id: when-sicredi
+                expression:
+                  simple:
+                    id: simple-sicredi
+                    expression: ${exchangeProperty.rota[codigoBanco].intValue} == 748
+                steps:
+                  - to:
+                      id: to-9f35
+                      uri: direct
+                      parameters:
+                        name: banco-sicredi
+              - id: when-safra
+                expression:
+                  simple:
+                    id: simple-safra
+                    expression: ${exchangeProperty.rota[codigoBanco].intValue} == 422
+                steps:
+                  - to:
+                      id: to-c419
+                      uri: direct
+                      parameters:
+                        name: banco-safra
+              - id: when-itau
+                expression:
+                  simple:
+                    id: simple-itau
+                    expression: ${exchangeProperty.rota[codigoBanco].intValue} == 341
+                steps:
+                  - to:
+                      id: to-4bd7
+                      uri: direct
+                      parameters:
+                        name: banco-itau
+            otherwise:
+              id: otherwise-banco
+              steps:
+                - setHeader:
+                    id: setHeader-erro-bancario
+                    name: CamelHttpResponseCode
+                    expression:
+                      simple:
+                        id: simple-status
+                        expression: "400"
+                - setBody:
+                    id: setBody-31ab
+                    expression:
+                      simple:
+                        id: simple-773b
+                        expression: |
+                          {
+                            "mensagem": "Banco inválido",
+                            "codigoBanco": "${exchangeProperty.rota[codigoBanco]}"
+                          }
+- route:
+    id: route-banco-brasil
+    nodePrefixId: route-banco-brasil
+    from:
+      id: bb01
+      uri: direct
+      parameters:
+        name: banco-brasil
+      steps:
+        - choice:
+            id: choice-bb-tipo
+            when:
+              - id: when-bb-inclusao
+                expression:
+                  simple:
+                    id: when-bb-inclusao
+                    expression: ${exchangeProperty.rota[tipo]} == "inclusao"
+                steps:
+                  - log:
+                      id: log-d308
+                      message: Inclusão BB
+              - id: when-bb-alteracao
+                expression:
+                  simple:
+                    id: when-bb-alteracao
+                    expression: ${exchangeProperty.rota[tipo]} == "alteracao"
+                steps:
+                  - log:
+                      id: log-1656
+                      message: Alteração BB
+            otherwise:
+              id: otherwise-bb-exclusao
+              steps:
+                - log:
+                    id: log-3a6e
+                    message: Exclusao BB
