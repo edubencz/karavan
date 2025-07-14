@@ -1,0 +1,283 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "rota": {
+      "type": "object",
+      "properties": {
+        "codigoBanco": {
+          "type": "integer"
+        },
+        "codigoUnimed": {
+          "type": "integer"
+        },
+        "numeroFatura": {
+          "type": "integer"
+        },
+        "tipo": {
+          "type": "string",
+          "enum": ["inclusao", "alteracao", "cancelamento"]
+        }
+      },
+      "required": [
+        "codigoBanco",
+        "codigoUnimed",
+        "numeroFatura"
+      ],
+      "additionalProperties": false
+    },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "dadosBoleto": {
+          "type": "object",
+          "properties": {
+            "numeroDocumento": {
+              "type": "string"
+            },
+            "dataVencimento": {
+              "type": "string",
+              "format": "date"
+            },
+            "dataEmissao": {
+              "type": "string",
+              "format": "date"
+            },
+            "valorNominal": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d{2}$"
+            },
+            "valorJuros": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d{2}$"
+            },
+            "valorMulta": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d{2}$"
+            },
+            "percentualJuros": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d{2}$"
+            },
+            "percentualMulta": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d{2}$"
+            },
+            "numeroNossoNumero": {
+              "type": "string"
+            },
+            "linhaDigitavel": {
+              "type": "string"
+            },
+            "codigoBarras": {
+              "type": "string"
+            },
+            "especieDocumento": {
+              "type": "string"
+            },
+            "aceite": {
+              "type": "string"
+            },
+            "dataProcessamento": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          "required": [
+            "numeroDocumento",
+            "dataVencimento",
+            "valorNominal"
+          ],
+          "additionalProperties": false
+        },
+        "dadosBanco": {
+          "type": "object",
+          "properties": {
+            "codigoBanco": {
+              "type": "string"
+            },
+            "nomeBanco": {
+              "type": "string"
+            },
+            "agencia": {
+              "type": "string"
+            },
+            "digitoAgencia": {
+              "type": "string"
+            },
+            "conta": {
+              "type": "string"
+            },
+            "digitoConta": {
+              "type": "string"
+            },
+            "convenio": {
+              "type": "string"
+            },
+            "carteira": {
+              "type": "string"
+            },
+            "variacao": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "codigoBanco",
+            "agencia",
+            "conta"
+          ],
+          "additionalProperties": false
+        },
+        "beneficiario": {
+          "type": "object",
+          "properties": {
+            "nome": {
+              "type": "string"
+            },
+            "documento": {
+              "type": "string"
+            },
+            "tipoPessoa": {
+              "type": "string"
+            },
+            "endereco": {
+              "type": "object",
+              "properties": {
+                "logradouro": {
+                  "type": "string"
+                },
+                "cidade": {
+                  "type": "string"
+                },
+                "uf": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{2}$"
+                },
+                "cep": {
+                  "type": "string",
+                  "pattern": "^\\d{8}$"
+                }
+              },
+              "required": [
+                "logradouro",
+                "cidade",
+                "uf",
+                "cep"
+              ],
+              "additionalProperties": false
+            },
+            "telefone": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "nome",
+            "documento",
+            "endereco"
+          ],
+          "additionalProperties": false
+        },
+        "pagador": {
+          "type": "object",
+          "properties": {
+            "nome": {
+              "type": "string"
+            },
+            "documento": {
+              "type": "string"
+            },
+            "tipoPessoa": {
+              "type": "string"
+            },
+            "endereco": {
+              "type": "object",
+              "properties": {
+                "logradouro": {
+                  "type": "string"
+                },
+                "bairro": {
+                  "type": "string"
+                },
+                "cidade": {
+                  "type": "string"
+                },
+                "uf": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{2}$"
+                },
+                "cep": {
+                  "type": "string",
+                  "pattern": "^\\d{8}$"
+                },
+                "complemento": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "logradouro",
+                "cidade",
+                "uf",
+                "cep"
+              ],
+              "additionalProperties": false
+            },
+            "telefone": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "nome",
+            "documento",
+            "endereco"
+          ],
+          "additionalProperties": false
+        },
+        "instrucoes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "mensagens": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "descontos": {
+          "type": "object",
+          "properties": {
+            "valorDesconto": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d{2}$"
+            },
+            "percentualDesconto": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d{2}$"
+            }
+          },
+          "required": [
+            "valorDesconto",
+            "percentualDesconto"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "dadosBoleto",
+        "dadosBanco",
+        "beneficiario",
+        "pagador",
+        "instrucoes",
+        "mensagens",
+        "descontos"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "rota",
+    "payload"
+  ],
+  "additionalProperties": false
+}

@@ -218,24 +218,124 @@
               - id: when-bb-inclusao
                 expression:
                   simple:
-                    id: when-bb-inclusao
+                    id: simple-bb-inclusao
                     expression: ${exchangeProperty.rota[tipo]} == "inclusao"
-                steps:
-                  - log:
-                      id: log-d308
-                      message: Inclusão BB
+                  steps:
+                    - undefined:
+                        log:
+                          id: log-simple-bb-inclusao
+                          message: Inclusão BB
               - id: when-bb-alteracao
                 expression:
                   simple:
-                    id: when-bb-alteracao
+                    id: simple-bb-alteracao
                     expression: ${exchangeProperty.rota[tipo]} == "alteracao"
                 steps:
-                  - log:
-                      id: log-1656
-                      message: Alteração BB
+                  - setProperty:
+                      id: setProperty-450c
+                      name: dataVencimentoFormatada
+                      expression:
+                        method:
+                          "0": f
+                          "1": _
+                          "2": u
+                          "3": t
+                          "4": i
+                          "5": l
+                          "6": .
+                          "7": t
+                          "8": r
+                          "9": a
+                          "10": t
+                          "11": a
+                          "12": r
+                          "13": _
+                          "14": d
+                          "15": a
+                          "16": t
+                          "17": a
+                          "18": (
+                          "19": $
+                          "20": "{"
+                          "21": e
+                          "22": x
+                          "23": c
+                          "24": h
+                          "25": a
+                          "26": "n"
+                          "27": g
+                          "28": e
+                          "29": P
+                          "30": r
+                          "31": o
+                          "32": p
+                          "33": e
+                          "34": r
+                          "35": t
+                          "36": "y"
+                          "37": .
+                          "38": r
+                          "39": o
+                          "40": t
+                          "41": a
+                          "42": "["
+                          "43": d
+                          "44": a
+                          "45": t
+                          "46": a
+                          "47": V
+                          "48": e
+                          "49": "n"
+                          "50": c
+                          "51": i
+                          "52": m
+                          "53": e
+                          "54": "n"
+                          "55": t
+                          "56": o
+                          "57": "]"
+                          "58": "}"
+                          "59": ","
+                          "61": "'"
+                          "62": d
+                          "63": d
+                          "64": .
+                          "65": M
+                          "66": M
+                          "67": .
+                          "68": "y"
+                          "69": "y"
+                          "70": "y"
+                          "71": "y"
+                          "72": "'"
+                          "73": )
+                          id: method-150b
+                  - setBody:
+                      id: setBody-3a67
+                      expression:
+                        simple:
+                          id: simple-3db8
+                          expression: |
+                            {
+                              "alteracao": "${exchangeProperty.rota[codigoBanco]}",
+                              "dataVencimento": "${exchangeProperty.dataVencimentoFormatada}"
+                            }              
+              - id: when-bb-cancelamento
+                expression:
+                  simple:
+                    id: simple-bb-cancelamento
+                    expression: ${exchangeProperty.rota[tipo]} == "cancelamento"
+                  steps:
+                    - undefined:
+                        log:
+                          id: log-simple-bb-cancelamento
+                          message: Cancelamento BB
             otherwise:
-              id: otherwise-bb-exclusao
+              id: otherwise-bb
               steps:
                 - log:
-                    id: log-3a6e
-                    message: Exclusao BB
+                    id: log-otherwise-bb
+                    message: Não foi possivel identificar a ação
+- beans:
+    - name: f_util
+      type: f_util.f_util
