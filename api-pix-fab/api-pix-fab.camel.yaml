@@ -46,7 +46,7 @@
                           id: simple-payload-erro
                           expression: >-
                             { "mensagem": "Erro no payload:
-                            ${exception.message.replaceAll('\\r?\\n', ' ')}" }
+                            ${exception.message.replaceAll('\r?\n', ' ')}" }
                   - stop:
                       id: stop-payload-erro
             steps:
@@ -230,13 +230,12 @@
                     id: simple-bb-alteracao
                     expression: ${exchangeProperty.rota[tipo]} == "alteracao"
                 steps:
-                  - setProperty:
-                      id: set-data-venc-formatada
-                      name: dataVencimentoFormatada
+                  - setBody:
+                      id: setBody-com-data-bruta
                       expression:
-                        bean: >-
-                          f_util?method=tratar_data(${exchangeProperty.rota[dataVencimento]},
-                          'dd.MM.yyyy')
+                        simple:
+                          id: simple-data-bruta
+                          expression: ${exchangeProperty.rota[dataVencimento]}
                   - setBody:
                       id: setBody-3a67
                       expression:
@@ -262,6 +261,3 @@
                 - log:
                     id: log-otherwise-bb
                     message: Não foi possivel identificar a ação
-- beans:
-    - name: f_util
-      type: nexdom.projeto.pix.f_util.f_util
