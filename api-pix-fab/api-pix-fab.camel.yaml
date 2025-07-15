@@ -269,6 +269,70 @@
                     id: simple-op-bb-inclusao
                     expression: ${exchangeProperty.rota[tipo]} == "inclusao"
                 steps:
+                  - setProperty:
+                      id: setProperty-json-forpayload
+                      name: forpayload
+                      expression:
+                        simple:
+                          id: simple-json-forpayload
+                          expression: |
+                            {
+                              "numeroConvenio": "${exchangeProperty.dadosBanco[convenio]}",
+                              "numeroCarteira": "${exchangeProperty.dadosBanco[carteira]}",
+                              "numeroVariacaoCarteira": "${exchangeProperty.dadosBanco[variacao]}",
+                              "codigoModalidade": "${exchangeProperty.dadosBanco[codigoModalidade]}",
+                              "dataEmissao": "${bean:formataData.tratarData(${exchangeProperty.dadosBoleto[dataEmissao]},'dd.MM.yyyy')}",
+                              "dataVencimento": "${bean:formataData.tratarData(${exchangeProperty.dadosBoleto[dataVencimento]},'dd.MM.yyyy')}",
+                              "valorOriginal": "${exchangeProperty.dadosBoleto[valorNominal]}",
+                              "valorAbatimento": "${exchangeProperty.descontos[valorDesconto]}",
+                              "quantidadeDiasProtesto": "NÃO OBR. - VERIFICAR NAO EXISTE NO PAYLOAD",
+                              "quantidadeDiasNegativacao": "NÃO OBR. - VERIFICAR NAO EXISTE NO PAYLOAD",
+                              "orgaoNegativador": "NÃO OBR. - VERIFICAR NAO EXISTE NO PAYLOAD",
+                              "indicadorAceiteTituloVencido": "NÃO OBR. - VERIFICAR NAO EXISTE NO PAYLOAD",
+                              "numeroDiasLimiteRecebimento": "NÃO OBR. - VERIFICAR NAO EXISTE NO PAYLOAD",
+                              "codigoAceite": "${exchangeProperty.dadosBoleto[aceite]}",
+                              "descricaoTipoTitulo": "${exchangeProperty.dadosBoleto[especieDocumento]}",
+                              "indicadorRecebimentoParcial": "NÃO OBR. - VERIFICAR NAO EXISTE NO PAYLOAD",
+                              "numeroTituloBeneficiario": "${exchangeProperty.dadosBoleto[numeroDocumento]}",
+                              "campoUtilizacaoBeneficiario": "${exchangeProperty.dadosBoleto[numeroDocumento]}",
+                              "numeroTituloCliente": "${exchangeProperty.dadosBoleto[numeroNossoNumero]}",
+                              "mensagemBloquetoOcorrencia": "nada",
+                              "jurosMora": {
+                                "tipo": 2,
+                                "valor": ${exchangeProperty.dadosBoleto[valorJuros]},
+                                "atencao": "ADICIONAR NO PAYPLOAD ORIGINAL 1 e 2 para TIPO assim fica mais facil tratar aqui",
+                              },    
+                              "multa": {
+                                "tipo": 2,
+                                "data": "${bean:formataData.tratarData(${exchangeProperty.dadosBoleto[dataVencimento]},'dd.MM.yyyy')}",
+                                "porcentagem": ${exchangeProperty.dadosBoleto[valorMulta]},
+                                "atencao": "ADICIONAR NO PAYPLOAD ORIGINAL DATA VENCIMENTO + 1 qua nao tem",
+                              },
+                              "pagador": {
+                                "tipoInscricao": "ADICIONAR ALEM DE P e J o valor 1 e 2 para ficar mais facil aqui",
+                                "numeroInscricao": "${exchangeProperty.pagador[documento]}",
+                                "nome": "${exchangeProperty.pagador[nome]}",
+                                "endereco": "${exchangeProperty.pagador[endereco][logradouro]}",
+                                "cep": "${exchangeProperty.pagador[endereco][cep]}",
+                                "cidade": "${exchangeProperty.pagador[endereco][cidade]}",
+                                "bairro": "${exchangeProperty.pagador[endereco][bairro]}",
+                                "uf": "${exchangeProperty.pagador[endereco][uf]}",
+                                "telefone": "${exchangeProperty.pagador[telefone]}",
+                                "email": ""
+                              },
+                              "beneficiarioFinal": {
+                                "tipoInscricao": "ADICIONAR ALEM DE P e J o valor 1 e 2 para ficar mais facil aqui",
+                                "numeroInscricao": "${exchangeProperty.beneficiario[documento]}",
+                                "nome": "${exchangeProperty.beneficiario[nome]}",
+                              },
+                              "indicadorPix": "S"
+                            }
+                  - setBody:
+                      id: setBody-json-bb-inclusao
+                      expression:
+                        simple:
+                          id: simple-json-bb-inclusao
+                          expression: ${exchangeProperty.forpayload}
                   - log:
                       id: log-op-inclusao-bb
                       message: Inclusão BB
@@ -283,26 +347,28 @@
                       name: dataVencimentoCrua
                       expression:
                         simple:
-                          id: simple-6fb4
+                          id: simple-dataVencimento-crua
                           expression: ${exchangeProperty.dadosBoleto[dataVencimento]}
                   - setProperty:
                       id: setProperty-dataVencimento-formatada
                       name: dataVencimentoFormatada
                       expression:
                         simple:
-                          id: simple-ea8b
+                          id: simple-dataVencimento-formatada
                           expression: >-
                             ${bean:formataData.tratarData(${exchangeProperty.dataVencimentoCrua},'dd.MM.yyyy')}
                   - setBody:
                       id: setBody-json-bb-alteracao
                       expression:
                         simple:
-                          id: simple-body-json-bb-alteracao
+                          id: simple-json-bb-alteracao
                           expression: |
-                            {
-                              "alteracao": "${exchangeProperty.rota[codigoBanco]}",
-                              "dataVencimento": "${exchangeProperty.dataVencimentoFormatada}"
-                            }
+                            <xml>
+                              <alteracao>
+                                <codigoBanco>${exchangeProperty.rota[codigoBanco]}</codigoBanco>
+                                <dataVencimento>${exchangeProperty.dataVencimentoFormatada}</dataVencimento>
+                              </alteracao>
+                            </xml>
               - id: when-bb-cancelamento
                 expression:
                   simple:
