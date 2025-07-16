@@ -270,11 +270,11 @@
                     expression: ${exchangeProperty.rota[tipo]} == "inclusao"
                 steps:
                   - setProperty:
-                      id: setProperty-json-forpayload
+                      id: setProperty-inclusao-forpayload
                       name: forpayload
                       expression:
                         simple:
-                          id: simple-json-forpayload
+                          id: simple-inclusao-forpayload
                           expression: |
                             {
                               "numeroConvenio": "${exchangeProperty.dadosBanco[convenio]}",
@@ -343,44 +343,116 @@
                     expression: ${exchangeProperty.rota[tipo]} == "alteracao"
                 steps:
                   - setProperty:
-                      id: setProperty-dataVencimento-crua
-                      name: dataVencimentoCrua
+                      id: setProperty-alteracao-forpayload
+                      name: forpayload
                       expression:
                         simple:
-                          id: simple-dataVencimento-crua
-                          expression: ${exchangeProperty.dadosBoleto[dataVencimento]}
-                  - setProperty:
-                      id: setProperty-dataVencimento-formatada
-                      name: dataVencimentoFormatada
-                      expression:
-                        simple:
-                          id: simple-dataVencimento-formatada
-                          expression: >-
-                            ${bean:formataData.tratarData(${exchangeProperty.dataVencimentoCrua},'dd.MM.yyyy')}
+                          id: simple-alteracao-forpayload
+                          expression: |
+                            {
+                              "numeroConvenio": ${exchangeProperty.dadosBanco[convenio]},
+                              "indicadorNovaDataVencimento": "S",
+                              "alteracaoData": {
+                                "novaDataVencimento": "${bean:formataData.tratarData(${exchangeProperty.dadosBoleto[dataVencimento]},'dd.MM.yyyy')}"
+                              },
+                              "indicadorNovoValorNominal": "S",
+                              "alteracaoValor": {
+                                "novoValorNominal": "${exchangeProperty.dadosBoleto[valorNominal]}",
+                              }
+                            }
                   - setBody:
                       id: setBody-json-bb-alteracao
                       expression:
                         simple:
                           id: simple-json-bb-alteracao
-                          expression: |
-                            <xml>
-                              <alteracao>
-                                <codigoBanco>${exchangeProperty.rota[codigoBanco]}</codigoBanco>
-                                <dataVencimento>${exchangeProperty.dataVencimentoFormatada}</dataVencimento>
-                              </alteracao>
-                            </xml>
+                          expression: ${exchangeProperty.forpayload}
               - id: when-bb-cancelamento
                 expression:
                   simple:
                     id: simple-op-bb-cancelamento
                     expression: ${exchangeProperty.rota[tipo]} == "cancelamento"
                 steps:
-                  - log:
-                      id: log-op-cancelamento-bb
-                      message: Cancelamento BB
+                  - setProperty:
+                      id: setProperty-cancelamento-forpayload
+                      name: forpayload
+                      expression:
+                        simple:
+                          id: simple-cancelamento-forpayload
+                          expression: |
+                            {
+                              "numeroConvenio": ${exchangeProperty.dadosBanco[convenio]}
+                            }
+                  - setBody:
+                      id: setBody-json-bb-cancelamento
+                      expression:
+                        simple:
+                          id: simple-json-bb-cancelamento
+                          expression: ${exchangeProperty.forpayload}
             otherwise:
               id: otherwise-op-bb
               steps:
                 - log:
                     id: log-op-nao-identificada-bb
                     message: Não foi possivel identificar a ação
+        - to:
+            id: to-envio-bb
+            uri: direct
+            parameters:
+              name: envio-bb
+- route:
+    id: route-envio-bb
+    nodePrefixId: route-envio-bb
+    from:
+      id: from-envio-bb
+      uri: direct
+      parameters:
+        name: envio-bb
+      steps:
+        - log:
+            id: log-envio-bb-inicio
+            message: Iniciando envio para API BB
+        - setProperty:
+            id: setProperty-nome-cliente
+            name: nomeCliente
+            expression:
+              simple:
+                id: simple-nome-cliente
+                expression: clienteA
+        - setProperty:
+            id: setProperty-3858
+            name: client_id
+            expression:
+              simple:
+                id: simple-da92
+                expression: ${exchangeProperty.clienteX.bb.client_id}
+        - setProperty:
+            id: setProperty-a6bc
+            name: client_secret
+            expression:
+              simple:
+                id: simple-9123
+                expression: ${exchangeProperty.clienteX.bb.client_secret}
+        - setHeader:
+            id: setHeader-content-type
+            name: Content-Type
+            expression:
+              simple:
+                id: simple-header-content-type
+                expression: application/json
+        - toD:
+            id: to-api-bb
+            uri: https
+            parameters:
+              httpUri: https://api.bb.com.br/cobranca
+              httpMethod: POST
+              logHttpActivity: true
+              bridgeEndpoint: true
+              oauth2ClientId: ${exchangeProperty.client_id}
+              oauth2ClientSecret: ${exchangeProperty.client_secret}
+              oauth2Scope: cobv.write cobv.read pix.write pix.read
+              oauth2TokenEndpoint: https://oauth.bb.com.br/oauth/token
+              oauth2CacheTokens: true
+              oauth2CachedTokensDefaultExpirySeconds: "600"
+        - log:
+            id: log-envio-bb-fim
+            message: Requisição para BB concluída
