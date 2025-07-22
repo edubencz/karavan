@@ -26,7 +26,7 @@
                       id: convertBodyTo-exception-string
                       type: java.lang.String
                   - setHeader:
-                      id: setHeader-exception-status
+                      id: setHeader-ca85
                       name: CamelHttpResponseCode
                       expression:
                         simple:
@@ -106,7 +106,7 @@
                   name: instrucoes
                   expression:
                     simple:
-                      id: simple-extract-instrucoes
+                      id: simple-77cc
                       expression: ${exchangeProperty.payload[instrucoes]}
               - setProperty:
                   id: setProperty-mensagens
@@ -395,64 +395,141 @@
                     id: log-op-nao-identificada-bb
                     message: Não foi possivel identificar a ação
         - to:
-            id: to-envio-bb
+            id: to-bb-cobranca
             uri: direct
             parameters:
-              name: envio-bb
+              name: bb-cobranca
 - route:
-    id: route-envio-bb
-    nodePrefixId: route-envio-bb
+    id: bb-cobranca
+    nodePrefixId: route-ecf
     from:
-      id: from-envio-bb
+      id: from-bb-cobranca
       uri: direct
       parameters:
-        name: envio-bb
+        name: bb-cobranca
       steps:
-        - log:
-            id: log-envio-bb-inicio
-            message: Iniciando envio para API BB
         - setProperty:
-            id: setProperty-nome-cliente
-            name: nomeCliente
+            id: setProperty-txid
+            name: txid
             expression:
-              simple:
-                id: simple-nome-cliente
-                expression: clienteA
+              constant:
+                id: constant-txid
+                expression: 111111111111
         - setProperty:
-            id: setProperty-3858
+            id: setProperty-appkey
+            name: appKey
+            expression:
+              constant:
+                id: constant-appkey
+                expression: 143851dc56ae48a794078dbe3c964d42
+        - setProperty:
+            id: setProperty-clientid
             name: client_id
             expression:
-              simple:
-                id: simple-da92
-                expression: ${exchangeProperty.clienteX.bb.client_id}
+              constant:
+                id: constant-clientid
+                expression: >-
+                  eyJpZCI6ImYzOTY1MjAtMzQwNi00MWMzIiwiY29kaWdvUHVibGljYWRvciI6MCwiY29kaWdvU29mdHdhcmUiOjEzNTk2MCwic2VxdWVuY2lhbEluc3RhbGFjYW8iOjF9
         - setProperty:
-            id: setProperty-a6bc
+            id: setProperty-clientsecret
             name: client_secret
             expression:
-              simple:
-                id: simple-9123
-                expression: ${exchangeProperty.clienteX.bb.client_secret}
+              constant:
+                id: constant-clientsecret
+                expression: >-
+                  eyJpZCI6ImQ3ZDE5ODQtNjU5MC00YTZhLWIxZDUtMGZkMTczMDc1Nzc0OGRjZGYzIiwiY29kaWdvUHVibGljYWRvciI6MCwiY29kaWdvU29mdHdhcmUiOjEzNTk2MCwic2VxdWVuY2lhbEluc3RhbGFjYW8iOjEsInNlcXVlbmNpYWxDcmVkZW5jaWFsIjoyLCJhbWJpZW50ZSI6ImhvbW9sb2dhY2FvIiwiaWF0IjoxNzUzMjEwMzgzNjUzfQ
         - setHeader:
-            id: setHeader-content-type
+            id: setHeader-content-type-bb-cobranca
             name: Content-Type
             expression:
-              simple:
-                id: simple-header-content-type
+              constant:
+                id: constant-content-type-bb-cobranca
                 expression: application/json
-        - toD:
-            id: to-api-bb
-            uri: https
-            parameters:
-              httpUri: https://api.bb.com.br/cobranca
-              httpMethod: POST
-              logHttpActivity: true
-              bridgeEndpoint: true
-              oauth2ClientId: ${exchangeProperty.client_id}
-              oauth2ClientSecret: ${exchangeProperty.client_secret}
-              oauth2Scope: cobv.write cobv.read pix.write pix.read
-              oauth2TokenEndpoint: https://oauth.bb.com.br/oauth/token
-              oauth2CacheTokens: true
-              oauth2CachedTokensDefaultExpirySeconds: "600"
+        - setBody:
+            id: setBody-bb-cobranca
+            expression:
+              simple:
+                id: simple-bb-cobranca
+                expression: ${exchangeProperty.forpayload}
+        - marshal:
+            id: marshal-bb-cobranca
+            json:
+              id: json-marshal-bb-cobranca
+              library: Jackson
         - log:
-            id: log-envio-bb-fim
-            message: Requisição para BB concluída
+            id: log-bb-cobranca
+            message: ${body}
+            logName: body antes do envio
+        - doTry:
+            id: doTry-bb-cobranca
+            doCatch:
+              - id: doCatch-bb-cobranca
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setHeader:
+                      id: setHeader-http-status-bb-cobranca
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-http-status-bb-cobranca
+                          expression: ${header.CamelHttpResponseCode}
+                  - setBody:
+                      id: setBody-erro-bb-cobranca
+                      expression:
+                        simple:
+                          id: simple-erro-bb-cobranca
+                          expression: |-
+                            {
+                              "mensagem": "Erro na comunicação com BB: ${exception.message}",
+                              "resposta": "${exception.stacktrace}"
+                            }
+                  - stop:
+                      id: stop-erro-bb-cobranca
+            steps:
+              - bean:
+                  id: bean-2b9c
+                  ref: tokenBancario
+                  method: >-
+                    getBbTokenClientCredentials(${exchangeProperty.client_id},
+                    ${exchangeProperty.client_secret})
+              - log:
+                  id: log-token-bb-cobranca
+                  message: "Token gerado BB: ${body}"
+              - setHeader:
+                  id: setHeader-authorization-bb-cobranca
+                  name: Authorization
+                  expression:
+                    simple:
+                      id: simple-authorization-bb-cobranca
+                      expression: Bearer ${body}
+              - setHeader:
+                  id: setHeader-gw-appkey
+                  name: gw-dev-app-key
+                  expression:
+                    simple:
+                      id: simple-gw-appkey
+                      expression: ${exchangeProperty.appKey}
+              - log:
+                  id: log-enviando-bb-cobranca
+                  message: >-
+                    Enviando request para BB com Authorization:
+                    ${header.Authorization}
+              - toD:
+                  id: toD-bb-cobranca
+                  uri: https://api.hm.bb.com.br/cobrancas/v2/boletos
+                  parameters:
+                    httpMethod: POST
+                    logHttpActivity: true
+                    bridgeEndpoint: true
+              - setBody:
+                  id: setBody-resposta-bb-cobranca
+                  expression:
+                    simple:
+                      id: simple-resposta-bb-cobranca
+                      expression: ${body}
+        - to:
+            id: to-extrair-bb-cobranca
+            uri: direct
+            parameters:
+              name: extrair-pix-copiaecola
