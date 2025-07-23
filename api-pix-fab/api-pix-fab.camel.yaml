@@ -449,7 +449,7 @@
             doCatch:
               - id: doCatch-bb-cobranca
                 exception:
-                  - org.apache.camel.http.common.HttpOperationFailedException
+                  - java.lang.Exception
                 steps:
                   - setHeader:
                       id: setHeader-http-status
@@ -496,7 +496,7 @@
                     - id: envio-bb-inclusao
                       expression:
                         simple:
-                          id: simple-d18c
+                          id: simple-envio-bb-inclusao
                           expression: ${exchangeProperty.rota[tipo]} == "inclusao"
                       steps:
                         - toD:
@@ -520,17 +520,18 @@
                     - id: envio-bb-alteracao
                       expression:
                         simple:
-                          id: simple-d18c
+                          id: simple-envio-bb-alteracao
                           expression: ${exchangeProperty.rota[tipo]} == "alteracao"
                       steps:
                         - toD:
                             id: toD-bb-cobranca-alteracao
                             uri: >-
-                              https://api.hm.bb.com.br/cobrancas/v2/boletos/${exchangeProperty.dadosBoleto[numeroNossoNumero]}?gw-dev-app-key=${exchangeProperty.appKey}
+                              https://api.hm.bb.com.br/cobrancas/v2/boletos/${exchangeProperty.dadosBoleto[numeroNossoNumero]}
                             parameters:
+                              gwDevAppKey: ${exchangeProperty.appKey}
                               httpMethod: PATCH
                               logHttpActivity: false
-                              bridgeEndpoint: true
+                              bridgeEndpoint: false
                         - setBody:
                             id: setBody-bb-alteracao
                             expression:
@@ -542,28 +543,22 @@
                             message: "Resposta BB: ${body}"
                             loggingLevel: INFO
                             logName: bb-cobranca
-                    - id: envio-bb-exclusao
-                      expression:
-                        simple:
-                          id: simple-d18c
-                          expression: ${exchangeProperty.rota[tipo]} == "exclusao"
-                      steps:
-                        - toD:
-                            id: toD-bb-cobranca-exclusao
-                            uri: >-
-                              https://api.hm.bb.com.br/cobrancas/v2/boletos/${exchangeProperty.dadosBoleto[numeroNossoNumero]}?gw-dev-app-key=${exchangeProperty.appKey}
-                            parameters:
-                              httpMethod: PATCH
-                              logHttpActivity: false
-                              bridgeEndpoint: true
-                        - setBody:
-                            id: setBody-bb-exclusao
-                            expression:
-                              simple:
-                                id: simple-bb-exclusao
-                                expression: ${body}
-                        - log:
-                            id: log-response-success-exclusao
-                            message: "Resposta BB: ${body}"
-                            loggingLevel: INFO
-                            logName: bb-cobranca
+                  otherwise:
+                    id: otherwise-bb-operacao-desconhecida
+                    steps:
+                      - setHeader:
+                          id: setHeader-bb-erro
+                          name: CamelHttpResponseCode
+                          expression:
+                            simple:
+                              id: simple-status-erro-bb
+                              expression: "400"
+                      - setBody:
+                          id: setBody-bb-erro
+                          expression:
+                            simple:
+                              id: simple-erro-operacao
+                              expression: |
+                                {
+                                  "mensagem": "Operação não suportada: ${exchangeProperty.rota[tipo]}"
+                                }
