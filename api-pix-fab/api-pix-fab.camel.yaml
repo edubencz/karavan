@@ -277,53 +277,52 @@
                           id: simple-inclusao-forpayload
                           expression: |
                             {
-                              "numeroConvenio": "${exchangeProperty.dadosBanco[convenio]}",
-                              "numeroCarteira": "${exchangeProperty.dadosBanco[carteira]}",
-                              "numeroVariacaoCarteira": "${exchangeProperty.dadosBanco[variacao]}",
-                              "codigoModalidade": "${exchangeProperty.dadosBanco[codigoModalidade]}",
-                              "dataEmissao": "${bean:formataData.tratarData(${exchangeProperty.dadosBoleto[dataEmissao]},'dd.MM.yyyy')}",
-                              "dataVencimento": "${bean:formataData.tratarData(${exchangeProperty.dadosBoleto[dataVencimento]},'dd.MM.yyyy')}",
-                              "valorOriginal": "${exchangeProperty.dadosBoleto[valorNominal]}",
-                              "valorAbatimento": "${exchangeProperty.descontos[valorDesconto]}",
-                              "quantidadeDiasProtesto": "NÃO OBR. - VERIFICAR NAO EXISTE NO PAYLOAD",
-                              "quantidadeDiasNegativacao": "NÃO OBR. - VERIFICAR NAO EXISTE NO PAYLOAD",
-                              "orgaoNegativador": "NÃO OBR. - VERIFICAR NAO EXISTE NO PAYLOAD",
-                              "indicadorAceiteTituloVencido": "NÃO OBR. - VERIFICAR NAO EXISTE NO PAYLOAD",
-                              "numeroDiasLimiteRecebimento": "NÃO OBR. - VERIFICAR NAO EXISTE NO PAYLOAD",
-                              "codigoAceite": "${exchangeProperty.dadosBoleto[aceite]}",
-                              "descricaoTipoTitulo": "${exchangeProperty.dadosBoleto[especieDocumento]}",
-                              "indicadorRecebimentoParcial": "NÃO OBR. - VERIFICAR NAO EXISTE NO PAYLOAD",
-                              "numeroTituloBeneficiario": "${exchangeProperty.dadosBoleto[numeroDocumento]}",
-                              "campoUtilizacaoBeneficiario": "${exchangeProperty.dadosBoleto[numeroDocumento]}",
-                              "numeroTituloCliente": "${exchangeProperty.dadosBoleto[numeroNossoNumero]}",
+                              "numeroConvenio": 3128557,
+                              "numeroCarteira": 17,
+                              "numeroVariacaoCarteira": 35,
+                              "codigoModalidade": 1,
+                              "dataEmissao": "14.07.2025",
+                              "dataVencimento": "20.07.2025",
+                              "valorOriginal": 500.50,
+                              "valorAbatimento": 0,
+                              "quantidadeDiasProtesto": 0,
+                              "quantidadeDiasNegativacao": 0,
+                              "orgaoNegativador": 0,
+                              "indicadorAceiteTituloVencido": "S",
+                              "numeroDiasLimiteRecebimento": 0,
+                              "codigoAceite": "A",
+                              "codigoTipoTitulo": 0,
+                              "descricaoTipoTitulo": "DM",
+                              "indicadorPermissaoRecebimentoParcial": "N",
+                              "numeroTituloBeneficiario": "123456",
+                              "campoUtilizacaoBeneficiario": "123456",
+                              "numeroTituloCliente": "00031285570000039000",
                               "mensagemBloquetoOcorrencia": "nada",
                               "jurosMora": {
-                                "tipo": 2,
-                                "valor": ${exchangeProperty.dadosBoleto[valorJuros]},
-                                "atencao": "ADICIONAR NO PAYPLOAD ORIGINAL 1 e 2 para TIPO assim fica mais facil tratar aqui",
-                              },    
+                                "tipo": 1,
+                                "valor": 0.33
+                              },
                               "multa": {
                                 "tipo": 2,
-                                "data": "${bean:formataData.tratarData(${exchangeProperty.dadosBoleto[dataVencimento]},'dd.MM.yyyy')}",
-                                "porcentagem": ${exchangeProperty.dadosBoleto[valorMulta]},
-                                "atencao": "ADICIONAR NO PAYPLOAD ORIGINAL DATA VENCIMENTO + 1 qua nao tem",
+                                "data": "21.07.2025",
+                                "porcentagem": 2
                               },
                               "pagador": {
-                                "tipoInscricao": "ADICIONAR ALEM DE P e J o valor 1 e 2 para ficar mais facil aqui",
-                                "numeroInscricao": "${exchangeProperty.pagador[documento]}",
-                                "nome": "${exchangeProperty.pagador[nome]}",
-                                "endereco": "${exchangeProperty.pagador[endereco][logradouro]}",
-                                "cep": "${exchangeProperty.pagador[endereco][cep]}",
-                                "cidade": "${exchangeProperty.pagador[endereco][cidade]}",
-                                "bairro": "${exchangeProperty.pagador[endereco][bairro]}",
-                                "uf": "${exchangeProperty.pagador[endereco][uf]}",
-                                "telefone": "${exchangeProperty.pagador[telefone]}",
-                                "email": ""
+                                "tipoInscricao": 1,
+                                "numeroInscricao": 28792420885,
+                                "nome": "Rodrigo Neves",
+                                "endereco": "Rua jose chaves de franca",
+                                "cep": 17055020,
+                                "cidade": "bauru",
+                                "bairro": "alto paraisog",
+                                "uf": "sp",
+                                "telefone": "14988047559",
+                                "email": "rodrigo.escobar@nexdom.tec.br"
                               },
                               "beneficiarioFinal": {
-                                "tipoInscricao": "ADICIONAR ALEM DE P e J o valor 1 e 2 para ficar mais facil aqui",
-                                "numeroInscricao": "${exchangeProperty.beneficiario[documento]}",
-                                "nome": "${exchangeProperty.beneficiario[nome]}",
+                                "tipoInscricao": 2,
+                                "numeroInscricao": 98959112000179 ,
+                                "nome": "Dirceu Borboleta"
                               },
                               "indicadorPix": "S"
                             }
@@ -445,21 +444,28 @@
               constant:
                 id: constant-content-type-bb-cobranca
                 expression: application/json
+        - log:
+            id: log-debug-forpayload
+            message: "DEBUG FORPAYLOAD: ${exchangeProperty.forpayload}"
         - setBody:
             id: setBody-bb-cobranca
             expression:
               simple:
                 id: simple-bb-cobranca
                 expression: ${exchangeProperty.forpayload}
-        - marshal:
-            id: marshal-bb-cobranca
-            json:
-              id: json-marshal-bb-cobranca
-              library: Jackson
+        - convertBodyTo:
+            id: convertBodyTo-bb-cobranca
+            type: java.lang.String
         - log:
-            id: log-bb-cobranca
-            message: ${body}
-            logName: body antes do envio
+            id: log-body-json-bb-cobranca
+            message: "JSON para envio BB: ${body}"
+        - setProperty:
+            id: setProperty-payload-debug
+            name: payloadDebug
+            expression:
+              simple:
+                id: simple-payload-debug
+                expression: ${body}
         - doTry:
             id: doTry-bb-cobranca
             doCatch:
@@ -475,20 +481,15 @@
                           id: simple-http-status-bb-cobranca
                           expression: ${header.CamelHttpResponseCode}
                   - setBody:
-                      id: setBody-erro-bb-cobranca
+                      id: setBody-3639
                       expression:
-                        simple:
-                          id: simple-erro-bb-cobranca
-                          expression: |-
-                            {
-                              "mensagem": "Erro na comunicação com BB: ${exception.message}",
-                              "resposta": "${exception.stacktrace}"
-                            }
+                        groovy:
+                          id: groovy-4243
                   - stop:
                       id: stop-erro-bb-cobranca
             steps:
               - bean:
-                  id: bean-2b9c
+                  id: bean-5cd2
                   ref: tokenBancario
                   method: >-
                     getBbTokenClientCredentials(${exchangeProperty.client_id},
