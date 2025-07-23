@@ -449,7 +449,7 @@
             doCatch:
               - id: doCatch-bb-cobranca
                 exception:
-                  - java.lang.Exception
+                  - org.apache.camel.http.common.HttpOperationFailedException
                 steps:
                   - setHeader:
                       id: setHeader-http-status
@@ -490,21 +490,80 @@
                     simple:
                       id: simple-gwkey
                       expression: ${exchangeProperty.appKey}
-              - toD:
-                  id: toD-bb-cobranca
-                  uri: https://api.hm.bb.com.br/cobrancas/v2/boletos
-                  parameters:
-                    httpMethod: POST
-                    logHttpActivity: false
-                    bridgeEndpoint: true
-              - setBody:
-                  id: setBody-bb-aceito
-                  expression:
-                    simple:
-                      id: simple-bb-aceito
-                      expression: ${body}
-              - log:
-                  id: log-response-success
-                  message: "Resposta BB: ${body}"
-                  loggingLevel: INFO
-                  logName: bb-cobranca
+              - choice:
+                  id: choice-rota-saida
+                  when:
+                    - id: envio-bb-inclusao
+                      expression:
+                        simple:
+                          id: simple-d18c
+                          expression: ${exchangeProperty.rota[tipo]} == "inclusao"
+                      steps:
+                        - toD:
+                            id: toD-bb-cobranca
+                            uri: https://api.hm.bb.com.br/cobrancas/v2/boletos
+                            parameters:
+                              httpMethod: POST
+                              logHttpActivity: false
+                              bridgeEndpoint: true
+                        - setBody:
+                            id: setBody-bb-aceito
+                            expression:
+                              simple:
+                                id: simple-bb-aceito
+                                expression: ${body}
+                        - log:
+                            id: log-response-success-inclusao
+                            message: "Resposta BB: ${body}"
+                            loggingLevel: INFO
+                            logName: bb-cobranca
+                    - id: envio-bb-alteracao
+                      expression:
+                        simple:
+                          id: simple-d18c
+                          expression: ${exchangeProperty.rota[tipo]} == "alteracao"
+                      steps:
+                        - toD:
+                            id: toD-bb-cobranca-alteracao
+                            uri: >-
+                              https://api.hm.bb.com.br/cobrancas/v2/boletos/${exchangeProperty.dadosBoleto[numeroNossoNumero]}?gw-dev-app-key=${exchangeProperty.appKey}
+                            parameters:
+                              httpMethod: PATCH
+                              logHttpActivity: false
+                              bridgeEndpoint: true
+                        - setBody:
+                            id: setBody-bb-alteracao
+                            expression:
+                              simple:
+                                id: simple-bb-alteracao
+                                expression: ${body}
+                        - log:
+                            id: log-response-success-alteracao
+                            message: "Resposta BB: ${body}"
+                            loggingLevel: INFO
+                            logName: bb-cobranca
+                    - id: envio-bb-exclusao
+                      expression:
+                        simple:
+                          id: simple-d18c
+                          expression: ${exchangeProperty.rota[tipo]} == "exclusao"
+                      steps:
+                        - toD:
+                            id: toD-bb-cobranca-exclusao
+                            uri: >-
+                              https://api.hm.bb.com.br/cobrancas/v2/boletos/${exchangeProperty.dadosBoleto[numeroNossoNumero]}?gw-dev-app-key=${exchangeProperty.appKey}
+                            parameters:
+                              httpMethod: PATCH
+                              logHttpActivity: false
+                              bridgeEndpoint: true
+                        - setBody:
+                            id: setBody-bb-exclusao
+                            expression:
+                              simple:
+                                id: simple-bb-exclusao
+                                expression: ${body}
+                        - log:
+                            id: log-response-success-exclusao
+                            message: "Resposta BB: ${body}"
+                            loggingLevel: INFO
+                            logName: bb-cobranca
