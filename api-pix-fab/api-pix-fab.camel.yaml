@@ -67,61 +67,55 @@
                       id: simple-extract-rota
                       expression: ${body[rota]}
               - setProperty:
-                  id: setProperty-payload
-                  name: payload
-                  expression:
-                    simple:
-                      id: simple-extract-payload
-                      expression: ${body[payload]}
-              - setProperty:
                   id: setProperty-dadosBoleto
                   name: dadosBoleto
                   expression:
                     simple:
                       id: simple-extract-dadosBoleto
-                      expression: ${exchangeProperty.payload[dadosBoleto]}
+                      expression: |
+                        ${body[dadosBoleto]}
               - setProperty:
                   id: setProperty-dadosBanco
                   name: dadosBanco
                   expression:
                     simple:
                       id: simple-extract-dadosBanco
-                      expression: ${exchangeProperty.payload[dadosBanco]}
+                      expression: ${body[dadosBanco]}
               - setProperty:
                   id: setProperty-beneficiario
                   name: beneficiario
                   expression:
                     simple:
                       id: simple-extract-beneficiario
-                      expression: ${exchangeProperty.payload[beneficiario]}
+                      expression: ${body[beneficiario]}
               - setProperty:
                   id: setProperty-pagador
                   name: pagador
                   expression:
                     simple:
                       id: simple-extract-pagador
-                      expression: ${exchangeProperty.payload[pagador]}
+                      expression: ${body[pagador]}
               - setProperty:
                   id: setProperty-instrucoes
                   name: instrucoes
                   expression:
                     simple:
                       id: simple-77cc
-                      expression: ${exchangeProperty.payload[instrucoes]}
+                      expression: ${body[instrucoes]}
               - setProperty:
                   id: setProperty-mensagens
                   name: mensagens
                   expression:
                     simple:
                       id: simple-extract-mensagens
-                      expression: ${exchangeProperty.payload[mensagens]}
+                      expression: ${body[mensagens]}
               - setProperty:
                   id: setProperty-descontos
                   name: descontos
                   expression:
                     simple:
                       id: simple-extract-descontos
-                      expression: ${exchangeProperty.payload[descontos]}
+                      expression: ${body[descontos]}
               - marshal:
                   id: marshal-payload-json
                   json:
@@ -285,31 +279,29 @@
                               "dataVencimento": "${bean:formataData.tratarData(${exchangeProperty.dadosBoleto[dataVencimento]},'dd.MM.yyyy')}",
                               "valorOriginal": "${exchangeProperty.dadosBoleto[valorNominal]}",
                               "valorAbatimento": "${exchangeProperty.descontos[valorDesconto]}",
-                              "quantidadeDiasProtesto": "NÃO OBR. - VERIFICAR NAO EXISTE NO PAYLOAD",
-                              "quantidadeDiasNegativacao": "NÃO OBR. - VERIFICAR NAO EXISTE NO PAYLOAD",
-                              "orgaoNegativador": "NÃO OBR. - VERIFICAR NAO EXISTE NO PAYLOAD",
-                              "indicadorAceiteTituloVencido": "NÃO OBR. - VERIFICAR NAO EXISTE NO PAYLOAD",
-                              "numeroDiasLimiteRecebimento": "NÃO OBR. - VERIFICAR NAO EXISTE NO PAYLOAD",
+                              "quantidadeDiasProtesto": "${exchangeProperty.dadosBoleto[quantidadeDiasProtesto]}",
+                              "quantidadeDiasNegativacao": "${exchangeProperty.dadosBoleto[quantidadeDiasNegativacao]}",
+                              "orgaoNegativador": "${exchangeProperty.dadosBoleto[orgaoNegativador]}",
+                              "indicadorAceiteTituloVencido": "${exchangeProperty.dadosBoleto[aceiteTituloVencido]}",
+                              "numeroDiasLimiteRecebimento": "${exchangeProperty.dadosBoleto[numeroDiasLimiteRecebimento]}",
                               "codigoAceite": "${exchangeProperty.dadosBoleto[aceite]}",
                               "descricaoTipoTitulo": "${exchangeProperty.dadosBoleto[especieDocumento]}",
-                              "indicadorRecebimentoParcial": "NÃO OBR. - VERIFICAR NAO EXISTE NO PAYLOAD",
+                              "indicadorRecebimentoParcial": "${exchangeProperty.dadosBoleto[indicadorRecebimentoParcial]}",
                               "numeroTituloBeneficiario": "${exchangeProperty.dadosBoleto[numeroDocumento]}",
                               "campoUtilizacaoBeneficiario": "${exchangeProperty.dadosBoleto[numeroDocumento]}",
                               "numeroTituloCliente": "${exchangeProperty.dadosBoleto[numeroNossoNumero]}",
-                              "mensagemBloquetoOcorrencia": "nada",
+                              "mensagemBloquetoOcorrencia": "${exchangeProperty.dadosBoleto[mensagemBloquetoOcorrencia]}",
                               "jurosMora": {
-                                "tipo": 2,
-                                "valor": ${exchangeProperty.dadosBoleto[valorJuros]},
-                                "atencao": "ADICIONAR NO PAYPLOAD ORIGINAL 1 e 2 para TIPO assim fica mais facil tratar aqui"
+                                "tipo": ${exchangeProperty.dadosBoleto[tipoJuros]},
+                                "valor": ${exchangeProperty.dadosBoleto[valorJuros]}
                               },    
                               "multa": {
-                                "tipo": 2,
-                                "data": "${bean:formataData.tratarData(${exchangeProperty.dadosBoleto[dataVencimento]},'dd.MM.yyyy')}",
-                                "porcentagem": ${exchangeProperty.dadosBoleto[valorMulta]},
-                                "atencao": "ADICIONAR NO PAYPLOAD ORIGINAL DATA VENCIMENTO + 1 qua nao tem"
+                                "tipo": ${exchangeProperty.dadosBoleto[tipoMulta]},
+                                "data": "${bean:formataData.tratarData(${exchangeProperty.dadosBoleto[dataMulta]},'dd.MM.yyyy')}",
+                                "porcentagem": ${exchangeProperty.dadosBoleto[valorMulta]}
                               },
                               "pagador": {
-                                "tipoInscricao": "ADICIONAR ALEM DE P e J o valor 1 e 2 para ficar mais facil aqui",
+                                "tipoInscricao": ${exchangeProperty.pagador[tipoPessoaNumero]},
                                 "numeroInscricao": "${exchangeProperty.pagador[documento]}",
                                 "nome": "${exchangeProperty.pagador[nome]}",
                                 "endereco": "${exchangeProperty.pagador[endereco][logradouro]}",
@@ -321,7 +313,7 @@
                                 "email": ""
                               },
                               "beneficiarioFinal": {
-                                "tipoInscricao": "ADICIONAR ALEM DE P e J o valor 1 e 2 para ficar mais facil aqui",
+                                "tipoInscricao": ${exchangeProperty.beneficiario[tipoPessoaNumero]},
                                 "numeroInscricao": "${exchangeProperty.beneficiario[documento]}",
                                 "nome": "${exchangeProperty.beneficiario[nome]}"
                               },
@@ -333,6 +325,9 @@
                         simple:
                           id: simple-json-bb-inclusao
                           expression: ${exchangeProperty.forpayload}
+                  - log:
+                      id: log-fe69
+                      message: ${body}
               - id: when-bb-alteracao
                 expression:
                   simple:
@@ -469,6 +464,7 @@
             steps:
               - setProperty:
                   id: setProperty-token
+                  disabled: true
                   name: token
                   expression:
                     simple:
@@ -476,6 +472,52 @@
                       expression: >-
                         ${bean:tokenBancario.getBbTokenClientCredentials(${exchangeProperty.client_id},
                         ${exchangeProperty.client_secret})}
+              - log:
+                  id: log-f816
+                  message: "### antes auth###"
+              - setHeader:
+                  id: setHeader-5402
+                  name: Authorization
+                  expression:
+                    groovy:
+                      id: groovy-41b5
+                      expression: |-
+                        def clientId = exchange.getProperty("client_id")
+                        def clientSecret = exchange.getProperty("client_secret")
+                        def creds = "${clientId}:${clientSecret}"
+                        return "Basic " + creds.bytes.encodeBase64().toString()
+              - setHeader:
+                  id: setHeader-18ae
+                  name: Content-Type
+                  expression:
+                    constant:
+                      id: constant-24c6
+                      expression: application/x-www-form-urlencoded
+              - setBody:
+                  id: setBody-d9f3
+                  expression:
+                    constant:
+                      id: constant-186a
+                      expression: >-
+                        grant_type=client_credentials&scopes=cobv.write%20cobv.read%20pix.write%20pix.read
+              - toD:
+                  id: to-1454
+                  uri: https
+                  parameters:
+                    bridgeEndpoint: true
+                    logHttpActivity: true
+                    httpMethod: POST
+                    httpUri: oauth.hm.bb.com.br/oauth/token
+                    disableStreamCache: false
+              - setProperty:
+                  id: setProperty-052c
+                  disabled: true
+                  expression:
+                    groovy:
+                      id: groovy-dda7
+              - log:
+                  id: log-5e1d
+                  message: "### depois auth ###"
               - setHeader:
                   id: setHeader-authorization
                   name: Authorization
@@ -521,7 +563,7 @@
                       expression:
                         simple:
                           id: simple-envio-bb-alteracao
-                          expression: ${exchangeProperty.rota[tipo]} == "alteracao"
+                          expression: ${exchangeProperty.rota[tipo]} != "inclusao"
                       steps:
                         - toD:
                             id: toD-bb-cobranca-alteracao
