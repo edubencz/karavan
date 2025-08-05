@@ -2,6 +2,17 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
+    "rota": {
+      "type": "object",
+      "properties": {
+        "codigoBanco": { "type": "integer" },
+        "codigoUnimed": { "type": "integer" },
+        "numeroFatura": { "type": "integer" },
+        "tipo": { "type": "string" }
+      },
+      "required": ["codigoBanco", "codigoUnimed", "numeroFatura", "tipo"],
+      "additionalProperties": false
+    },
     "dadosBoleto": {
       "type": "object",
       "properties": {
@@ -25,8 +36,9 @@
         "quantidadeDiasNegativacao": { "type": "integer" },
         "orgaoNegativador": { "type": ["string", "null"] },
         "aceiteTituloVencido": { "type": "string" },
-        "numeroDiasLimiteRecebimento": { "type": ["integer", "null"] },
-        "mensagemBloquetoOcorrencia": { "type": ["string", "null"] }
+        "numeroDiasLimiteRecebimento": { "type": "integer" },
+        "mensagemBloquetoOcorrencia": { "type": ["string", "null"] },
+        "codigoTipoTitulo": { "type": "integer" }
       },
       "required": [
         "numeroDocumento",
@@ -34,6 +46,7 @@
         "dataEmissao",
         "tipoJuros",
         "tipoMulta",
+        "dataMulta",
         "valorNominal",
         "valorJuros",
         "percentualJuros",
@@ -46,19 +59,12 @@
         "dataProcessamento",
         "quantidadeDiasProtesto",
         "quantidadeDiasNegativacao",
-        "aceiteTituloVencido"
+        "orgaoNegativador",
+        "aceiteTituloVencido",
+        "numeroDiasLimiteRecebimento",
+        "mensagemBloquetoOcorrencia",
+        "codigoTipoTitulo"
       ],
-      "additionalProperties": false
-    },
-    "rota": {
-      "type": "object",
-      "properties": {
-        "codigoBanco": { "type": "integer" },
-        "codigoUnimed": { "type": "integer" },
-        "numeroFatura": { "type": "integer" },
-        "tipo": { "type": "string" }
-      },
-      "required": ["codigoBanco", "codigoUnimed", "numeroFatura", "tipo"],
       "additionalProperties": false
     },
     "dadosBanco": {
@@ -72,7 +78,8 @@
         "digitoConta": { "type": "string" },
         "convenio": { "type": "string" },
         "carteira": { "type": "string" },
-        "variacao": { "type": ["string", "null"] }
+        "variacao": { "type": "integer" },
+        "codigoModalidade": { "type": "integer" }
       },
       "required": [
         "codigoBanco",
@@ -82,7 +89,9 @@
         "conta",
         "digitoConta",
         "convenio",
-        "carteira"
+        "carteira",
+        "variacao",
+        "codigoModalidade"
       ],
       "additionalProperties": false
     },
@@ -114,8 +123,8 @@
       "properties": {
         "nome": { "type": "string" },
         "documento": { "type": "string" },
+        "tipoPessoaNumero": { "type": "integer" },
         "tipoPessoa": { "type": "string" },
-        "tipoPessoaNumero": { "type": "string" },
         "endereco": {
           "type": "object",
           "properties": {
@@ -126,12 +135,12 @@
             "cep": { "type": "string" },
             "complemento": { "type": ["string", "null"] }
           },
-          "required": ["logradouro", "bairro", "cidade", "uf", "cep"],
+          "required": ["logradouro", "bairro", "cidade", "uf", "cep", "complemento"],
           "additionalProperties": false
         },
         "telefone": { "type": "string" }
       },
-      "required": ["nome", "documento", "tipoPessoa", "tipoPessoaNumero", "endereco", "telefone"],
+      "required": ["nome", "documento", "tipoPessoaNumero", "tipoPessoa", "endereco", "telefone"],
       "additionalProperties": false
     },
     "instrucoes": {
@@ -161,7 +170,7 @@
         "numeroProcesso": { "type": ["string", "null"] },
         "competencia": { "type": ["string", "null"] }
       },
-      "required": ["numeroFatura", "codigoUnimed", "contratoVenda"],
+      "required": ["numeroFatura", "codigoUnimed", "contratoVenda", "tipoContrato", "numeroProcesso", "competencia"],
       "additionalProperties": false
     }
   },

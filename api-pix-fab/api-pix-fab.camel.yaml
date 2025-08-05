@@ -198,6 +198,9 @@
                         redisHost: fesc-sql-dev01.fesc.sgusuite.com.br
                         redisPort: 6379
                         command: GET
+                  - log:
+                      id: log-523b
+                      message: TOKEN BANCO> ${body}
                   - setProperty:
                       id: setProperty-token-valido
                       description: "TOKEN: tokenBancario"
@@ -205,7 +208,10 @@
                       expression:
                         simple:
                           id: simple-f024
-                          expression: "{$body}"
+                          expression: ${body}
+                  - log:
+                      id: log-4be1
+                      message: "TOKKKEN: ${exchangeProperty.tokenBancario}"
             otherwise:
               id: otherwise-78e1
               steps:
@@ -686,24 +692,24 @@
                       expression:
                         simple:
                           id: simple-inclusao-forpayload
-                          expression: |
+                          expression: |-
                             {
-                              "numeroConvenio": "${exchangeProperty.dadosBanco[convenio]}",
-                              "numeroCarteira": "${exchangeProperty.dadosBanco[carteira]}",
-                              "numeroVariacaoCarteira": "${exchangeProperty.dadosBanco[variacao]}",
-                              "codigoModalidade": "${exchangeProperty.dadosBanco[codigoModalidade]}",
+                              "numeroConvenio": ${exchangeProperty.dadosBanco[convenio]},
+                              "numeroCarteira": ${exchangeProperty.dadosBanco[carteira]},
+                              "numeroVariacaoCarteira": ${exchangeProperty.dadosBanco[variacao]},
+                              "codigoModalidade": ${exchangeProperty.dadosBanco[codigoModalidade]},
                               "dataEmissao": "${bean:formataData.tratarData(${exchangeProperty.dadosBoleto[dataEmissao]},'dd.MM.yyyy')}",
                               "dataVencimento": "${bean:formataData.tratarData(${exchangeProperty.dadosBoleto[dataVencimento]},'dd.MM.yyyy')}",
-                              "valorOriginal": "${exchangeProperty.dadosBoleto[valorNominal]}",
-                              "valorAbatimento": "${exchangeProperty.descontos[valorDesconto]}",
-                              "quantidadeDiasProtesto": "${exchangeProperty.dadosBoleto[quantidadeDiasProtesto]}",
-                              "quantidadeDiasNegativacao": "${exchangeProperty.dadosBoleto[quantidadeDiasNegativacao]}",
-                              "orgaoNegativador": "${exchangeProperty.dadosBoleto[orgaoNegativador]}",
+                              "valorOriginal": ${exchangeProperty.dadosBoleto[valorNominal]},
+                              "valorAbatimento": ${exchangeProperty.descontos[valorDesconto]},
+                              "quantidadeDiasProtesto": ${exchangeProperty.dadosBoleto[quantidadeDiasProtesto]},
+                              "quantidadeDiasNegativacao": ${exchangeProperty.dadosBoleto[quantidadeDiasNegativacao]},
+                              "orgaoNegativador": 0,
                               "indicadorAceiteTituloVencido": "${exchangeProperty.dadosBoleto[aceiteTituloVencido]}",
-                              "numeroDiasLimiteRecebimento": "${exchangeProperty.dadosBoleto[numeroDiasLimiteRecebimento]}",
+                              "numeroDiasLimiteRecebimento": ${exchangeProperty.dadosBoleto[numeroDiasLimiteRecebimento]},
                               "codigoAceite": "${exchangeProperty.dadosBoleto[aceite]}",
-                              "descricaoTipoTitulo": "${exchangeProperty.dadosBoleto[especieDocumento]}",
-                              "indicadorRecebimentoParcial": "${exchangeProperty.dadosBoleto[indicadorRecebimentoParcial]}",
+                              "codigoTipoTitulo": ${exchangeProperty.dadosBoleto[codigoTipoTitulo]},
+                              "indicadorPermissaoRecebimentoParcial": "N",
                               "numeroTituloBeneficiario": "${exchangeProperty.dadosBoleto[numeroDocumento]}",
                               "campoUtilizacaoBeneficiario": "${exchangeProperty.dadosBoleto[numeroDocumento]}",
                               "numeroTituloCliente": "${exchangeProperty.dadosBoleto[numeroNossoNumero]}",
@@ -711,27 +717,27 @@
                               "jurosMora": {
                                 "tipo": ${exchangeProperty.dadosBoleto[tipoJuros]},
                                 "valor": ${exchangeProperty.dadosBoleto[valorJuros]}
-                              },    
+                              },
                               "multa": {
                                 "tipo": ${exchangeProperty.dadosBoleto[tipoMulta]},
                                 "data": "${bean:formataData.tratarData(${exchangeProperty.dadosBoleto[dataMulta]},'dd.MM.yyyy')}",
-                                "porcentagem": ${exchangeProperty.dadosBoleto[valorMulta]}
+                                "porcentagem": ${exchangeProperty.dadosBoleto[percentualMulta]}
                               },
                               "pagador": {
                                 "tipoInscricao": ${exchangeProperty.pagador[tipoPessoaNumero]},
-                                "numeroInscricao": "${exchangeProperty.pagador[documento]}",
+                                "numeroInscricao": ${exchangeProperty.pagador[documento]},
                                 "nome": "${exchangeProperty.pagador[nome]}",
                                 "endereco": "${exchangeProperty.pagador[endereco][logradouro]}",
-                                "cep": "${exchangeProperty.pagador[endereco][cep]}",
+                                "cep": ${exchangeProperty.pagador[endereco][cep]},
                                 "cidade": "${exchangeProperty.pagador[endereco][cidade]}",
                                 "bairro": "${exchangeProperty.pagador[endereco][bairro]}",
                                 "uf": "${exchangeProperty.pagador[endereco][uf]}",
                                 "telefone": "${exchangeProperty.pagador[telefone]}",
-                                "email": ""
+                                "email": null
                               },
                               "beneficiarioFinal": {
                                 "tipoInscricao": ${exchangeProperty.beneficiario[tipoPessoaNumero]},
-                                "numeroInscricao": "${exchangeProperty.beneficiario[documento]}",
+                                "numeroInscricao": ${exchangeProperty.beneficiario[documento]},
                                 "nome": "${exchangeProperty.beneficiario[nome]}"
                               },
                               "indicadorPix": "S"
@@ -822,11 +828,170 @@
                           }
                 - stop:
                     id: stop-0cc6
-        - stop:
-            id: stop-7397
         - to:
             id: to-bb-cobranca
-            disabled: true
+            disabled: false
             uri: direct
             parameters:
               name: bb-cobranca
+- route:
+    id: bb-cobranca
+    nodePrefixId: route-ecf
+    from:
+      id: from-bb-cobranca
+      uri: direct
+      parameters:
+        name: bb-cobranca
+      steps:
+        - log:
+            id: log-4a6b
+            message: "####ROUTE-BB-COBRANCA#####"
+        - log:
+            id: log-aa16
+            message: "TOKEN: ${exchangeProperty.tokenBancario}"
+        - setHeader:
+            id: setHeader-content-type-bb-cobranca
+            name: Content-Type
+            expression:
+              constant:
+                id: constant-content-type-bb-cobranca
+                expression: application/json
+        - setBody:
+            id: setBody-bb-cobranca
+            expression:
+              simple:
+                id: simple-bb-cobranca
+                expression: ${exchangeProperty.forpayload}
+        - convertBodyTo:
+            id: convertBodyTo-bb-cobranca
+            type: java.lang.String
+        - doTry:
+            id: doTry-bb-cobranca
+            doCatch:
+              - id: doCatch-bb-cobranca
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setHeader:
+                      id: setHeader-http-status
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-http-status
+                          expression: ${header.CamelHttpResponseCode}
+                  - setBody:
+                      id: setBody-erro
+                      expression:
+                        simple:
+                          id: simple-erro
+                          expression: ${exception.getResponseBody()}
+                  - stop:
+                      id: stop-erro
+            steps:
+              - log:
+                  id: log-5e1d
+                  message: "### depois auth ###"
+              - setHeader:
+                  id: setHeader-authorization
+                  name: Authorization
+                  expression:
+                    simple:
+                      id: simple-authorization
+                      expression: Bearer ${exchangeProperty.tokenBancario}
+              - setHeader:
+                  id: setHeader-gwkey
+                  disabled: false
+                  name: X-Developer-Application-Key
+                  expression:
+                    simple:
+                      id: simple-gwkey
+                      expression: 143851dc56ae48a794078dbe3c964d42
+              - log:
+                  id: log-c7e4
+                  message: ${exchangeProperty.bancoAppKey}
+              - choice:
+                  id: choice-rota-saida
+                  when:
+                    - id: envio-bb-inclusao
+                      expression:
+                        simple:
+                          id: simple-envio-bb-inclusao
+                          expression: ${exchangeProperty.rota[tipo]} == "inclusao"
+                      steps:
+                        - log:
+                            id: log-aefa
+                            message: "### ENVIANDO-INCLUSAO-COBRANCA-BB#####"
+                        - setProperty:
+                            id: setProperty-1fbd
+                            description: setUrl
+                            disabled: true
+                            name: setUrl
+                            expression:
+                              simple:
+                                id: simple-faa7
+                                expression: >-
+                                  https://api.hm.bb.com.br/cobrancas/v2/boletos?gw-dev-app-key=${exchangeProperty.bancoAppKey}
+                        - toD:
+                            id: toD-bb-cobranca
+                            uri: https://api.hm.bb.com.br/cobrancas/v2/boletos
+                            parameters:
+                              httpMethod: POST
+                              logHttpActivity: true
+                              bridgeEndpoint: true
+                              httpUri: https://api.hm.bb.com.br/cobrancas/v2/boletos
+                        - setBody:
+                            id: setBody-bb-aceito
+                            expression:
+                              simple:
+                                id: simple-bb-aceito
+                                expression: ${body}
+                        - log:
+                            id: log-response-success-inclusao
+                            message: "Resposta BB: ${body}"
+                            loggingLevel: INFO
+                            logName: bb-cobranca
+                    - id: envio-bb-alteracao
+                      expression:
+                        simple:
+                          id: simple-envio-bb-alteracao
+                          expression: ${exchangeProperty.rota[tipo]} != "inclusao"
+                      steps:
+                        - toD:
+                            id: toD-bb-cobranca-alteracao
+                            uri: >-
+                              https://api.hm.bb.com.br/cobrancas/v2/boletos/${exchangeProperty.dadosBoleto[numeroNossoNumero]}
+                            parameters:
+                              gwDevAppKey: ${exchangeProperty.appKey}
+                              httpMethod: PATCH
+                              logHttpActivity: false
+                              bridgeEndpoint: false
+                        - setBody:
+                            id: setBody-bb-alteracao
+                            expression:
+                              simple:
+                                id: simple-bb-alteracao
+                                expression: ${body}
+                        - log:
+                            id: log-response-success-alteracao
+                            message: "Resposta BB: ${body}"
+                            loggingLevel: INFO
+                            logName: bb-cobranca
+                  otherwise:
+                    id: otherwise-bb-operacao-desconhecida
+                    steps:
+                      - setHeader:
+                          id: setHeader-bb-erro
+                          name: CamelHttpResponseCode
+                          expression:
+                            simple:
+                              id: simple-status-erro-bb
+                              expression: "400"
+                      - setBody:
+                          id: setBody-bb-erro
+                          expression:
+                            simple:
+                              id: simple-erro-operacao
+                              expression: |
+                                {
+                                  "mensagem": "Operação não suportada: ${exchangeProperty.rota[tipo]}"
+                                }
