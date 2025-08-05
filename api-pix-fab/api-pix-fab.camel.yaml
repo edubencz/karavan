@@ -254,8 +254,19 @@
       parameters:
         name: banco-brasil
       steps:
+        - to:
+            id: to-a9e9
+            uri: direct
+            parameters:
+              name: redis-valida-token
+        - log:
+            id: log-589f
+            message: "##ROUTE-BANCO-BRASIL-PEGOU-TOKEN#####"
+        - stop:
+            id: stop-ba14
         - choice:
             id: choice-operacao-bb
+            disabled: true
             when:
               - id: when-bb-inclusao
                 expression:
@@ -604,3 +615,355 @@
                                 {
                                   "mensagem": "Operação não suportada: ${exchangeProperty.rota[tipo]}"
                                 }
+- route:
+    id: redis-valida-token
+    nodePrefixId: route-redis-valida
+    from:
+      id: from-dinamica
+      uri: direct
+      parameters:
+        name: redis-valida-token
+      steps:
+        - log:
+            id: log-28c0
+            message: "#####VALIDA TOKEN#####"
+        - setProperty:
+            id: setProperty-key-cliente-banco
+            name: BancoKey
+            expression:
+              simple:
+                id: simple-75d2
+                expression: >-
+                  apipix:${exchangeProperty.rota[codigoUnimed]}:${exchangeProperty.rota[codigoBanco]}:token
+        - log:
+            id: log-5cc6
+            message: ${exchangeProperty.BancoKey}
+        - setHeader:
+            id: setHeader-redis-token-key
+            name: CamelRedis.Key
+            expression:
+              simple:
+                id: simple-3c0f
+                expression: ${exchangeProperty.BancoKey}
+        - to:
+            id: to-480b
+            uri: kamelet:redis-sink
+            parameters:
+              redisHost: fesc-sql-dev01.fesc.sgusuite.com.br
+              redisPort: 6379
+              command: EXISTS
+        - log:
+            id: log-resultado-redis
+            message: ${body}
+        - choice:
+            id: choice-redis-existe-token
+            when:
+              - id: when-a54b
+                expression:
+                  simple:
+                    id: simple-97dd
+                    expression: ${body} == true
+                steps:
+                  - to:
+                      id: to-95c5
+                      uri: kamelet:redis-sink
+                      parameters:
+                        redisHost: fesc-sql-dev01.fesc.sgusuite.com.br
+                        redisPort: 6379
+                        command: GET
+                  - setProperty:
+                      id: setProperty-token-valido
+                      name: tokenBancario
+                      expression:
+                        simple:
+                          id: simple-f024
+                          expression: "{$body}"
+                  - log:
+                      id: log-0445
+                      message: ${body}
+            otherwise:
+              id: otherwise-78e1
+              steps:
+                - log:
+                    id: log-70d6
+                    message: "### BUSCA CHAVES BANCARIAS ####"
+                - to:
+                    id: to-redis-busca-token
+                    uri: direct
+                    parameters:
+                      name: redis-busca-token
+                - log:
+                    id: log-d6aa
+                    message: "## VOLTOU PARA REDIS VALIDA TOKEN#####"
+        - convertBodyTo:
+            id: convertBodyTo-string
+            type: java.lang.String
+        - setBody:
+            id: setBody-fd1e
+            expression:
+              simple:
+                id: simple-cfba
+                expression: ${body}
+- route:
+    id: redis-busca-token
+    from:
+      id: from-redis-valida-token
+      uri: direct
+      parameters:
+        name: redis-busca-token
+      steps:
+        - setProperty:
+            id: setProperty-redis-busca-conf
+            name: chaveDadosBanco
+            expression:
+              simple:
+                id: simple-a566
+                expression: >-
+                  apipix:${exchangeProperty.rota[codigoUnimed]}:${exchangeProperty.rota[codigoBanco]}
+        - log:
+            id: log-89a1
+            message: ${exchangeProperty.chaveDadosBanco}
+        - setHeader:
+            id: setHeader-9267
+            name: CamelRedis.Key
+            expression:
+              simple:
+                id: simple-260a
+                expression: ${exchangeProperty.chaveDadosBanco}
+        - to:
+            id: redis-busca-dados-banco
+            uri: kamelet:redis-sink
+            parameters:
+              redisHost: fesc-sql-dev01.fesc.sgusuite.com.br
+              redisPort: 6379
+              command: EXISTS
+        - log:
+            id: log-16c1
+            message: ${body}
+        - choice:
+            id: choice-dadd
+            when:
+              - id: when-e23d
+                expression:
+                  simple:
+                    id: simple-3775
+                    expression: ${body} == true
+                steps:
+                  - to:
+                      id: to-redis-busca-chaves
+                      uri: kamelet:redis-sink
+                      parameters:
+                        redisHost: fesc-sql-dev01.fesc.sgusuite.com.br
+                        redisPort: 6379
+                        command: GET
+                  - unmarshal:
+                      id: unmarshal-busca-chaves
+                      json:
+                        id: json-e49b
+                        library: Jackson
+                  - setProperty:
+                      id: setProperty-appKey
+                      name: bancoAppKey
+                      expression:
+                        simple:
+                          id: simple-3f62
+                          expression: ${body[AppKey]}
+                  - setProperty:
+                      id: setProperty-ClientId
+                      name: bancoClientId
+                      expression:
+                        simple:
+                          id: simple-d07d
+                          expression: ${body[ClientId]}
+                  - setProperty:
+                      id: setProperty-ClientSecret
+                      name: bancoClientSecret
+                      expression:
+                        simple:
+                          id: simple-e743
+                          expression: ${body[ClientSecret]}
+                  - setProperty:
+                      id: setProperty-banco-certificado
+                      name: bancoCertificado
+                      expression:
+                        simple:
+                          id: simple-6994
+                          expression: ${body[Certificado]}
+                  - setProperty:
+                      id: setProperty-banco-senhaCert
+                      name: bancoSenhaCertificado
+                      expression:
+                        simple:
+                          id: simple-a3c9
+                          expression: ${body[Senha]}
+                  - setProperty:
+                      id: setProperty-banco-scopes
+                      name: bancoScopes
+                      expression:
+                        simple:
+                          id: simple-0320
+                          expression: ${body[Scopes]}
+                  - to:
+                      id: to-944f
+                      uri: direct
+                      parameters:
+                        name: redis-auth2-token
+            otherwise:
+              id: otherwise-efaf
+              steps:
+                - setHeader:
+                    id: setHeader-nao-existe-banco
+                    name: CamelHttpResponseCode
+                    expression:
+                      simple:
+                        id: simple-b4d9
+                        expression: "400"
+                - setBody:
+                    id: setBody-296e
+                    expression:
+                      simple:
+                        id: simple-1504
+                        expression: >-
+                          { erro: "Chaves do banco/Unimed não encontradas no
+                          Vault" }
+                - stop:
+                    id: stop-dados-bancarios
+- route:
+    id: redis-auth2-token
+    from:
+      id: from-redis-auth2-token
+      uri: direct
+      parameters:
+        name: redis-auth2-token
+      steps:
+        - choice:
+            id: choice-auth2-identifica-banco
+            when:
+              - id: when-auth2-bb
+                expression:
+                  simple:
+                    id: simple-a0b6
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 1
+                steps:
+                  - setBody:
+                      id: setBody-auth2-bb-scopes
+                      expression:
+                        simple:
+                          id: simple-8bb0
+                          expression: >-
+                            grant_type=client_credentials&scopes:
+                            ${exchangeProperty[bancoScopes]}
+                  - setHeader:
+                      id: setHeader-6d5f
+                      description: Content-Type
+                      name: Content-Type
+                      expression:
+                        simple:
+                          id: simple-8e29
+                          expression: application/x-www-form-urlencoded
+                  - setHeader:
+                      id: setHeader-7a86
+                      name: Authorization
+                      expression:
+                        simple:
+                          id: simple-e6a0
+                          expression: Basic ${exchangeProperty.bancoClientSecret}
+                  - log:
+                      id: log-ae1d
+                      message: ${body}
+                  - toD:
+                      id: to-req-oauth2-bb
+                      uri: https
+                      parameters:
+                        httpUri: oauth.hm.bb.com.br/oauth/token
+                        httpMethod: POST
+                        bridgeEndpoint: true
+                        logHttpActivity: true
+                  - unmarshal:
+                      id: unmarshal-recebe-token
+                      json:
+                        id: json-07e8
+                  - log:
+                      id: log-b807
+                      message: ${body[access_token]}
+                  - setProperty:
+                      id: setProperty-2a48
+                      name: tokenBancario
+                      expression:
+                        simple:
+                          id: simple-0098
+                          expression: ${body[access_token]}
+                  - log:
+                      id: log-4b78
+                      message: "#####RECEBEU TOKEN  BANCO#######"
+                  - log:
+                      id: log-6f11
+                      message: ${exchangeProperty.tokenBancario}
+            otherwise:
+              id: otherwise-auth2-identifica-banco
+              steps:
+                - setHeader:
+                    id: setHeader-1851
+                    name: CamelHttpResponseCode
+                    expression:
+                      simple:
+                        id: simple-26ed
+                        expression: "400"
+                - setBody:
+                    id: setBody-5135
+                    expression:
+                      simple:
+                        id: simple-ed61
+                        expression: >-
+                          { erro: "Banco não idetificado para busca do token
+                          oAuth2" }
+        - choice:
+            id: choice-valida-recebeu-token
+            when:
+              - id: when-e5fc
+                expression:
+                  simple:
+                    id: simple-9e45
+                    expression: ${exchangeProperty.tokenBancario} != ""
+                steps:
+                  - setProperty:
+                      id: setProperty-set-redis-token
+                      name: RedisKey
+                      expression:
+                        simple:
+                          id: simple-df24
+                          expression: ${exchangeProperty.BancoKey}:token
+                  - setProperty:
+                      id: setProperty-set-redis-ttl
+                      name: RedisSeconds
+                      expression:
+                        simple:
+                          id: simple-8831
+                          expression: ${body[expires_in]}
+                  - setBody:
+                      id: setBody-1cd4
+                      expression:
+                        simple:
+                          id: simple-ecb2
+                          expression: ${exchangeProperty.tokenBancario}
+                  - to:
+                      id: to-redis-set-token
+                      uri: kamelet:redis-sink
+                      parameters:
+                        redisHost: fesc-sql-dev01.fesc.sgusuite.com.br
+                        redisPort: 6379
+                        command: SET
+                  - log:
+                      id: log-4a23
+                      message: ${exchangeProperty.tokenBancario}
+            otherwise:
+              id: otherwise-5ab6
+              steps:
+                - setBody:
+                    id: setBody-retorno-erro-banco-token
+                    expression:
+                      simple:
+                        id: simple-c0be
+                        expression: ${body}
+                - stop:
+                    id: stop-678a
