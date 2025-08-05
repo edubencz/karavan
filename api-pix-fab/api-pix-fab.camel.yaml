@@ -206,9 +206,6 @@
                         simple:
                           id: simple-f024
                           expression: "{$body}"
-                  - log:
-                      id: log-0445
-                      message: ${body}
             otherwise:
               id: otherwise-78e1
               steps:
@@ -347,6 +344,9 @@
             otherwise:
               id: otherwise-efaf
               steps:
+                - log:
+                    id: log-6c3f
+                    message: "### ERRO CHAVE NAO ENCONTRADA###"
                 - setHeader:
                     id: setHeader-nao-existe-banco
                     name: CamelHttpResponseCode
@@ -360,8 +360,12 @@
                       simple:
                         id: simple-1504
                         expression: >-
-                          { erro: "Chaves do banco/Unimed não encontradas no
-                          Vault" }
+                          { "erro": "Chaves do banco/Unimed não encontradas no
+                          Vault",
+
+                          "codigoBanco": ${exchangeProperty.rota[codigoBanco]}
+
+                          }
                 - stop:
                     id: stop-dados-bancarios
 - route:
@@ -454,7 +458,13 @@
                         id: simple-ed61
                         expression: >-
                           { erro: "Banco não idetificado para busca do token
-                          oAuth2" }
+                          oAuth2",
+
+                          "codigoBanco": ${exchangeProperty.rota[codigoBanco]}
+
+                          }
+                - stop:
+                    id: stop-d54d
         - choice:
             id: choice-valida-recebeu-token
             disabled: false
@@ -641,9 +651,11 @@
                         id: simple-msg-banco-invalido
                         expression: |
                           {
-                            "mensagem": "Banco inválido",
+                            "erro": "Banco inválido",
                             "codigoBanco": "${exchangeProperty.rota[codigoBanco]}"
                           }
+                - stop:
+                    id: stop-b758
 - route:
     id: route-banco-brasil
     nodePrefixId: route-banco-brasil
@@ -661,6 +673,7 @@
             disabled: false
             when:
               - id: when-bb-inclusao
+                description: novoBoleto
                 expression:
                   simple:
                     id: simple-op-bb-inclusao
@@ -730,6 +743,7 @@
                           id: simple-json-bb-inclusao
                           expression: ${exchangeProperty.forpayload}
               - id: when-bb-alteracao
+                description: alteraBoleto
                 expression:
                   simple:
                     id: simple-op-bb-alteracao
@@ -761,6 +775,7 @@
                           id: simple-json-bb-alteracao
                           expression: ${exchangeProperty.forpayload}
               - id: when-bb-cancelamento
+                description: cancelaBoleto
                 expression:
                   simple:
                     id: simple-op-bb-cancelamento
@@ -786,9 +801,27 @@
             otherwise:
               id: otherwise-op-bb
               steps:
-                - log:
-                    id: log-op-nao-identificada-bb
-                    message: Não foi possivel identificar a ação
+                - setHeader:
+                    id: setHeader-34b7
+                    name: CamelHttpResponseCode
+                    expression:
+                      simple:
+                        id: simple-4933
+                        expression: "400"
+                - setBody:
+                    id: setBody-aaa4
+                    expression:
+                      simple:
+                        id: simple-1a5c
+                        expression: >-
+                          { "erro": "Não foi possível identificar o tipo de rota
+                          enviado (inclusao/alteracao/cancelamento)",
+
+                          "tipo": "${exchangeProperty.rota[tipo]}"
+
+                          }
+                - stop:
+                    id: stop-0cc6
         - stop:
             id: stop-7397
         - to:
