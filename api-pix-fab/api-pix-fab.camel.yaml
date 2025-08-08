@@ -411,8 +411,6 @@
                   - log:
                       id: log-197f
                       message: "#### INICIO DE BUSCA TOKEN SANTANDER ####"
-                  - stop:
-                      id: stop-7100
                   - setBody:
                       id: setBody-2d3d
                       expression:
@@ -467,6 +465,9 @@
                   - log:
                       id: log-aca4
                       message: ${body}
+                  - log:
+                      id: log-2c18
+                      message: "#### FIM DO TOKEN #####"
                   - stop:
                       id: stop-ec69
             otherwise:
