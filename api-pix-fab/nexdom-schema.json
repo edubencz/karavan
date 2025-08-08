@@ -34,10 +34,10 @@
         "dataProcessamento": { "type": "string", "format": "date" },
         "quantidadeDiasProtesto": { "type": "integer" },
         "quantidadeDiasNegativacao": { "type": "integer" },
-        "orgaoNegativador": { "type": ["string", "null"] },
+        "orgaoNegativador": { "type": ["null", "string"] },
         "aceiteTituloVencido": { "type": "string" },
         "numeroDiasLimiteRecebimento": { "type": "integer" },
-        "mensagemBloquetoOcorrencia": { "type": ["string", "null"] },
+        "mensagemBloquetoOcorrencia": { "type": ["null", "string"] },
         "codigoTipoTitulo": { "type": "integer" }
       },
       "required": [
@@ -133,7 +133,7 @@
             "cidade": { "type": "string" },
             "uf": { "type": "string" },
             "cep": { "type": "string" },
-            "complemento": { "type": ["string", "null"] }
+            "complemento": { "type": ["null", "string"] }
           },
           "required": ["logradouro", "bairro", "cidade", "uf", "cep", "complemento"],
           "additionalProperties": false
@@ -166,9 +166,9 @@
         "numeroFatura": { "type": "string" },
         "codigoUnimed": { "type": "string" },
         "contratoVenda": { "type": "string" },
-        "tipoContrato": { "type": ["string", "null"] },
-        "numeroProcesso": { "type": ["string", "null"] },
-        "competencia": { "type": ["string", "null"] }
+        "tipoContrato": { "type": ["null", "string"] },
+        "numeroProcesso": { "type": ["null", "string"] },
+        "competencia": { "type": ["null", "string"] }
       },
       "required": ["numeroFatura", "codigoUnimed", "contratoVenda", "tipoContrato", "numeroProcesso", "competencia"],
       "additionalProperties": false

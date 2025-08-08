@@ -1,15 +1,23 @@
 package org.camel.karavan.demo.apipixfab;
 
 import org.apache.camel.BindToRegistry;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
 
 @BindToRegistry("montaPayload")
 public class MontaPayload {
 
     private MontaBB montaBB = new MontaBB();
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @SuppressWarnings("unchecked")
-    public Map<String, Object> montarPayload(Map<String, Object> jsonCompleto) throws Exception {
+    public String montarPayload(String jsonString) throws Exception {
+        Map<String, Object> jsonCompleto = objectMapper.readValue(jsonString, Map.class);
+        return montarPayload(jsonCompleto);
+    }
+
+    @SuppressWarnings("unchecked")
+    public String montarPayload(Map<String, Object> jsonCompleto) throws Exception {
         
         // Extrair objetos do JSON principal
         Map<String, Object> rota = getNestedMap(jsonCompleto, "rota");
@@ -28,29 +36,35 @@ public class MontaPayload {
         String tipo = (String) rota.get("tipo");
         
         if (codigoBanco == null) {
-            throw new IllegalArgumentException("{ \"erro\": \"Código do banco não informado\" }");
+            Map<String, Object> erro = new HashMap<>();
+            erro.put("erro", "Código do banco não informado");
+            return objectMapper.writeValueAsString(erro);
         }
         
         if (tipo == null || tipo.isEmpty()) {
-            throw new IllegalArgumentException("{ \"erro\": \"Tipo de operação não informado\" }");
+            Map<String, Object> erro = new HashMap<>();
+            erro.put("erro", "Tipo de operação não informado");
+            return objectMapper.writeValueAsString(erro);
         }
 
         // Por enquanto só temos BB implementado
         if (codigoBanco.intValue() == 1) { // Banco do Brasil
             return processarBB(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
         } else {
-            throw new IllegalArgumentException("{ \"erro\": \"Banco não suportado: " + codigoBanco + "\" }");
+            Map<String, Object> erro = new HashMap<>();
+            erro.put("erro", "Banco não suportado: " + codigoBanco);
+            return objectMapper.writeValueAsString(erro);
         }
     }
 
-    private Map<String, Object> processarBB(String tipo, 
-                                          Map<String, Object> dadosBanco,
-                                          Map<String, Object> dadosBoleto,
-                                          Map<String, Object> pagador,
-                                          Map<String, Object> beneficiario,
-                                          List<String> instrucoes,
-                                          List<String> mensagens,
-                                          Map<String, Object> descontos) throws Exception {
+    private String processarBB(String tipo, 
+                              Map<String, Object> dadosBanco,
+                              Map<String, Object> dadosBoleto,
+                              Map<String, Object> pagador,
+                              Map<String, Object> beneficiario,
+                              List<String> instrucoes,
+                              List<String> mensagens,
+                              Map<String, Object> descontos) throws Exception {
         
         switch (tipo.toLowerCase()) {
             case "inclusao":
@@ -61,7 +75,9 @@ public class MontaPayload {
             case "cancelar":
                 return montaBB.montarCancelamento(dadosBanco, dadosBoleto);
             default:
-                throw new IllegalArgumentException("{ \"erro\": \"Tipo de operação não suportado: " + tipo + "\" }");
+                Map<String, Object> erro = new HashMap<>();
+                erro.put("erro", "Tipo de operação não suportado: " + tipo);
+                return objectMapper.writeValueAsString(erro);
         }
     }
 

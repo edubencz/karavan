@@ -60,6 +60,14 @@
                   json:
                     id: json-unmarshal
               - setProperty:
+                  id: setProperty-15ee
+                  description: dadosRecebidos
+                  name: dadosRecebidos
+                  expression:
+                    simple:
+                      id: simple-5831
+                      expression: ${body}
+              - setProperty:
                   id: setProperty-rota
                   description: "Variavel: rota"
                   name: rota
@@ -67,63 +75,6 @@
                     simple:
                       id: simple-extract-rota
                       expression: ${body[rota]}
-              - setProperty:
-                  id: setProperty-dadosBoleto
-                  description: "Variavel: dadosBoleto"
-                  name: dadosBoleto
-                  expression:
-                    simple:
-                      id: simple-extract-dadosBoleto
-                      expression: |
-                        ${body[dadosBoleto]}
-              - setProperty:
-                  id: setProperty-dadosBanco
-                  description: "Variavel: dadosBanco"
-                  name: dadosBanco
-                  expression:
-                    simple:
-                      id: simple-extract-dadosBanco
-                      expression: ${body[dadosBanco]}
-              - setProperty:
-                  id: setProperty-beneficiario
-                  description: "Variavel: beneficiario"
-                  name: beneficiario
-                  expression:
-                    simple:
-                      id: simple-extract-beneficiario
-                      expression: ${body[beneficiario]}
-              - setProperty:
-                  id: setProperty-pagador
-                  description: "Variavel: pagador"
-                  name: pagador
-                  expression:
-                    simple:
-                      id: simple-extract-pagador
-                      expression: ${body[pagador]}
-              - setProperty:
-                  id: setProperty-instrucoes
-                  description: "Variavel: instrucoes"
-                  name: instrucoes
-                  expression:
-                    simple:
-                      id: simple-77cc
-                      expression: ${body[instrucoes]}
-              - setProperty:
-                  id: setProperty-mensagens
-                  description: "Variavel: mensagens"
-                  name: mensagens
-                  expression:
-                    simple:
-                      id: simple-extract-mensagens
-                      expression: ${body[mensagens]}
-              - setProperty:
-                  id: setProperty-descontos
-                  description: "Variavel: descontos"
-                  name: descontos
-                  expression:
-                    simple:
-                      id: simple-extract-descontos
-                      expression: ${body[descontos]}
               - setProperty:
                   id: setProperty-redis-banco-key
                   description: "Variavel: redisKey"
@@ -548,289 +499,18 @@
         - log:
             id: log-05db
             message: "#### ROUTE-VALIDA-BANCO ######"
-        - choice:
-            id: choice-roteamento-banco
-            when:
-              - id: when-banco-brasil
-                description: Banco == 1
-                expression:
-                  simple:
-                    id: simple-match-brasil
-                    expression: ${exchangeProperty.rota[codigoBanco]} == 1
-                steps:
-                  - to:
-                      id: to-banco-brasil
-                      uri: direct
-                      parameters:
-                        name: banco-brasil
-              - id: when-banco-bradesco
-                expression:
-                  simple:
-                    id: simple-match-bradesco
-                    expression: ${exchangeProperty.rota[codigoBanco].intValue} == 234
-                steps:
-                  - to:
-                      id: to-banco-bradesco
-                      uri: direct
-                      parameters:
-                        name: banco-bradesco
-              - id: when-banco-sicoob
-                expression:
-                  simple:
-                    id: simple-match-sicoob
-                    expression: ${exchangeProperty.rota[codigoBanco].intValue} == 756
-                steps:
-                  - to:
-                      id: to-banco-sicoob
-                      uri: direct
-                      parameters:
-                        name: banco-sicoob
-              - id: when-banco-unicred
-                expression:
-                  simple:
-                    id: simple-match-unicred
-                    expression: ${exchangeProperty.rota[codigoBanco].intValue} == 748
-                steps:
-                  - to:
-                      id: to-banco-unicred
-                      uri: direct
-                      parameters:
-                        name: banco-unicred
-              - id: when-banco-santander
-                expression:
-                  simple:
-                    id: simple-match-santander
-                    expression: ${exchangeProperty.rota[codigoBanco].intValue} == 33
-                steps:
-                  - to:
-                      id: to-banco-santander
-                      uri: direct
-                      parameters:
-                        name: banco-santander
-              - id: when-banco-sicredi
-                expression:
-                  simple:
-                    id: simple-match-sicredi
-                    expression: ${exchangeProperty.rota[codigoBanco].intValue} == 748
-                steps:
-                  - to:
-                      id: to-banco-sicredi
-                      uri: direct
-                      parameters:
-                        name: banco-sicredi
-              - id: when-banco-safra
-                expression:
-                  simple:
-                    id: simple-match-safra
-                    expression: ${exchangeProperty.rota[codigoBanco].intValue} == 422
-                steps:
-                  - to:
-                      id: to-banco-safra
-                      uri: direct
-                      parameters:
-                        name: banco-safra
-              - id: when-banco-itau
-                expression:
-                  simple:
-                    id: simple-match-itau
-                    expression: ${exchangeProperty.rota[codigoBanco].intValue} == 341
-                steps:
-                  - to:
-                      id: to-banco-itau
-                      uri: direct
-                      parameters:
-                        name: banco-itau
-            otherwise:
-              id: otherwise-banco-invalido
-              steps:
-                - setHeader:
-                    id: setHeader-status-erro-banco
-                    name: CamelHttpResponseCode
-                    expression:
-                      simple:
-                        id: simple-status-400
-                        expression: "400"
-                - setBody:
-                    id: setBody-mensagem-banco-invalido
-                    expression:
-                      simple:
-                        id: simple-msg-banco-invalido
-                        expression: |
-                          {
-                            "erro": "Banco inválido",
-                            "codigoBanco": "${exchangeProperty.rota[codigoBanco]}"
-                          }
-                - stop:
-                    id: stop-b758
-- route:
-    id: route-banco-brasil
-    nodePrefixId: route-banco-brasil
-    from:
-      id: from-banco-brasil
-      uri: direct
-      parameters:
-        name: banco-brasil
-      steps:
-        - log:
-            id: log-589f
-            message: "##ROUTE-BANCO-BRASIL-PEGOU-TOKEN#####"
-        - choice:
-            id: choice-operacao-bb
-            disabled: false
-            when:
-              - id: when-bb-inclusao
-                description: novoBoleto
-                expression:
-                  simple:
-                    id: simple-op-bb-inclusao
-                    expression: ${exchangeProperty.rota[tipo]} == "inclusao"
-                steps:
-                  - setProperty:
-                      id: setProperty-inclusao-forpayload
-                      description: forpaypload
-                      name: forpayload
-                      expression:
-                        simple:
-                          id: simple-inclusao-forpayload
-                          expression: |-
-                            {
-                              "numeroConvenio": ${exchangeProperty.dadosBanco[convenio]},
-                              "numeroCarteira": ${exchangeProperty.dadosBanco[carteira]},
-                              "numeroVariacaoCarteira": ${exchangeProperty.dadosBanco[variacao]},
-                              "codigoModalidade": ${exchangeProperty.dadosBanco[codigoModalidade]},
-                              "dataEmissao": "${bean:formataData.tratarData(${exchangeProperty.dadosBoleto[dataEmissao]},'dd.MM.yyyy')}",
-                              "dataVencimento": "${bean:formataData.tratarData(${exchangeProperty.dadosBoleto[dataVencimento]},'dd.MM.yyyy')}",
-                              "valorOriginal": ${exchangeProperty.dadosBoleto[valorNominal]},
-                              "valorAbatimento": ${exchangeProperty.descontos[valorDesconto]},
-                              "quantidadeDiasProtesto": ${exchangeProperty.dadosBoleto[quantidadeDiasProtesto]},
-                              "quantidadeDiasNegativacao": ${exchangeProperty.dadosBoleto[quantidadeDiasNegativacao]},
-                              "orgaoNegativador": 0,
-                              "indicadorAceiteTituloVencido": "${exchangeProperty.dadosBoleto[aceiteTituloVencido]}",
-                              "numeroDiasLimiteRecebimento": ${exchangeProperty.dadosBoleto[numeroDiasLimiteRecebimento]},
-                              "codigoAceite": "${exchangeProperty.dadosBoleto[aceite]}",
-                              "codigoTipoTitulo": ${exchangeProperty.dadosBoleto[codigoTipoTitulo]},
-                              "indicadorPermissaoRecebimentoParcial": "N",
-                              "numeroTituloBeneficiario": "${exchangeProperty.dadosBoleto[numeroDocumento]}",
-                              "campoUtilizacaoBeneficiario": "${exchangeProperty.dadosBoleto[numeroDocumento]}",
-                              "numeroTituloCliente": "${exchangeProperty.dadosBoleto[numeroNossoNumero]}",
-                              "mensagemBloquetoOcorrencia": "${exchangeProperty.dadosBoleto[mensagemBloquetoOcorrencia]}",
-                              "jurosMora": {
-                                "tipo": ${exchangeProperty.dadosBoleto[tipoJuros]},
-                                "valor": ${exchangeProperty.dadosBoleto[valorJuros]}
-                              },
-                              "multa": {
-                                "tipo": ${exchangeProperty.dadosBoleto[tipoMulta]},
-                                "data": "${bean:formataData.tratarData(${exchangeProperty.dadosBoleto[dataMulta]},'dd.MM.yyyy')}",
-                                "porcentagem": ${exchangeProperty.dadosBoleto[percentualMulta]}
-                              },
-                              "pagador": {
-                                "tipoInscricao": ${exchangeProperty.pagador[tipoPessoaNumero]},
-                                "numeroInscricao": ${exchangeProperty.pagador[documento]},
-                                "nome": "${exchangeProperty.pagador[nome]}",
-                                "endereco": "${exchangeProperty.pagador[endereco][logradouro]}",
-                                "cep": ${exchangeProperty.pagador[endereco][cep]},
-                                "cidade": "${exchangeProperty.pagador[endereco][cidade]}",
-                                "bairro": "${exchangeProperty.pagador[endereco][bairro]}",
-                                "uf": "${exchangeProperty.pagador[endereco][uf]}",
-                                "telefone": "${exchangeProperty.pagador[telefone]}",
-                                "email": null
-                              },
-                              "beneficiarioFinal": {
-                                "tipoInscricao": ${exchangeProperty.beneficiario[tipoPessoaNumero]},
-                                "numeroInscricao": ${exchangeProperty.beneficiario[documento]},
-                                "nome": "${exchangeProperty.beneficiario[nome]}"
-                              },
-                              "indicadorPix": "S"
-                            }
-                  - setBody:
-                      id: setBody-json-bb-inclusao
-                      expression:
-                        simple:
-                          id: simple-json-bb-inclusao
-                          expression: ${exchangeProperty.forpayload}
-              - id: when-bb-alteracao
-                description: alteraBoleto
-                expression:
-                  simple:
-                    id: simple-op-bb-alteracao
-                    expression: ${exchangeProperty.rota[tipo]} == "alteracao"
-                steps:
-                  - setProperty:
-                      id: setProperty-alteracao-forpayload
-                      description: forpaypload
-                      name: forpayload
-                      expression:
-                        simple:
-                          id: simple-alteracao-forpayload
-                          expression: |
-                            {
-                              "numeroConvenio": ${exchangeProperty.dadosBanco[convenio]},
-                              "indicadorNovaDataVencimento": "S",
-                              "alteracaoData": {
-                                "novaDataVencimento": "${bean:formataData.tratarData(${exchangeProperty.dadosBoleto[dataVencimento]},'dd.MM.yyyy')}"
-                              },
-                              "indicadorNovoValorNominal": "S",
-                              "alteracaoValor": {
-                                "novoValorNominal": "${exchangeProperty.dadosBoleto[valorNominal]}",
-                              }
-                            }
-                  - setBody:
-                      id: setBody-json-bb-alteracao
-                      expression:
-                        simple:
-                          id: simple-json-bb-alteracao
-                          expression: ${exchangeProperty.forpayload}
-              - id: when-bb-cancelamento
-                description: cancelaBoleto
-                expression:
-                  simple:
-                    id: simple-op-bb-cancelamento
-                    expression: ${exchangeProperty.rota[tipo]} == "cancelamento"
-                steps:
-                  - setProperty:
-                      id: setProperty-cancelamento-forpayload
-                      description: forpaypload
-                      name: forpayload
-                      expression:
-                        simple:
-                          id: simple-cancelamento-forpayload
-                          expression: |
-                            {
-                              "numeroConvenio": ${exchangeProperty.dadosBanco[convenio]}
-                            }
-                  - setBody:
-                      id: setBody-json-bb-cancelamento
-                      expression:
-                        simple:
-                          id: simple-json-bb-cancelamento
-                          expression: ${exchangeProperty.forpayload}
-            otherwise:
-              id: otherwise-op-bb
-              steps:
-                - setHeader:
-                    id: setHeader-34b7
-                    name: CamelHttpResponseCode
-                    expression:
-                      simple:
-                        id: simple-4933
-                        expression: "400"
-                - setBody:
-                    id: setBody-aaa4
-                    expression:
-                      simple:
-                        id: simple-1a5c
-                        expression: >-
-                          { "erro": "Não foi possível identificar o tipo de rota
-                          enviado (inclusao/alteracao/cancelamento)",
-
-                          "tipo": "${exchangeProperty.rota[tipo]}"
-
-                          }
-                - stop:
-                    id: stop-0cc6
+        - setBody:
+            id: setBody-96ff
+            expression:
+              simple:
+                id: simple-b02e
+                expression: ${exchangeProperty.dadosRecebidos}
+        - bean:
+            id: bean-4a67
+            ref: montaPayload
+            method: montarPayload
         - to:
-            id: to-bb-cobranca
-            disabled: false
+            id: to-1155
             uri: direct
             parameters:
               name: bb-cobranca
@@ -843,19 +523,6 @@
       parameters:
         name: bb-cobranca
       steps:
-        - setProperty:
-            id: setProperty-39b9
-            name: forpayload
-            expression:
-              simple:
-                id: simple-c58d
-                expression: >-
-                  ${bean:montadorPayload.montarBB(${exchangeProperty.rota},${exchangeProperty.dadosBoleto},${exchangeProperty.dadosBanco},${exchangeProperty.pagador},${exchangeProperty.beneficiario},${exchangeProperty.instrucoes},${exchangeProperty.mensagens},${exchangeProperty.descontos})}
-        - log:
-            id: log-58ac
-            message: ${exchangeProperty.forpayload}
-        - stop:
-            id: stop-c7a5
         - log:
             id: log-4a6b
             message: "####ROUTE-BB-COBRANCA#####"
@@ -869,15 +536,6 @@
               constant:
                 id: constant-content-type-bb-cobranca
                 expression: application/json
-        - setBody:
-            id: setBody-bb-cobranca
-            expression:
-              simple:
-                id: simple-bb-cobranca
-                expression: ${exchangeProperty.forpayload}
-        - convertBodyTo:
-            id: convertBodyTo-bb-cobranca
-            type: java.lang.String
         - doTry:
             id: doTry-bb-cobranca
             doCatch:
@@ -903,7 +561,7 @@
             steps:
               - log:
                   id: log-5e1d
-                  message: "### depois auth ###"
+                  message: ${body}
               - setHeader:
                   id: setHeader-authorization
                   name: Authorization
