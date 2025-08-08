@@ -67,9 +67,9 @@ public class MontaPayload {
                               Map<String, Object> descontos) throws Exception {
         
         switch (tipo.toLowerCase()) {
-            case "inclusao":
+            case "registrar":
                 return montaBB.montarEmissao(dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
-            case "alteracao":
+            case "alterar":
                 return montaBB.montarAlteracao(dadosBanco, dadosBoleto);
             case "cancelamento":
             case "cancelar":

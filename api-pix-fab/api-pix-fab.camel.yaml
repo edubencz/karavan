@@ -240,6 +240,9 @@
                         redisHost: fesc-sql-dev01.fesc.sgusuite.com.br
                         redisPort: 6379
                         command: GET
+                  - log:
+                      id: log-62ea
+                      message: "### RETORNO COM DADOS DO BANCO PARA TOKEN####"
                   - unmarshal:
                       id: unmarshal-busca-chaves
                       json:
@@ -398,6 +401,74 @@
                   - log:
                       id: log-6f11
                       message: ${exchangeProperty.tokenBancario}
+              - id: when-a865
+                description: Banco == 33
+                expression:
+                  simple:
+                    id: simple-c13b
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 33
+                steps:
+                  - log:
+                      id: log-197f
+                      message: "#### INICIO DE BUSCA TOKEN SANTANDER ####"
+                  - stop:
+                      id: stop-7100
+                  - setBody:
+                      id: setBody-2d3d
+                      expression:
+                        simple:
+                          id: simple-a586
+                          expression: >-
+                            grant_type=client_credentials&client_secret:
+                            ${exchangeProperty[bancoClientSecret]}&client_id:
+                            ${exchangeProperty[bancoClientId]}
+                  - setHeader:
+                      id: setHeader-santander-content-type
+                      name: Content-Type
+                      expression:
+                        simple:
+                          id: simple-santander-content-type
+                          expression: application/x-www-form-urlencoded
+                  - setHeader:
+                      id: setHeader-santander-ssl-certificate
+                      name: CamelHttpClientCertificateStore
+                      expression:
+                        simple:
+                          id: simple-santander-certificate
+                          expression: ${exchangeProperty.bancoCertificado}
+                  - setHeader:
+                      id: setHeader-santander-ssl-password
+                      name: CamelHttpClientCertificateStorePassword
+                      expression:
+                        simple:
+                          id: simple-santander-certificate-password
+                          expression: ${exchangeProperty.bancoSenhaCertificado}
+                  - toD:
+                      id: to-req-oauth2-santander
+                      uri: https
+                      parameters:
+                        httpUri: api.santander.com.br/auth/oauth/v2/token
+                        httpMethod: POST
+                        bridgeEndpoint: true
+                        logHttpActivity: true
+                        useGlobalSslContextParameters: false
+                  - unmarshal:
+                      id: unmarshal-santander-token
+                      json:
+                        id: json-santander-token
+                  - setProperty:
+                      id: setProperty-santander-token
+                      description: "Variavel: tokenBancario"
+                      name: tokenBancario
+                      expression:
+                        simple:
+                          id: simple-santander-token
+                          expression: ${body[access_token]}
+                  - log:
+                      id: log-aca4
+                      message: ${body}
+                  - stop:
+                      id: stop-ec69
             otherwise:
               id: otherwise-auth2-identifica-banco
               steps:
@@ -587,21 +658,11 @@
                       expression:
                         simple:
                           id: simple-envio-bb-inclusao
-                          expression: ${exchangeProperty.rota[tipo]} == "inclusao"
+                          expression: ${exchangeProperty.rota[tipo]} == "registrar"
                       steps:
                         - log:
                             id: log-aefa
                             message: "### ENVIANDO-INCLUSAO-COBRANCA-BB#####"
-                        - setProperty:
-                            id: setProperty-1fbd
-                            description: setUrl
-                            disabled: true
-                            name: setUrl
-                            expression:
-                              simple:
-                                id: simple-faa7
-                                expression: >-
-                                  https://api.hm.bb.com.br/cobrancas/v2/boletos?gw-dev-app-key=${exchangeProperty.bancoAppKey}
                         - toD:
                             id: toD-bb-cobranca
                             uri: https://api.hm.bb.com.br/cobrancas/v2/boletos
@@ -625,7 +686,7 @@
                       expression:
                         simple:
                           id: simple-envio-bb-alteracao
-                          expression: ${exchangeProperty.rota[tipo]} != "inclusao"
+                          expression: ${exchangeProperty.rota[tipo]} != "registrar"
                       steps:
                         - toD:
                             id: toD-bb-cobranca-alteracao
