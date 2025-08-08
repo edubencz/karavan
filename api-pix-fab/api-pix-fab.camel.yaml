@@ -843,6 +843,19 @@
       parameters:
         name: bb-cobranca
       steps:
+        - setProperty:
+            id: setProperty-39b9
+            name: forpayload
+            expression:
+              simple:
+                id: simple-c58d
+                expression: >-
+                  ${bean:montadorPayload.montarBB(${exchangeProperty.rota},${exchangeProperty.dadosBoleto},${exchangeProperty.dadosBanco},${exchangeProperty.pagador},${exchangeProperty.beneficiario},${exchangeProperty.instrucoes},${exchangeProperty.mensagens},${exchangeProperty.descontos})}
+        - log:
+            id: log-58ac
+            message: ${exchangeProperty.forpayload}
+        - stop:
+            id: stop-c7a5
         - log:
             id: log-4a6b
             message: "####ROUTE-BB-COBRANCA#####"
