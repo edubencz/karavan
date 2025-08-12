@@ -263,7 +263,7 @@
                       expression:
                         simple:
                           id: simple-d07d
-                          expression: ${body[ClientId]}
+                          expression: ${body[ClientID]}
                   - setProperty:
                       id: setProperty-ClientSecret
                       description: "Banco: bancoClientSecret"
@@ -340,6 +340,165 @@
             id: log-ab81
             message: "### ROUTE-REDIS-AUTH2-TOKEN####"
         - choice:
+            id: choice-71cc
+            description: Geração de Certificado
+            when:
+              - id: when-62c1
+                description: Existe Certificado
+                expression:
+                  simple:
+                    id: simple-d539
+                    expression: ${exchangeProperty.bancoCertificado} != ""
+                steps:
+                  - setProperty:
+                      id: setProperty-a5e2
+                      description: "Certificado: sslBeanId"
+                      name: sslBeanId
+                      expression:
+                        groovy:
+                          id: groovy-1dd6
+                          expression: >
+                            import java.security.KeyStore
+
+                            import java.io.FileInputStream
+
+                            import java.io.FileOutputStream
+
+                            import java.util.Base64
+
+                            import java.io.File
+
+                            import java.nio.file.Files
+
+                            import java.nio.file.Paths
+
+                            // .p12 e .pfx são o mesmo formato PKCS#12, só muda
+                            a extensão. O Java/Camel espera .p12, mas o conteúdo
+                            é igual ao .pfx usado no Insomnia.
+
+                            def base64 =
+                            exchange.getProperty('bancoCertificado', String)
+
+                            def senha =
+                            exchange.getProperty('bancoSenhaCertificado',
+                            String)
+
+                            println("[DEBUG] Iniciando processamento de
+                            certificado")
+
+                            println("[DEBUG] Tamanho do certificado Base64: " +
+                            (base64 ? base64.length() : "null"))
+
+                            if (base64 == null || senha == null) {
+                              println("[ERROR] Certificado (base64) ou Senha ausentes")
+                              throw new RuntimeException('Certificado (base64) ou Senha ausentes')
+                            }
+
+                            // Decodificar Base64 para bytes
+
+                            def pfxBytes =
+                            Base64.getDecoder().decode(base64.replaceAll("\\s",
+                            ""))
+
+                            println("[DEBUG] Certificado decodificado, tamanho:
+                            " + pfxBytes.length + " bytes")
+
+                            // Salvar em arquivo temporário para uso com o Camel
+
+                            def id = "camel-ssl-" + exchange.getExchangeId()
+
+                            def tempDir = System.getProperty("java.io.tmpdir")
+
+                            println("[DEBUG] Diretório temporário: " + tempDir)
+
+                            def path = tempDir + File.separator + id + ".p12"
+
+                            println("[DEBUG] Caminho do arquivo temporário: " +
+                            path)
+
+                            new FileOutputStream(path).withCloseable { stream ->
+                              stream.write(pfxBytes)
+                            }
+
+                            println("[DEBUG] Certificado salvo em: " + path)
+
+                            def certFile = new File(path)
+
+                            println("[DEBUG] Arquivo existe? " +
+                            certFile.exists())
+
+                            println("[DEBUG] Tamanho do arquivo: " +
+                            certFile.length() + " bytes")
+
+                            println("[DEBUG] Permissões do arquivo: " +
+                            certFile.canRead() + ", " + certFile.canWrite())
+
+                            // Opcional: ler os primeiros bytes para garantir
+                            que não está corrompido
+
+                            def headBytes =
+                            Files.readAllBytes(Paths.get(path))[0..15]
+
+                            println("[DEBUG] Primeiros bytes do arquivo: " +
+                            headBytes.collect{String.format("%02X", it)}.join("
+                            "))
+
+                            // Criar e configurar SSL Context Parameters para o
+                            Camel
+
+                            def kp = new
+                            org.apache.camel.support.jsse.KeyStoreParameters()
+
+                            kp.setResource("file:" + path)
+
+                            kp.setType("PKCS12")
+
+                            kp.setPassword(senha)
+
+                            println("[DEBUG] KeyStoreParameters configurado:
+                            resource=file:" + path + ", type=PKCS12,
+                            password=***")
+
+                            def km = new
+                            org.apache.camel.support.jsse.KeyManagersParameters()
+
+                            km.setKeyStore(kp)
+
+                            km.setKeyPassword(senha)
+
+                            println("[DEBUG] KeyManagersParameters configurado")
+
+                            // Criar o SSLContextParameters
+
+                            def ssl = new
+                            org.apache.camel.support.jsse.SSLContextParameters()
+
+                            ssl.setKeyManagers(km)
+
+                            println("[DEBUG] SSLContextParameters criado")
+
+                            // Registrar o SSL Context no registro do Camel
+
+                            exchange.getContext().getRegistry().bind(id, ssl)
+
+                            println("[DEBUG] SSL Context configurado e
+                            registrado com ID: " + id)
+
+                            return id
+                  - log:
+                      id: log-5bcb
+                      message: "### PASSOU PELA GERACAO DE CERTIFICADO ####"
+            otherwise:
+              id: otherwise-1b5b
+        - setHeader:
+            id: setHeader-8770
+            description: "Header: Content-Type"
+            name: Content-Type
+            expression:
+              simple:
+                id: simple-5ce1
+                expression: application/x-www-form-urlencoded
+        - choice:
             id: choice-auth2-identifica-banco
             when:
               - id: when-auth2-bb
@@ -358,15 +517,8 @@
                             grant_type=client_credentials&scopes:
                             ${exchangeProperty[bancoScopes]}
                   - setHeader:
-                      id: setHeader-6d5f
-                      description: Content-Type
-                      name: Content-Type
-                      expression:
-                        simple:
-                          id: simple-8e29
-                          expression: application/x-www-form-urlencoded
-                  - setHeader:
                       id: setHeader-7a86
+                      description: "Header: Authorization"
                       name: Authorization
                       expression:
                         simple:
@@ -396,9 +548,6 @@
                           id: simple-0098
                           expression: ${body[access_token]}
                   - log:
-                      id: log-4b78
-                      message: "#####RECEBEU TOKEN  BANCO#######"
-                  - log:
                       id: log-6f11
                       message: ${exchangeProperty.tokenBancario}
               - id: when-a865
@@ -408,52 +557,63 @@
                     id: simple-c13b
                     expression: ${exchangeProperty.rota[codigoBanco]} == 33
                 steps:
-                  - log:
-                      id: log-197f
-                      message: "#### INICIO DE BUSCA TOKEN SANTANDER ####"
                   - setBody:
                       id: setBody-2d3d
                       expression:
                         simple:
                           id: simple-a586
                           expression: >-
-                            grant_type=client_credentials&client_secret:
-                            ${exchangeProperty[bancoClientSecret]}&client_id:
-                            ${exchangeProperty[bancoClientId]}
-                  - setHeader:
-                      id: setHeader-santander-content-type
-                      name: Content-Type
-                      expression:
-                        simple:
-                          id: simple-santander-content-type
-                          expression: application/x-www-form-urlencoded
+                            grant_type=client_credentials&client_secret=${exchangeProperty[bancoClientSecret]}&client_id=${exchangeProperty[bancoClientId]}
                   - setHeader:
                       id: setHeader-santander-ssl-certificate
-                      name: CamelHttpClientCertificateStore
+                      description: "Host: Santander"
+                      name: Host
                       expression:
                         simple:
                           id: simple-santander-certificate
-                          expression: ${exchangeProperty.bancoCertificado}
-                  - setHeader:
-                      id: setHeader-santander-ssl-password
-                      name: CamelHttpClientCertificateStorePassword
-                      expression:
-                        simple:
-                          id: simple-santander-certificate-password
-                          expression: ${exchangeProperty.bancoSenhaCertificado}
+                          expression: trust-sandbox.api.santander.com.br
+                  - log:
+                      id: log-baa5
+                      message: "### VAi CHAMAR O HTTPS DO SANTANDER#####"
                   - toD:
-                      id: to-req-oauth2-santander
-                      uri: https
+                      id: to-c3f7
+                      uri: >-
+                        https://trust-sandbox.api.santander.com.br/auth/oauth/v2/token
                       parameters:
-                        httpUri: api.santander.com.br/auth/oauth/v2/token
                         httpMethod: POST
                         bridgeEndpoint: true
                         logHttpActivity: true
-                        useGlobalSslContextParameters: false
-                  - unmarshal:
-                      id: unmarshal-santander-token
-                      json:
-                        id: json-santander-token
+                        sslContextParameters: "#${exchangeProperty.sslBeanId}"
+                        httpUri: >-
+                          trust-sandbox.api.santander.com.br/auth/oauth/v2/token?disableContentCompression=false
+                  - setBody:
+                      id: setBody-94bb
+                      expression:
+                        groovy:
+                          id: groovy-33ed
+                          expression: |-
+                            import java.util.zip.GZIPInputStream
+                                      import org.apache.camel.converter.stream.ByteArrayInputStreamCache
+                                      def bytes
+                                      if (body instanceof ByteArrayInputStreamCache) {
+                                          bytes = body.getBytes()
+                                      } else if (body instanceof byte[]) {
+                                          bytes = body
+                                      } else {
+                                          bytes = body.toString().getBytes("UTF-8")
+                                      }
+                                      def gis = new GZIPInputStream(new ByteArrayInputStream(bytes))
+                                      def decompressed = gis.getText("UTF-8")
+                                      gis.close()
+                                      return decompressed
+                  - log:
+                      id: log-fe03
+                      message: "### RECEBEU ALGO DO SANTANDER #####"
+                  - log:
+                      id: log-f71e
+                      message: ${body}
+                  - stop:
+                      id: stop-e69c
                   - setProperty:
                       id: setProperty-santander-token
                       description: "Variavel: tokenBancario"
@@ -463,13 +623,10 @@
                           id: simple-santander-token
                           expression: ${body[access_token]}
                   - log:
-                      id: log-aca4
-                      message: ${body}
-                  - log:
                       id: log-2c18
                       message: "#### FIM DO TOKEN #####"
                   - stop:
-                      id: stop-ec69
+                      id: stop-0938
             otherwise:
               id: otherwise-auth2-identifica-banco
               steps:
