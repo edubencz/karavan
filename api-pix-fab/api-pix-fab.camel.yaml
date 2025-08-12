@@ -582,38 +582,44 @@
                       parameters:
                         httpMethod: POST
                         bridgeEndpoint: true
-                        logHttpActivity: true
+                        logHttpActivity: false
                         sslContextParameters: "#${exchangeProperty.sslBeanId}"
                         httpUri: >-
                           trust-sandbox.api.santander.com.br/auth/oauth/v2/token?disableContentCompression=false
+                  - unmarshal:
+                      id: unmarshal-b606
+                      json:
+                        id: json-a967
                   - setBody:
                       id: setBody-94bb
+                      disabled: true
                       expression:
                         groovy:
                           id: groovy-33ed
-                          expression: |-
+                          expression: >-
                             import java.util.zip.GZIPInputStream
-                                      import org.apache.camel.converter.stream.ByteArrayInputStreamCache
-                                      def bytes
-                                      if (body instanceof ByteArrayInputStreamCache) {
-                                          bytes = body.getBytes()
-                                      } else if (body instanceof byte[]) {
-                                          bytes = body
-                                      } else {
-                                          bytes = body.toString().getBytes("UTF-8")
-                                      }
-                                      def gis = new GZIPInputStream(new ByteArrayInputStream(bytes))
-                                      def decompressed = gis.getText("UTF-8")
-                                      gis.close()
-                                      return decompressed
-                  - log:
-                      id: log-fe03
-                      message: "### RECEBEU ALGO DO SANTANDER #####"
-                  - log:
-                      id: log-f71e
-                      message: ${body}
-                  - stop:
-                      id: stop-e69c
+
+                            import
+                            org.apache.camel.converter.stream.ByteArrayInputStreamCache
+
+                            def bytes
+
+                            if (body instanceof ByteArrayInputStreamCache) {
+                                bytes = body.getBytes()
+                            } else if (body instanceof byte[]) {
+                                bytes = body
+                            } else {
+                                bytes = body.toString().getBytes("UTF-8")
+                            }
+
+                            def gis = new GZIPInputStream(new
+                            ByteArrayInputStream(bytes))
+
+                            def decompressed = gis.getText("UTF-8")
+
+                            gis.close()
+
+                            return decompressed
                   - setProperty:
                       id: setProperty-santander-token
                       description: "Variavel: tokenBancario"
@@ -625,8 +631,6 @@
                   - log:
                       id: log-2c18
                       message: "#### FIM DO TOKEN #####"
-                  - stop:
-                      id: stop-0938
             otherwise:
               id: otherwise-auth2-identifica-banco
               steps:
@@ -738,11 +742,33 @@
             id: bean-4a67
             ref: montaPayload
             method: montarPayload
-        - to:
-            id: to-1155
-            uri: direct
-            parameters:
-              name: bb-cobranca
+        - choice:
+            id: choice-ec60
+            when:
+              - id: when-b0f4
+                description: Banco == 1
+                expression:
+                  simple:
+                    id: simple-8b31
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 1
+                steps:
+                  - to:
+                      id: to-1155
+                      uri: direct
+                      parameters:
+                        name: bb-cobranca
+              - id: when-1254
+                description: Banco == 33
+                expression:
+                  simple:
+                    id: simple-a57d
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 33
+                steps:
+                  - log:
+                      id: log-6b82
+                      message: "### ENVIA DADOS AO SANTANDER ###"
+            otherwise:
+              id: otherwise-cb94
 - route:
     id: bb-cobranca
     nodePrefixId: route-ecf

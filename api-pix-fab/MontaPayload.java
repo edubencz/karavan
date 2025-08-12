@@ -50,7 +50,12 @@ public class MontaPayload {
         // Por enquanto só temos BB implementado
         if (codigoBanco.intValue() == 1) { // Banco do Brasil
             return processarBB(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
-        } else {
+        } 
+        else if (codigoBanco.intValue() == 33) //Santander 
+        {
+            return processarBB(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+        }
+        else {
             Map<String, Object> erro = new HashMap<>();
             erro.put("erro", "Banco não suportado: " + codigoBanco);
             return objectMapper.writeValueAsString(erro);
