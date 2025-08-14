@@ -264,6 +264,11 @@
                         simple:
                           id: simple-d07d
                           expression: ${body[ClientID]}
+                  - log:
+                      id: log-b489
+                      message: "### bancoClientId: ${exchangeProperty[bancoClientId]}"
+                  - stop:
+                      id: stop-3681
                   - setProperty:
                       id: setProperty-ClientSecret
                       description: "Banco: bancoClientSecret"
@@ -983,16 +988,62 @@
                     simple:
                       id: simple-0e37
                       expression: >-
-                        https://trust-sandbox.api.santander.com.br/collection_bill_management/v2/workspaces/${exchangeProperty[santanderWorkspace]}/bank_slips
+                        trust-sandbox.api.santander.com.br/collection_bill_management/v2/workspaces/${exchangeProperty[santanderWorkspace]}/bank_slips
         - log:
             id: log-018e
             message: "##ENVIO AO TANTANDER###"
+        - setHeader:
+            id: setHeader-3b75
+            description: "Header: Authorization"
+            disabled: true
+            name: Authorization
+            expression:
+              simple:
+                id: simple-c3db
+                expression: Bearer ${exchangeProperty[tokenBancario]}
+        - setHeader:
+            id: setHeader-640a
+            description: "Header: X-Application-Key"
+            disabled: true
+            name: X-Application-Key
+            expression:
+              simple:
+                id: simple-63fc
+                expression: ${exchangeProperty[redisClientID]}
+        - setHeaders:
+            id: setHeaders-90f8
+            headers:
+              - id: setHeader-ba73
+                name: X-Application-Key
+                expression:
+                  simple:
+                    id: simple-847a
+                    expression: ${exchangeProperty[bancoClientId]}
+              - id: setHeader-bcfe
+                name: Authorization
+                expression:
+                  simple:
+                    id: simple-674c
+                    expression: Bearer ${exchangeProperty[tokenBancario]}
+        - log:
+            id: log-5f7b
+            message: ${exchangeProperty[bancoClientId]}
         - setBody:
             id: setBody-6cf5
             expression:
               simple:
                 id: simple-1919
                 expression: ${exchangeProperty[payloadEnvio]}
+        - toD:
+            id: to-bf6f
+            uri: https
+            parameters:
+              httpUri: ${exchangeProperty[santanderURL]}
+              bridgeEndpoint: true
+              httpMethod: POST
+              logHttpActivity: true
         - log:
             id: log-b295
-            message: "URL: ${exchangeProperty[santnderURL]}"
+            message: "URL: ${exchangeProperty[santanderURL]}"
+        - stop:
+            id: stop-b8e3
