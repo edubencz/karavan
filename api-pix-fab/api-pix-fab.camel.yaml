@@ -742,6 +742,14 @@
             id: bean-4a67
             ref: montaPayload
             method: montarPayload
+        - setProperty:
+            id: setProperty-c7d8
+            description: "Body: payloadEnvio"
+            name: payloadEnvio
+            expression:
+              simple:
+                id: simple-a9b2
+                expression: ${body}
         - choice:
             id: choice-ec60
             when:
@@ -764,6 +772,11 @@
                     id: simple-a57d
                     expression: ${exchangeProperty.rota[codigoBanco]} == 33
                 steps:
+                  - to:
+                      id: to-8e67
+                      uri: direct
+                      parameters:
+                        name: santander-cobranca
                   - log:
                       id: log-6b82
                       message: "### ENVIA DADOS AO SANTANDER ###"
@@ -911,3 +924,75 @@
                                 {
                                   "mensagem": "Operação não suportada: ${exchangeProperty.rota[tipo]}"
                                 }
+- route:
+    id: santander-cobranca
+    nodePrefixId: route-ecf
+    from:
+      id: from-santander-cobranca
+      uri: direct
+      parameters:
+        name: santander-cobranca
+      steps:
+        - doTry:
+            id: doTry-ee75
+            doCatch:
+              - id: doCatch-d714
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - log:
+                      id: log-9cc1
+                      message: "### ERRO AO BUSCaR WORKSPACE ###"
+                  - stop:
+                      id: stop-6a65
+            steps:
+              - log:
+                  id: log-14bd
+                  message: "### BUSCA WORKSPACE ###"
+              - setHeader:
+                  id: setHeader-5e38
+                  name: CamelRedis.Key
+                  expression:
+                    simple:
+                      id: simple-d45d
+                      expression: ${exchangeProperty.redisKey}
+              - toD:
+                  id: to-0953
+                  uri: kamelet:redis-sink
+                  parameters:
+                    redisHost: fesc-sql-dev01.fesc.sgusuite.com.br
+                    redisPort: 6379
+                    command: GET
+              - unmarshal:
+                  id: unmarshal-21e9
+                  json:
+                    id: json-cec0
+              - setProperty:
+                  id: setProperty-5b32
+                  description: "Var: santanderWorkspace"
+                  name: santanderWorkspace
+                  expression:
+                    simple:
+                      id: simple-541f
+                      expression: ${body[Workspace]}
+              - setProperty:
+                  id: setProperty-bdc8
+                  description: URL
+                  name: santanderURL
+                  expression:
+                    simple:
+                      id: simple-0e37
+                      expression: >-
+                        https://trust-sandbox.api.santander.com.br/collection_bill_management/v2/workspaces/${exchangeProperty[santanderWorkspace]}/bank_slips
+        - log:
+            id: log-018e
+            message: "##ENVIO AO TANTANDER###"
+        - setBody:
+            id: setBody-6cf5
+            expression:
+              simple:
+                id: simple-1919
+                expression: ${exchangeProperty[payloadEnvio]}
+        - log:
+            id: log-b295
+            message: "URL: ${exchangeProperty[santnderURL]}"
