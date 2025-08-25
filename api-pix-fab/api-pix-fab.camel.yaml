@@ -112,6 +112,7 @@
       steps:
         - log:
             id: log-28c0
+            description: "#####ROUTE REDIS-VALIDA-TOKEN#####"
             message: "#####ROUTE REDIS-VALIDA-TOKEN#####"
         - setHeader:
             id: setHeader-redis-token-key
@@ -151,6 +152,7 @@
                         command: GET
                   - unmarshal:
                       id: unmarshal-8ce0
+                      disabled: false
                       json:
                         id: json-4933
                   - setProperty:
@@ -163,8 +165,8 @@
                           expression: ${body[token]}
                   - setProperty:
                       id: setProperty-6c47
-                      description: "TOKEN: tokenArquivoCertificado"
-                      name: tokenArquivoCertificado
+                      description: "TOKEN: bancoArquivoCertificado"
+                      name: bancoArquivoCertificado
                       expression:
                         simple:
                           id: simple-33d0
@@ -184,7 +186,7 @@
                     id: to-busca-token-redis
                     uri: direct
                     parameters:
-                      name: busca-token-redis
+                      name: busca-dados-banco-para-token
                 - log:
                     id: log-d6aa
                     message: "## VOLTOU PARA REDIS VALIDA TOKEN#####"
@@ -207,12 +209,13 @@
                 id: simple-cfba
                 expression: ${body}
 - route:
-    id: busca-token-redis
+    id: busca-dados-banco-para-token
+    description: busca-dados-banco-para-token
     from:
       id: from-redis-valida-token
       uri: direct
       parameters:
-        name: busca-token-redis
+        name: busca-dados-banco-para-token
       steps:
         - log:
             id: log-89a1
@@ -724,7 +727,7 @@
                         simple:
                           id: simple-ecb2
                           expression: >-
-                            {"Senha":"${exchangeProperty.bancoSenhaCertificado}","token":"${exchangeProperty.tokenBancario}","arquivo":"${exchangeProperty.bancoArquivoCertificado}"
+                            {"Senha":"${exchangeProperty.bancoSenhaCertificado}","token":"${exchangeProperty.tokenBancario}","arquivo":"${exchangeProperty.bancoArquivoCertificado}"}
                   - log:
                       id: log-2cee
                       description: "##SALVANDO DADOS TOKEN REDIS ###"
@@ -790,11 +793,11 @@
             id: choice-0fe2
             when:
               - id: when-a85f
-                description: tokenArquivoCertificado != ""
+                description: bancoArquivoCertificado!= ""
                 expression:
                   simple:
                     id: simple-a692
-                    expression: ${exchangeProperty.tokenArquivoCertificado} != ""
+                    expression: ${exchangeProperty.bancoArquivoCertificado} != ""
                 steps:
                   - log:
                       id: log-4635
@@ -806,7 +809,7 @@
                       id: setProperty-c337
                       description: "SSL: Add certificado"
                       disabled: false
-                      name: ssl-add-certificado
+                      name: sslBeanId
                       expression:
                         groovy:
                           id: groovy-1cc6
@@ -1192,6 +1195,7 @@
               httpMethod: POST
               logHttpActivity: true
               httpUri: ${exchangeProperty[santanderURL]}
+              sslContextParameters: "#${exchangeProperty.sslBeanId}"
         - log:
             id: log-b295
             message: "URL: ${exchangeProperty[santanderURL]}"
