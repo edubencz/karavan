@@ -149,9 +149,10 @@
                         redisHost: fesc-sql-dev01.fesc.sgusuite.com.br
                         redisPort: 6379
                         command: GET
-                  - log:
-                      id: log-523b
-                      message: TOKEN BANCO> ${body}
+                  - unmarshal:
+                      id: unmarshal-8ce0
+                      json:
+                        id: json-4933
                   - setProperty:
                       id: setProperty-token-valido
                       description: "TOKEN: tokenBancario"
@@ -159,18 +160,31 @@
                       expression:
                         simple:
                           id: simple-f024
-                          expression: ${body}
-                  - log:
-                      id: log-4be1
-                      message: "TOKKKEN: ${exchangeProperty.tokenBancario}"
+                          expression: ${body[token]}
+                  - setProperty:
+                      id: setProperty-6c47
+                      description: "TOKEN: tokenArquivoCertificado"
+                      name: tokenArquivoCertificado
+                      expression:
+                        simple:
+                          id: simple-33d0
+                          expression: ${body[arquivo]}
+                  - setProperty:
+                      id: setProperty-1dec
+                      description: "TOKEN: bancoSenhaCertificado"
+                      name: bancoSenhaCertificado
+                      expression:
+                        simple:
+                          id: simple-104f
+                          expression: ${body[Senha]}
             otherwise:
               id: otherwise-78e1
               steps:
                 - to:
-                    id: to-redis-gera-oauth2-token
+                    id: to-busca-token-redis
                     uri: direct
                     parameters:
-                      name: redis-gera-oauth2-token
+                      name: busca-token-redis
                 - log:
                     id: log-d6aa
                     message: "## VOLTOU PARA REDIS VALIDA TOKEN#####"
@@ -178,7 +192,7 @@
             id: to-8cfe
             uri: direct
             parameters:
-              name: valida-banco
+              name: route-valida-banco
         - log:
             id: log-f58b
             description: "LOG: FIM DO PROCESSO"
@@ -193,12 +207,12 @@
                 id: simple-cfba
                 expression: ${body}
 - route:
-    id: redis-gera-oauth2-token
+    id: busca-token-redis
     from:
       id: from-redis-valida-token
       uri: direct
       parameters:
-        name: redis-gera-oauth2-token
+        name: busca-token-redis
       steps:
         - log:
             id: log-89a1
@@ -264,11 +278,6 @@
                         simple:
                           id: simple-d07d
                           expression: ${body[ClientID]}
-                  - log:
-                      id: log-b489
-                      message: "### bancoClientId: ${exchangeProperty[bancoClientId]}"
-                  - stop:
-                      id: stop-3681
                   - setProperty:
                       id: setProperty-ClientSecret
                       description: "Banco: bancoClientSecret"
@@ -301,11 +310,15 @@
                         simple:
                           id: simple-0320
                           expression: ${body[Scopes]}
+                  - log:
+                      id: log-48c2
+                      description: "### CHAMA BUSCA-TOKE-BANCO####"
+                      message: "### CHAMA BUSCA-TOKE-BANCO####"
                   - to:
                       id: to-944f
                       uri: direct
                       parameters:
-                        name: redis-auth2-token
+                        name: busca-token-banco
             otherwise:
               id: otherwise-efaf
               steps:
@@ -334,16 +347,16 @@
                 - stop:
                     id: stop-dados-bancarios
 - route:
-    id: redis-auth2-token
+    id: busca-token-banco
     from:
-      id: from-redis-auth2-token
+      id: from-busca-token-banco
       uri: direct
       parameters:
-        name: redis-auth2-token
+        name: busca-token-banco
       steps:
         - log:
             id: log-ab81
-            message: "### ROUTE-REDIS-AUTH2-TOKEN####"
+            message: "### ROUTE-BUSCA-TOKEN-BANCO####"
         - choice:
             id: choice-71cc
             description: Geração de Certificado
@@ -424,6 +437,14 @@
                             new FileOutputStream(path).withCloseable { stream ->
                               stream.write(pfxBytes)
                             }
+
+
+                            println("[DEBUG] Cria
+                            exchangeProperty.bancoArquivoCertificado: " + path)
+
+                            exchange.setProperty("bancoArquivoCertificado",
+                            path)
+
 
                             println("[DEBUG] Certificado salvo em: " + path)
 
@@ -702,7 +723,12 @@
                       expression:
                         simple:
                           id: simple-ecb2
-                          expression: ${exchangeProperty.tokenBancario}
+                          expression: >-
+                            {"Senha":"${exchangeProperty.bancoSenhaCertificado}","token":"${exchangeProperty.tokenBancario}","arquivo":"${exchangeProperty.bancoArquivoCertificado}"
+                  - log:
+                      id: log-2cee
+                      description: "##SALVANDO DADOS TOKEN REDIS ###"
+                      message: "##SALVANDO DADOS TOKEN REDIS ###"
                   - to:
                       id: to-redis-set-token
                       description: CriaToken
@@ -732,11 +758,16 @@
       id: from-redis-valida-token
       uri: direct
       parameters:
-        name: valida-banco
+        name: route-valida-banco
       steps:
         - log:
             id: log-05db
-            message: "#### ROUTE-VALIDA-BANCO ######"
+            message: >-
+              #### ROUTE-VALIDA-BANCO:
+              ${exchangeProperty[tokenArquivoCertificado]}
+        - removeHeaders:
+            id: removeHeaders-e305
+            pattern: remove-headers-antes-envio
         - setBody:
             id: setBody-96ff
             expression:
@@ -755,6 +786,137 @@
               simple:
                 id: simple-a9b2
                 expression: ${body}
+        - choice:
+            id: choice-0fe2
+            when:
+              - id: when-a85f
+                description: tokenArquivoCertificado != ""
+                expression:
+                  simple:
+                    id: simple-a692
+                    expression: ${exchangeProperty.tokenArquivoCertificado} != ""
+                steps:
+                  - log:
+                      id: log-4635
+                      description: "## ARQUIVO ANEXAR ENVIO###"
+                      message: >-
+                        ## ARQUIVO ANEXAR ENVIO:
+                        ${exchangeProperty.tokenArquivoCertificado}
+                  - setProperty:
+                      id: setProperty-c337
+                      description: "SSL: Add certificado"
+                      disabled: false
+                      name: ssl-add-certificado
+                      expression:
+                        groovy:
+                          id: groovy-1cc6
+                          expression: >
+                            import java.io.File
+
+                            import java.nio.file.Files
+
+                            import java.nio.file.Paths
+
+                            // Recebe o nome do arquivo do certificado já
+                            existente
+
+                            // e a senha em bancoSenhaCertificado
+
+
+                            def arquivo =
+                            exchange.getProperty('bancoArquivoCertificado',
+                            String) // agora é o nome do arquivo
+
+
+                            def senha =
+                            exchange.getProperty('bancoSenhaCertificado',
+                            String)
+
+
+                            println("[DEBUG] Iniciando processamento de
+                            certificado por nome de arquivo")
+
+                            println("[DEBUG] Nome do arquivo recebido: " +
+                            arquivo)
+
+                            println("[DEBUG] Senha recebida: " + (senha ? "***"
+                            : "null"))
+
+
+                            if (arquivo == null || senha == null) {
+                              println("[ERROR] Nome do arquivo ou senha ausentes")
+                              throw new RuntimeException('Nome do arquivo ou senha ausentes')
+                            }
+
+
+                            def certFile = new File(arquivo)
+
+                            if (!certFile.exists()) {
+                              println("[ERROR] Arquivo de certificado não encontrado: " + arquivo)
+                              throw new RuntimeException('Arquivo de certificado não encontrado: ' + arquivo)
+                            }
+
+                            println("[DEBUG] Arquivo existe? " +
+                            certFile.exists())
+
+                            println("[DEBUG] Tamanho do arquivo: " +
+                            certFile.length() + " bytes")
+
+                            println("[DEBUG] Permissões do arquivo: " +
+                            certFile.canRead() + ", " + certFile.canWrite())
+
+                            // Opcional: ler os primeiros bytes para garantir
+                            que não está corrompido
+
+                            def headBytes =
+                            Files.readAllBytes(Paths.get(arquivo))[0..15]
+
+                            println("[DEBUG] Primeiros bytes do arquivo: " +
+                            headBytes.collect{String.format("%02X", it)}.join("
+                            "))
+
+                            // Criar e configurar SSL Context Parameters para o
+                            Camel
+
+                            def kp = new
+                            org.apache.camel.support.jsse.KeyStoreParameters()
+
+                            kp.setResource("file:" + arquivo)
+
+                            kp.setType("PKCS12")
+
+                            kp.setPassword(senha)
+
+                            println("[DEBUG] KeyStoreParameters configurado:
+                            resource=file:" + arquivo + ", type=PKCS12,
+                            password=***")
+
+                            def km = new
+                            org.apache.camel.support.jsse.KeyManagersParameters()
+
+                            km.setKeyStore(kp)
+
+                            km.setKeyPassword(senha)
+
+                            println("[DEBUG] KeyManagersParameters configurado")
+
+                            def ssl = new
+                            org.apache.camel.support.jsse.SSLContextParameters()
+
+                            ssl.setKeyManagers(km)
+
+                            println("[DEBUG] SSLContextParameters criado")
+
+                            exchange.getContext().getRegistry().bind("camel-ssl-"
+                            + exchange.getExchangeId(), ssl)
+
+                            println("[DEBUG] SSL Context configurado e
+                            registrado com ID: camel-ssl-" +
+                            exchange.getExchangeId())
+
+                            return "camel-ssl-" + exchange.getExchangeId()
+            otherwise:
+              id: otherwise-c99e
         - choice:
             id: choice-ec60
             when:
@@ -852,6 +1014,7 @@
                       expression: 143851dc56ae48a794078dbe3c964d42
               - log:
                   id: log-c7e4
+                  description: "## APPKEY BB ##"
                   message: ${exchangeProperty.bancoAppKey}
               - choice:
                   id: choice-rota-saida
@@ -881,6 +1044,7 @@
                                 expression: ${body}
                         - log:
                             id: log-response-success-inclusao
+                            description: "## RESPOSTA BB ###"
                             message: "Resposta BB: ${body}"
                             loggingLevel: INFO
                             logName: bb-cobranca
@@ -907,6 +1071,7 @@
                                 expression: ${body}
                         - log:
                             id: log-response-success-alteracao
+                            description: "## RESPOSTA BB ###"
                             message: "Resposta BB: ${body}"
                             loggingLevel: INFO
                             logName: bb-cobranca
@@ -953,6 +1118,7 @@
             steps:
               - log:
                   id: log-14bd
+                  description: "### BUSCA WORKSPACE ###"
                   message: "### BUSCA WORKSPACE ###"
               - setHeader:
                   id: setHeader-5e38
@@ -991,25 +1157,8 @@
                         trust-sandbox.api.santander.com.br/collection_bill_management/v2/workspaces/${exchangeProperty[santanderWorkspace]}/bank_slips
         - log:
             id: log-018e
-            message: "##ENVIO AO TANTANDER###"
-        - setHeader:
-            id: setHeader-3b75
-            description: "Header: Authorization"
-            disabled: true
-            name: Authorization
-            expression:
-              simple:
-                id: simple-c3db
-                expression: Bearer ${exchangeProperty[tokenBancario]}
-        - setHeader:
-            id: setHeader-640a
-            description: "Header: X-Application-Key"
-            disabled: true
-            name: X-Application-Key
-            expression:
-              simple:
-                id: simple-63fc
-                expression: ${exchangeProperty[redisClientID]}
+            description: "##ENVIO AO SANTANDER###"
+            message: "##ENVIO AO SANTANDER###"
         - setHeaders:
             id: setHeaders-90f8
             headers:
@@ -1018,7 +1167,7 @@
                 expression:
                   simple:
                     id: simple-847a
-                    expression: ${exchangeProperty[bancoClientId]}
+                    expression: ymANIxoAnezEd9QAM9FLA4AvQLczOAxj
               - id: setHeader-bcfe
                 name: Authorization
                 expression:
@@ -1027,7 +1176,8 @@
                     expression: Bearer ${exchangeProperty[tokenBancario]}
         - log:
             id: log-5f7b
-            message: ${exchangeProperty[bancoClientId]}
+            description: SANTANDER - X-Application-Key
+            message: "X-Application-Key: ${exchangeProperty[bancoClientId]}"
         - setBody:
             id: setBody-6cf5
             expression:
@@ -1035,13 +1185,13 @@
                 id: simple-1919
                 expression: ${exchangeProperty[payloadEnvio]}
         - toD:
-            id: to-bf6f
+            id: to-69a2
             uri: https
             parameters:
-              httpUri: ${exchangeProperty[santanderURL]}
               bridgeEndpoint: true
               httpMethod: POST
               logHttpActivity: true
+              httpUri: ${exchangeProperty[santanderURL]}
         - log:
             id: log-b295
             message: "URL: ${exchangeProperty[santanderURL]}"
