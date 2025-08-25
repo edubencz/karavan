@@ -219,7 +219,8 @@
       steps:
         - log:
             id: log-89a1
-            message: "####ROUTE-GERA-OAUTH2-TOKEN######"
+            description: "####ROUTE-DADOS-BANCO-PARA-TOKEN######"
+            message: "####ROUTE-DADOS-BANCO-PARA-TOKEN######"
         - setHeader:
             id: setHeader-9267
             name: CamelRedis.Key
@@ -259,6 +260,7 @@
                         command: GET
                   - log:
                       id: log-62ea
+                      description: "### RETORNO COM DADOS DO BANCO PARA TOKEN####"
                       message: "### RETORNO COM DADOS DO BANCO PARA TOKEN####"
                   - unmarshal:
                       id: unmarshal-busca-chaves
@@ -359,7 +361,8 @@
       steps:
         - log:
             id: log-ab81
-            message: "### ROUTE-BUSCA-TOKEN-BANCO####"
+            description: "### ROUTE-BUSCA-TOKEN-BANCO"
+            message: "### ROUTE-BUSCA-TOKEN-BANCO: ${exchangeProperty.bancoCertificado}"
         - choice:
             id: choice-71cc
             description: Geração de Certificado
@@ -369,8 +372,14 @@
                 expression:
                   simple:
                     id: simple-d539
-                    expression: ${exchangeProperty.bancoCertificado} != ""
+                    expression: >-
+                      ${exchangeProperty.bancoCertificado != null &&
+                      exchangeProperty.bancoCertificado.trim() != ""}
                 steps:
+                  - log:
+                      id: log-0c84
+                      description: "### BUSCAR CERTIFICADO ###"
+                      message: "### BUSCAR CERTIFICADO ###"
                   - setProperty:
                       id: setProperty-a5e2
                       description: "Certificado: sslBeanId"
@@ -527,6 +536,10 @@
               simple:
                 id: simple-5ce1
                 expression: application/x-www-form-urlencoded
+        - log:
+            id: log-f2fa
+            description: "## VALIDA BANCO PARA SOLIC TOKEN ###"
+            message: "## VALIDA BANCO PARA SOLIC TOKEN ###"
         - choice:
             id: choice-auth2-identifica-banco
             when:
@@ -660,6 +673,48 @@
                   - log:
                       id: log-2c18
                       message: "#### FIM DO TOKEN #####"
+              - id: when-334f
+                description: Banco == 341
+                expression:
+                  simple:
+                    id: simple-3f18
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 341
+                steps:
+                  - setBody:
+                      id: setBody-a928
+                      expression:
+                        simple:
+                          id: simple-2942
+                          expression: >-
+                            grant_type=client_credentials&client_secret=${exchangeProperty[bancoClientSecret]}&client_id=${exchangeProperty[bancoClientId]}
+                  - log:
+                      id: log-17ac
+                      description: "#BODY ITAU SOLI TOKEN"
+                      message: "#BODY ITAU SOLI TOKEN ${body}"
+                  - toD:
+                      id: to-8221
+                      uri: https
+                      parameters:
+                        httpUri: sandbox.devportal.itau.com.br/api/oauth/jwt
+                        bridgeEndpoint: true
+                        httpMethod: POST
+                        logHttpActivity: true
+                  - log:
+                      id: log-2b3f
+                      description: "###TOKEN: ITAU ->"
+                      message: "###TOKEN: ITAU -> ${body}"
+                  - unmarshal:
+                      id: unmarshal-5ae8
+                      json:
+                        id: json-c585
+                  - setProperty:
+                      id: setProperty-f268
+                      description: "Variavel: tokenBancario"
+                      name: tokenBancario
+                      expression:
+                        simple:
+                          id: simple-721a
+                          expression: ${body[access_token]}
             otherwise:
               id: otherwise-auth2-identifica-banco
               steps:
@@ -765,6 +820,7 @@
       steps:
         - log:
             id: log-05db
+            description: "#### ROUTE-VALIDA-BANCO: "
             message: >-
               #### ROUTE-VALIDA-BANCO:
               ${exchangeProperty[tokenArquivoCertificado]}
@@ -797,7 +853,9 @@
                 expression:
                   simple:
                     id: simple-a692
-                    expression: ${exchangeProperty.bancoArquivoCertificado} != ""
+                    expression: >-
+                      ${exchangeProperty.bancoCertificado != null &&
+                      exchangeProperty.bancoArquivoCertificado != ""}
                 steps:
                   - log:
                       id: log-4635
@@ -950,6 +1008,16 @@
                   - log:
                       id: log-6b82
                       message: "### ENVIA DADOS AO SANTANDER ###"
+              - id: when-dd24
+                description: Banco == 341
+                expression:
+                  simple:
+                    id: simple-8a5c
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 341
+                steps:
+                  - log:
+                      id: log-915d
+                      message: ITAU!!!!!
             otherwise:
               id: otherwise-cb94
 - route:
