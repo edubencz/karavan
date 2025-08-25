@@ -8,6 +8,7 @@ import java.util.*;
 public class MontaPayload {
 
     private MontaBB montaBB = new MontaBB();
+    private MontaSantander montaSantander = new MontaSantander();
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @SuppressWarnings("unchecked")
@@ -121,12 +122,12 @@ public class MontaPayload {
         
         switch (tipo.toLowerCase()) {
             case "registrar":
-                return montaBB.montarEmissao(dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+                return montaSantander.montarEmissao(dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
             case "alterar":
-                return montaBB.montarAlteracao(dadosBanco, dadosBoleto);
+                return montaSantander.montarAlteracao(dadosBanco, dadosBoleto);
             case "cancelamento":
             case "cancelar":
-                return montaBB.montarCancelamento(dadosBanco, dadosBoleto);
+                return montaSantander.montarCancelamento(dadosBanco, dadosBoleto);
             default:
                 Map<String, Object> erro = new HashMap<>();
                 erro.put("erro", "Tipo de operação não suportado: " + tipo);

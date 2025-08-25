@@ -71,19 +71,19 @@ public class MontaSantander {
         payer.put("address", enderecoPagador.get("logradouro"));
         payer.put("neighborhood", enderecoPagador.get("bairro"));
         payer.put("city", enderecoPagador.get("cidade"));
-        payer.put("state", enderecoPagador.get("estado"));
+        payer.put("state", enderecoPagador.get("uf"));
         payer.put("zipCode", enderecoPagador.get("cep"));
         payload.put("payer", payer);
 
-        payer.put("bankNumber", dadosBoleto.get("numeroNossoNumero"));
-        payer.put("dueDate", dadosBoleto.get("dataVencimento"));
-        payer.put("issueDate", dadosBoleto.get("dataEmissao"));
-        payer.put("nominalValue", dadosBoleto.get("valorNominal"));
-        payer.put("documentKind", dadosBoleto.get("tipoDoc"));
+        payload.put("bankNumber", dadosBoleto.get("numeroNossoNumero"));
+        payload.put("dueDate", dadosBoleto.get("dataVencimento"));
+        payload.put("issueDate", dadosBoleto.get("dataEmissao"));
+        payload.put("nominalValue", dadosBoleto.get("valorNominal"));
+        payload.put("documentKind", dadosBoleto.get("tipoDoc"));
 
         //Campo opicional, mas enviado sempre para seguir o CADASTRO_CONVENIO entre Unimed e Banco
-        payer.put("protestType", "CADASTRO_CONVENIO");
-        payer.put("paymentType", "REGISTRO");
+        payload.put("protestType", "CADASTRO_CONVENIO");
+        payload.put("paymentType", "REGISTRO");
 
         // Campos opcionais
         //Descontos
@@ -98,169 +98,36 @@ public class MontaSantander {
             discount.put("limitDate", dadosBoleto.get("dataVencimento"));
 
             discount.put("discountOne", discountOne);
-            payer.put("discount", discount);
+            payload.put("discount", discount);
         }
 
         //Juros
         Number valorJuros = (Number) dadosDescontos.get("valorJuros");
         if (valorJuros != null && valorJuros.doubleValue() > 0) {
-            payer.put("finePercentage", dadosBoleto.get("percentualJuros"));
-            payer.put("fineQuantityDays", (Number) 1);
+            payload.put("finePercentage", dadosBoleto.get("percentualJuros"));
+            payload.put("fineQuantityDays", (Number) 1);
         }
 
-        
-        return objectMapper.writeValueAsString(payer);
+        // Mensagens
+        if (mensagens != null) {
+            List<String> mensagensValidas = new ArrayList<>();
+            for (String msg : mensagens) {
+                if (msg != null && !msg.trim().isEmpty() && !msg.matches("\\[.*@.*")) {
+                    mensagensValidas.add(msg);
+                }
+            }
+            payload.put("messages", mensagensValidas);
+        } else {
+            payload.put("messages", new ArrayList<String>());
+        }
+        return objectMapper.writeValueAsString(payload);
     }
 
     public String montarAlteracao(Map<String, Object> dadosBanco,
-                                 Map<String, Object> dadosBoleto,
-                                 Map<String, Object> dadosPagador,
-                                 Map<String, Object> dadosDescontos) throws Exception {
+                                 Map<String, Object> dadosBoleto) throws Exception {
         Map<String, Object> payload = new LinkedHashMap<>();
-        
-        // Campo obrigatório - número do convênio
         payload.put("numeroConvenio", dadosBanco.get("convenio"));
-        
-        // Alteração de data de vencimento
-        payload.put("indicadorNovaDataVencimento", "S");
-        Map<String, Object> alteracaoData = new LinkedHashMap<>();
-        alteracaoData.put("novaDataVencimento", tratarData((String) dadosBoleto.get("dataVencimento"), "dd.MM.yyyy"));
-        payload.put("alteracaoData", alteracaoData);
-        
-        // Alteração de valor nominal
-        payload.put("indicadorNovoValorNominal", "S");
-        Map<String, Object> alteracaoValor = new LinkedHashMap<>();
-        alteracaoValor.put("novoValorNominal", dadosBoleto.get("valorNominal"));
-        payload.put("alteracaoValor", alteracaoValor);
-        
-        // Protesto - se houver dias de protesto configurados
-        Number diasProtesto = (Number) dadosBoleto.get("quantidadeDiasProtesto");
-        if (diasProtesto != null && diasProtesto.intValue() > 0) {
-            payload.put("indicadorProtestar", "S");
-            Map<String, Object> protesto = new LinkedHashMap<>();
-            protesto.put("quantidadeDiasProtesto", diasProtesto);
-            payload.put("protesto", protesto);
-        }
-        
-        // Juros
-        Number tipoJuros = (Number) dadosBoleto.get("tipoJuros");
-        Number valorJuros = (Number) dadosBoleto.get("valorJuros");
-        Number percentualJuros = (Number) dadosBoleto.get("percentualJuros");
-        
-        if (tipoJuros != null) {
-            payload.put("indicadorCobrarJuros", "S");
-            Map<String, Object> juros = new LinkedHashMap<>();
-            juros.put("tipoJuros", tipoJuros);
-            
-            if (tipoJuros.intValue() == 1 && valorJuros != null && valorJuros.doubleValue() > 0) {
-                juros.put("valorJuros", valorJuros);
-            } else if (tipoJuros.intValue() == 2 && percentualJuros != null && percentualJuros.doubleValue() > 0) {
-                juros.put("taxaJuros", percentualJuros);
-            }
-            
-            payload.put("juros", juros);
-        }
-        
-        // Multa
-        Number tipoMulta = (Number) dadosBoleto.get("tipoMulta");
-        Number percentualMulta = (Number) dadosBoleto.get("percentualMulta");
-        Number valorMulta = (Number) dadosBoleto.get("valorMulta");
-        
-        if (tipoMulta != null) {
-            payload.put("indicadorCobrarMulta", "S");
-            Map<String, Object> multa = new LinkedHashMap<>();
-            multa.put("tipoMulta", tipoMulta);
-            
-            if (dadosBoleto.get("dataMulta") != null) {
-                multa.put("dataInicioMulta", tratarData((String) dadosBoleto.get("dataMulta"), "dd.MM.yyyy"));
-            }
-            
-            if (tipoMulta.intValue() == 1 && valorMulta != null) {
-                multa.put("valorMulta", valorMulta);
-            } else if (tipoMulta.intValue() == 2 && percentualMulta != null) {
-                multa.put("taxaMulta", percentualMulta);
-            }
-            
-            payload.put("multa", multa);
-        }
-        
-        // Negativação se existir configuração
-        Number diasNegativacao = (Number) dadosBoleto.get("quantidadeDiasNegativacao");
-        if (diasNegativacao != null && diasNegativacao.intValue() > 0) {
-            payload.put("indicadorNegativar", "S");
-            Map<String, Object> negativacao = new LinkedHashMap<>();
-            negativacao.put("quantidadeDiasNegativacao", diasNegativacao);
-            negativacao.put("tipoNegativacao", 2); // Valor padrão conforme documentação Santander
-
-            if (dadosBoleto.get("orgaoNegativador") != null) {
-                negativacao.put("orgaoNegativador", dadosBoleto.get("orgaoNegativador"));
-            }
-            
-            payload.put("negativacao", negativacao);
-        }
-        
-        // Alteração de prazo para aceite de boleto vencido
-        if (dadosBoleto.get("aceiteTituloVencido") != null && 
-            "S".equals(dadosBoleto.get("aceiteTituloVencido"))) {
-            
-            payload.put("indicadorAlterarPrazoBoletoVencido", "S");
-            Map<String, Object> alteracaoPrazo = new LinkedHashMap<>();
-            alteracaoPrazo.put("quantidadeDiasAceite", dadosBoleto.get("numeroDiasLimiteRecebimento"));
-            payload.put("alteracaoPrazo", alteracaoPrazo);
-        }
-        
-        // Desconto
-        Number valorDesconto = (Number) dadosDescontos.get("valorDesconto");
-        Number percentualDesconto = (Number) dadosDescontos.get("percentualDesconto");
-        if (valorDesconto != null && valorDesconto.doubleValue() > 0) {
-            payload.put("indicadorAtribuirDesconto", "S");
-            Map<String, Object> desconto = new LinkedHashMap<>();
-            desconto.put("tipoPrimeiroDesconto", 1);
-            desconto.put("valorPrimeiroDesconto", valorDesconto);
-            
-            if (percentualDesconto != null && percentualDesconto.doubleValue() > 0) {
-                desconto.put("percentualPrimeiroDesconto", percentualDesconto);
-            }
-            
-            desconto.put("dataPrimeiroDesconto", tratarData((String) dadosBoleto.get("dataVencimento"), "dd.MM.yyyy"));
-            payload.put("desconto", desconto);
-        }
-        
-        // Alteração de endereço do pagador
-        Map<String, Object> enderecoPagador = getNestedMap(dadosPagador, "endereco");
-        if (!enderecoPagador.isEmpty()) {
-            payload.put("indicadorAlterarEnderecoPagador", "S");
-            Map<String, Object> alteracaoEndereco = new LinkedHashMap<>();
-            
-            if (enderecoPagador.get("logradouro") != null) {
-                alteracaoEndereco.put("enderecoPagador", enderecoPagador.get("logradouro"));
-            }
-            
-            if (enderecoPagador.get("bairro") != null) {
-                alteracaoEndereco.put("bairroPagador", enderecoPagador.get("bairro"));
-            }
-            
-            if (enderecoPagador.get("cidade") != null) {
-                alteracaoEndereco.put("cidadePagador", enderecoPagador.get("cidade"));
-            }
-            
-            if (enderecoPagador.get("uf") != null) {
-                alteracaoEndereco.put("UFPagador", enderecoPagador.get("uf"));
-            }
-            
-            if (enderecoPagador.get("cep") != null) {
-                String cepStr = enderecoPagador.get("cep").toString();
-                cepStr = cepStr.replaceAll("[^0-9]", "");
-                try {
-                    alteracaoEndereco.put("CEPPagador", Long.valueOf(cepStr));
-                } catch (NumberFormatException e) {
-                    alteracaoEndereco.put("CEPPagador", cepStr);
-                }
-            }
-            
-            payload.put("alteracaoEndereco", alteracaoEndereco);
-        }
-        
+        payload.put("numeroDocumento", dadosBoleto.get("numeroDocumento"));
         return objectMapper.writeValueAsString(payload);
     }
 

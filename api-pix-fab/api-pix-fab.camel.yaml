@@ -789,12 +789,6 @@
               simple:
                 id: simple-a9b2
                 expression: ${body}
-        - log:
-            id: log-54a5
-            description: "## PAYLOAD GERADO PARA TESTAR###"
-            message: ${body}
-        - stop:
-            id: stop-ba1e
         - choice:
             id: choice-0fe2
             when:
@@ -1193,13 +1187,18 @@
               simple:
                 id: simple-1919
                 expression: ${exchangeProperty[payloadEnvio]}
+        - log:
+            id: log-8b2a
+            description: "### BODY PARA SANTANDER"
+            disabled: true
+            message: "### BODY PARA SANTANDER: ${body}"
         - toD:
             id: to-69a2
             uri: https
             parameters:
               bridgeEndpoint: true
               httpMethod: POST
-              logHttpActivity: true
+              logHttpActivity: false
               httpUri: ${exchangeProperty[santanderURL]}
               sslContextParameters: "#${exchangeProperty.sslBeanId}"
         - log:
