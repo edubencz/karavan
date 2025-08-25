@@ -55,7 +55,15 @@ public class MontaPayload {
         
         // Extrair arrays
         List<String> instrucoes = getStringList(jsonCompleto, "instrucoes");
-        List<String> mensagens = getStringList(jsonCompleto, "mensagens");
+        List<String> mensagensOriginais = getStringList(jsonCompleto, "mensagens");
+        List<String> mensagens = new ArrayList<>();
+        if (mensagensOriginais != null) {
+            for (String msg : mensagensOriginais) {
+                if (msg != null && !msg.trim().isEmpty() && !msg.matches("\\[.*@.*")) {
+                    mensagens.add(msg);
+                }
+            }
+        }
 
         // Determinar banco baseado no código do banco
         Number codigoBanco = (Number) rota.get("codigoBanco");

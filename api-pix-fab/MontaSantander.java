@@ -110,13 +110,7 @@ public class MontaSantander {
 
         // Mensagens
         if (mensagens != null) {
-            List<String> mensagensValidas = new ArrayList<>();
-            for (String msg : mensagens) {
-                if (msg != null && !msg.trim().isEmpty() && !msg.matches("\\[.*@.*")) {
-                    mensagensValidas.add(msg);
-                }
-            }
-            payload.put("messages", mensagensValidas);
+            payload.put("messages", mensagens);
         } else {
             payload.put("messages", new ArrayList<String>());
         }
@@ -134,7 +128,14 @@ public class MontaSantander {
     public String montarCancelamento(Map<String, Object> dadosBanco,
                                    Map<String, Object> dadosBoleto) throws Exception {
         Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("numeroConvenio", dadosBanco.get("convenio"));
+        /*
+        "covenantCode": "3567206",
+        "bankNumber": "123",
+        "operation": "BAIXAR"
+        */
+        payload.put("covenantCode", dadosBanco.get("convenio"));
+        payload.put("bankNumber", dadosBanco.get("codigoBanco"));
+        payload.put("operation", "BAIXAR");
         return objectMapper.writeValueAsString(payload);
     }
 }
