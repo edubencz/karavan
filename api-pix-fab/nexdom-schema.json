@@ -30,6 +30,7 @@
         "linhaDigitavel": { "type": "string" },
         "codigoBarras": { "type": "string" },
         "especieDocumento": { "type": "string" },
+        "tipoDoc": { "type": "string" },
         "aceite": { "type": "string" },
         "dataProcessamento": { "type": "string", "format": "date" },
         "quantidadeDiasProtesto": { "type": "integer" },

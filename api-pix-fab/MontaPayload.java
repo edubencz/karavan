@@ -11,6 +11,31 @@ public class MontaPayload {
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @SuppressWarnings("unchecked")
+    private Map<String, Object> getNestedMap(Map<String, Object> source, String key) {
+        Object value = source.get(key);
+        if (value instanceof Map) {
+            return (Map<String, Object>) value;
+        }
+        return new HashMap<>();
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> getStringList(Map<String, Object> source, String key) {
+        Object value = source.get(key);
+        if (value instanceof List) {
+            List<?> list = (List<?>) value;
+            List<String> result = new ArrayList<>();
+            for (Object item : list) {
+                if (item instanceof String) {
+                    result.add((String) item);
+                }
+            }
+            return result;
+        }
+        return new ArrayList<>();
+    }
+
+    @SuppressWarnings("unchecked")
     public String montarPayload(String jsonString) throws Exception {
         Map<String, Object> jsonCompleto = objectMapper.readValue(jsonString, Map.class);
         return montarPayload(jsonCompleto);
@@ -51,9 +76,8 @@ public class MontaPayload {
         if (codigoBanco.intValue() == 1) { // Banco do Brasil
             return processarBB(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
         } 
-        else if (codigoBanco.intValue() == 33) //Santander 
-        {
-            return processarBB(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+        else if (codigoBanco.intValue() == 33) { // Santander
+            return processarSantander(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
         }
         else {
             Map<String, Object> erro = new HashMap<>();
@@ -86,28 +110,28 @@ public class MontaPayload {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> getNestedMap(Map<String, Object> source, String key) {
-        Object value = source.get(key);
-        if (value instanceof Map) {
-            return (Map<String, Object>) value;
+    private String processarSantander(String tipo, 
+                              Map<String, Object> dadosBanco,
+                              Map<String, Object> dadosBoleto,
+                              Map<String, Object> pagador,
+                              Map<String, Object> beneficiario,
+                              List<String> instrucoes,
+                              List<String> mensagens,
+                              Map<String, Object> descontos) throws Exception {
+        
+        switch (tipo.toLowerCase()) {
+            case "registrar":
+                return montaBB.montarEmissao(dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+            case "alterar":
+                return montaBB.montarAlteracao(dadosBanco, dadosBoleto);
+            case "cancelamento":
+            case "cancelar":
+                return montaBB.montarCancelamento(dadosBanco, dadosBoleto);
+            default:
+                Map<String, Object> erro = new HashMap<>();
+                erro.put("erro", "Tipo de operação não suportado: " + tipo);
+                return objectMapper.writeValueAsString(erro);
         }
-        return new HashMap<>();
     }
 
-    @SuppressWarnings("unchecked")
-    private List<String> getStringList(Map<String, Object> source, String key) {
-        Object value = source.get(key);
-        if (value instanceof List) {
-            List<?> list = (List<?>) value;
-            List<String> result = new ArrayList<>();
-            for (Object item : list) {
-                if (item instanceof String) {
-                    result.add((String) item);
-                }
-            }
-            return result;
-        }
-        return new ArrayList<>();
-    }
 }

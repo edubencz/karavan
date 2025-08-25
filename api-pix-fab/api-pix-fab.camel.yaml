@@ -789,6 +789,12 @@
               simple:
                 id: simple-a9b2
                 expression: ${body}
+        - log:
+            id: log-54a5
+            description: "## PAYLOAD GERADO PARA TESTAR###"
+            message: ${body}
+        - stop:
+            id: stop-ba1e
         - choice:
             id: choice-0fe2
             when:
