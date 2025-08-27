@@ -315,6 +315,14 @@
                         simple:
                           id: simple-0320
                           expression: ${body[Scopes]}
+                  - setProperty:
+                      id: setProperty-ae79
+                      description: "Banco: bancoDadosEspecificos"
+                      name: bancoDadosEspecificos
+                      expression:
+                        simple:
+                          id: simple-ecfa
+                          expression: ${body}
                   - log:
                       id: log-48c2
                       description: "### CHAMA BUSCA-TOKE-BANCO####"
@@ -572,11 +580,13 @@
                         logHttpActivity: false
                   - unmarshal:
                       id: unmarshal-recebe-token
+                      disabled: true
                       json:
                         id: json-07e8
                   - setProperty:
                       id: setProperty-2a48
                       description: "Variavel: tokenBancario"
+                      disabled: true
                       name: tokenBancario
                       expression:
                         simple:
@@ -617,11 +627,13 @@
                           trust-sandbox.api.santander.com.br/auth/oauth/v2/token?disableContentCompression=false
                   - unmarshal:
                       id: unmarshal-b606
+                      disabled: true
                       json:
                         id: json-a967
                   - setProperty:
                       id: setProperty-santander-token
                       description: "Variavel: tokenBancario"
+                      disabled: true
                       name: tokenBancario
                       expression:
                         simple:
@@ -651,16 +663,60 @@
                         logHttpActivity: false
                   - unmarshal:
                       id: unmarshal-5ae8
+                      disabled: true
                       json:
                         id: json-c585
                   - setProperty:
                       id: setProperty-f268
                       description: "Variavel: tokenBancario"
+                      disabled: true
                       name: tokenBancario
                       expression:
                         simple:
                           id: simple-721a
                           expression: ${body[access_token]}
+              - id: when-cd7b
+                description: Banco == 748
+                expression:
+                  simple:
+                    id: simple-6c66
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 748
+                steps:
+                  - setBody:
+                      id: setBody-c6cc
+                      expression:
+                        simple:
+                          id: simple-28a3
+                          expression: >-
+                            username=${exchangeProperty.bancoDadosEspecificos[username]}&password=${exchangeProperty.bancoDadosEspecificos[password]}&grant_type=${exchangeProperty.bancoDadosEspecificos[grant_type]}&scope=${exchangeProperty.bancoScopes}
+                  - setHeaders:
+                      id: setHeaders-3a3a
+                      headers:
+                        - id: setHeader-1a84
+                          name: x-api-key
+                          expression:
+                            simple:
+                              id: simple-b699
+                              expression: ${exchangeProperty.bancoClientId}
+                        - id: setHeader-f63c
+                          name: context
+                          expression:
+                            simple:
+                              id: simple-24c6
+                              expression: COBRANCA
+                  - toD:
+                      id: to-726c
+                      uri: https
+                      parameters:
+                        httpUri: api-parceiro.sicredi.com.br/sb/auth/openapi/token
+                        bridgeEndpoint: true
+                        httpMethod: POST
+                        logHttpActivity: false
+                  - unmarshal:
+                      id: unmarshal-a880
+                      disabled: true
+                      json:
+                        id: json-0752
             otherwise:
               id: otherwise-auth2-identifica-banco
               steps:
@@ -685,6 +741,18 @@
                           }
                 - stop:
                     id: stop-d54d
+        - unmarshal:
+            id: unmarshal-bb71
+            json:
+              id: json-5bc3
+        - setProperty:
+            id: setProperty-aed8
+            description: "Variavel: tokenBancario"
+            name: tokenBancario
+            expression:
+              simple:
+                id: simple-c618
+                expression: ${body[access_token]}
         - choice:
             id: choice-valida-recebeu-token
             disabled: false
@@ -698,7 +766,7 @@
                 steps:
                   - log:
                       id: log-afe0
-                      message: ${exchangeProperty.redisToken}
+                      message: "## PREPARANDO PARA SALVAR TOKEN NO REDIS ##"
                   - setHeader:
                       id: setHeader-e778
                       name: CamelRedis.Key
@@ -963,6 +1031,18 @@
                       uri: direct
                       parameters:
                         name: itau-cobranca
+              - id: when-579f
+                description: Banco == 748
+                expression:
+                  simple:
+                    id: simple-4d54
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 748
+                steps:
+                  - log:
+                      id: log-ba67
+                      message: ${body}
+                  - stop:
+                      id: stop-cbde
             otherwise:
               id: otherwise-cb94
 - route:
