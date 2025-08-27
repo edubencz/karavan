@@ -112,8 +112,8 @@
       steps:
         - log:
             id: log-28c0
-            description: "#####ROUTE REDIS-VALIDA-TOKEN#####"
-            message: "#####ROUTE REDIS-VALIDA-TOKEN#####"
+            description: "# ROUTE: REDIS-VALIDA-TOKEN #"
+            message: "# ROUTE: REDIS-VALIDA-TOKEN #"
         - setHeader:
             id: setHeader-redis-token-key
             name: CamelRedis.Key
@@ -124,14 +124,17 @@
         - to:
             id: to-480b
             description: ExisteToken
+            disabled: false
             uri: kamelet:redis-sink
             parameters:
               redisHost: fesc-sql-dev01.fesc.sgusuite.com.br
               redisPort: 6379
               command: EXISTS
-        - log:
-            id: log-resultado-redis
-            message: ${body}
+        - to:
+            id: to-busca-token-redis
+            uri: direct
+            parameters:
+              name: busca-dados-banco-para-token
         - choice:
             id: choice-redis-existe-token
             description: Choice:ExisteToken
@@ -183,10 +186,10 @@
               id: otherwise-78e1
               steps:
                 - to:
-                    id: to-busca-token-redis
+                    id: to-bfe7
                     uri: direct
                     parameters:
-                      name: busca-dados-banco-para-token
+                      name: busca-token-banco
                 - log:
                     id: log-d6aa
                     message: "## VOLTOU PARA REDIS VALIDA TOKEN#####"
@@ -201,9 +204,11 @@
             message: ${body}
         - convertBodyTo:
             id: convertBodyTo-string
+            disabled: true
             type: java.lang.String
         - setBody:
             id: setBody-fd1e
+            disabled: true
             expression:
               simple:
                 id: simple-cfba
@@ -325,13 +330,8 @@
                           expression: ${body}
                   - log:
                       id: log-48c2
-                      description: "### CHAMA BUSCA-TOKE-BANCO####"
-                      message: "### CHAMA BUSCA-TOKE-BANCO####"
-                  - to:
-                      id: to-944f
-                      uri: direct
-                      parameters:
-                        name: busca-token-banco
+                      description: "### FINALIZOU BUSCA DADOS BANCO ####"
+                      message: "### FINALIZOU BUSCA DADOS BANCO ####"
             otherwise:
               id: otherwise-efaf
               steps:
@@ -840,6 +840,7 @@
               ${exchangeProperty[tokenArquivoCertificado]}
         - removeHeaders:
             id: removeHeaders-e305
+            disabled: true
             pattern: remove-headers-antes-envio
         - setBody:
             id: setBody-96ff
@@ -1038,11 +1039,11 @@
                     id: simple-4d54
                     expression: ${exchangeProperty.rota[codigoBanco]} == 748
                 steps:
-                  - log:
-                      id: log-ba67
-                      message: ${body}
-                  - stop:
-                      id: stop-cbde
+                  - to:
+                      id: to-acce
+                      uri: direct
+                      parameters:
+                        name: sicredi-cobranca
             otherwise:
               id: otherwise-cb94
 - route:
@@ -1304,6 +1305,7 @@
       uri: direct
       parameters:
         name: itau-cobranca
+        synchronous: false
       steps:
         - log:
             id: log-76e2
@@ -1447,3 +1449,51 @@
             message: ${body}
         - stop:
             id: stop-42d2
+- route:
+    id: sicredi-cobranca
+    nodePrefixId: route-ecf
+    from:
+      id: from-sicredi-cobranca
+      uri: direct
+      parameters:
+        name: sicredi-cobranca
+      steps:
+        - log:
+            id: log-8ca5
+            description: "# ENVIO SICREDI # "
+            message: "# ENVIO SICREDI #  "
+        - setHeaders:
+            id: setHeaders-abe7
+            headers:
+              - id: setHeader-x-api-key
+                name: x-api-key
+                expression:
+                  simple:
+                    id: simple-fdf4
+                    expression: ${exchangeProperty.bancoClientId}
+              - id: setHeader-cooperativa
+                name: cooperativa
+                expression:
+                  simple:
+                    id: simple-38cb
+                    expression: ${exchangeProperty.bancoDadosEspecificos[cooperativa]}
+              - id: setHeader-posto
+                name: posto
+                expression:
+                  simple:
+                    id: simple-3188
+                    expression: ${exchangeProperty.bancoDadosEspecificos[posto]}
+              - id: setHeader-authorization
+                name: Authorization
+                expression:
+                  simple:
+                    id: simple-e6ac
+                    expression: Bearer ${exchangeProperty.tokenBancario}
+        - toD:
+            id: to-5df9
+            uri: https
+            parameters:
+              httpUri: api-parceiro.sicredi.com.br/sb/cobranca/boleto/v1/boletos
+              bridgeEndpoint: true
+              httpMethod: POST
+              logHttpActivity: false
