@@ -10,6 +10,7 @@ public class MontaPayload {
     private MontaBB montaBB = new MontaBB();
     private MontaSantander montaSantander = new MontaSantander();
     private MontaItau montaItau = new MontaItau();
+    private MontaSicredi montaSicredi = new MontaSicredi();
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @SuppressWarnings("unchecked")
@@ -92,6 +93,9 @@ public class MontaPayload {
         else if (codigoBanco.intValue() == 341) { // Itau
             return processarItau(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
         }
+        else if (codigoBanco.intValue() == 748) { // Sicredi
+            return processarSicredi(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+        }
         else {
             Map<String, Object> erro = new HashMap<>();
             erro.put("erro", "Banco não suportado: " + codigoBanco);
@@ -170,5 +174,29 @@ public class MontaPayload {
                 return objectMapper.writeValueAsString(erro);
         }
     }    
+
+    private String processarSicredi(String tipo, 
+                              Map<String, Object> dadosBanco,
+                              Map<String, Object> dadosBoleto,
+                              Map<String, Object> pagador,
+                              Map<String, Object> beneficiario,
+                              List<String> instrucoes,
+                              List<String> mensagens,
+                              Map<String, Object> descontos) throws Exception {
+        
+        switch (tipo.toLowerCase()) {
+            case "registrar":
+                return montaSicredi.montarEmissao(dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+            case "alterar":
+                return montaSicredi.montarAlteracao(dadosBanco, dadosBoleto, pagador, descontos);
+            case "cancelamento":
+            case "cancelar":
+                return montaSicredi.montarCancelamento(dadosBanco, dadosBoleto);
+            default:
+                Map<String, Object> erro = new HashMap<>();
+                erro.put("erro", "Tipo de operação não suportado: " + tipo);
+                return objectMapper.writeValueAsString(erro);
+        }
+    }       
 
 }

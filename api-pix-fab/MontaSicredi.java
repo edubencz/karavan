@@ -56,6 +56,7 @@ public class MontaSicredi {
         
         // Campos obrigatórios conforme documentação BB
         payload.put("tipoCobranca", "HIBRIDO");
+        payload.put("codigoBeneficiario", dadosBanco.get("convenio"));
 
         // Pagador
         Map<String, Object> pagador = new LinkedHashMap<>();
@@ -66,6 +67,8 @@ public class MontaSicredi {
         }
         pagador.put("documento", dadosPagador.get("documento"));
         pagador.put("nome", dadosPagador.get("nome"));
+        
+        Map<String, Object> enderecoPagador = getNestedMap(dadosPagador, "endereco");
         pagador.put("endereco", enderecoPagador.get("logradouro"));
         //pagador.put("bairro", enderecoPagador.get("bairro"));
         pagador.put("cidade", enderecoPagador.get("cidade"));
@@ -74,36 +77,44 @@ public class MontaSicredi {
         payload.put("pagador", pagador);
 
         payload.put("especieDocumento", "DUPLICATA_MERCANTIL_INDICACAO");
-        payload.put("nossoNumero", dadosBoleto.get("numeroNossoNumero"));
+        String nossoNumero = (String) dadosBoleto.get("numeroDocumento");
+        payload.put("nossoNumero", String.format("%09d", Long.parseLong(nossoNumero)));
         payload.put("seuNumero", dadosBoleto.get("numeroDocumento"));
         payload.put("dataVencimento", dadosBoleto.get("dataVencimento"));
 
-        if (dadosBoleto.get("quantidadeDiasProtesto").val() > 0) {
-            payload.put("diasProtestoAuto", (Number) dadosBoleto.get("quantidadeDiasProtesto"));
+        Number quantidadeDiasProtesto = (Number) dadosBoleto.get("quantidadeDiasProtesto");
+        if (quantidadeDiasProtesto != null && quantidadeDiasProtesto.doubleValue() > 0) {
+            payload.put("diasProtestoAuto", quantidadeDiasProtesto);
         }
 
-        if (dadosBoleto.get("numeroDiasLimiteRecebimento").val() > 0)
-        {
-            payload.put("validadeAposVencimento", (Number) dadosBoleto.get("numeroDiasLimiteRecebimento"));
+        Number numeroDiasLimiteRecebimento = (Number) dadosBoleto.get("numeroDiasLimiteRecebimento");
+        if (numeroDiasLimiteRecebimento != null && numeroDiasLimiteRecebimento.doubleValue() > 0) {
+            payload.put("validadeAposVencimento", numeroDiasLimiteRecebimento);
         }
 
         payload.put("valor", dadosBoleto.get("valorNominal"));
-        if (dadosDescontos.get("valorDesconto").val() > 0) {
-            payload.put("valorDesconto1", (Number) dadosDescontos.get("valorDesconto"));
-            payload.put("dataDesconto1", dadosDescontos.get("dataVencimento"));
+        Number valorDesconto = (Number) dadosDescontos.get("valorDesconto");
+        if (valorDesconto != null && valorDesconto.doubleValue() > 0) {
+            payload.put("valorDesconto1", valorDesconto);
+            payload.put("dataDesconto1", dadosBoleto.get("dataVencimento"));
         }
 
-        if (dadosBoleto.get("valorJuros").val() > 0) {
+        Number valorJuros = (Number) dadosBoleto.get("valorJuros");
+        Number percentualJuros = (Number) dadosBoleto.get("percentualJuros");
+        if (valorJuros != null && valorJuros.doubleValue() > 0) {
             payload.put("tipoJuros", "VALOR");
+            payload.put("juros", valorJuros);
         } else {
             payload.put("tipoJuros", "PERCENTUAL");
+            payload.put("juros", percentualJuros);
         }
-        payload.put("juros", (Number) dadosBoleto.get("valorJuros"));
 
-        if (dadosBoleto.get("percentualMulta").val() > 0) {
-            payload.put("multa", (Number) dadosBoleto.get("percentualMulta"));
+        Number percentualMulta = (Number) dadosBoleto.get("percentualMulta");
+        Number valorMulta = (Number) dadosBoleto.get("valorMulta");
+        if (percentualMulta != null && percentualMulta.doubleValue() > 0) {
+            payload.put("multa", percentualMulta);
         } else {
-            payload.put("multa", (Number) dadosBoleto.get("valorMulta"));
+            payload.put("multa", valorMulta);
         }
 
         //instrucoes
@@ -124,7 +135,7 @@ public class MontaSicredi {
                                  Map<String, Object> dadosDescontos) throws Exception {
         Map<String, Object> payload = new LinkedHashMap<>();
         
-        return objectMapper.writeValueAsString(payload);
+        return "";//objectMapper.writeValueAsString(payload);
     }
 
     public String montarCancelamento(Map<String, Object> dadosBanco,
