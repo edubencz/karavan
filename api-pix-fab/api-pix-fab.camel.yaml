@@ -546,16 +546,6 @@
                       message: "# ARQ. CERT. GERADO PELO GROOVY #"
             otherwise:
               id: otherwise-1b5b
-              steps:
-                - setProperty:
-                    id: setProperty-bbf4
-                    description: securityContext
-                    disabled: true
-                    name: securityContext
-                    expression:
-                      simple:
-                        id: simple-ced4
-                        expression: "\"\""
         - setHeader:
             id: setHeader-8770
             description: "Header: Content-Type"
@@ -602,29 +592,6 @@
                         simple:
                           id: simple-5a09
                           expression: ${exchangeProperty.bancoDadosEspecificos[url_oauth]}
-                  - toD:
-                      id: to-req-oauth2-bb
-                      disabled: true
-                      uri: https
-                      parameters:
-                        httpUri: oauth.hm.bb.com.br/oauth/token
-                        httpMethod: POST
-                        bridgeEndpoint: true
-                        logHttpActivity: false
-                  - unmarshal:
-                      id: unmarshal-recebe-token
-                      disabled: true
-                      json:
-                        id: json-07e8
-                  - setProperty:
-                      id: setProperty-2a48
-                      description: "Variavel: tokenBancario"
-                      disabled: true
-                      name: tokenBancario
-                      expression:
-                        simple:
-                          id: simple-0098
-                          expression: ${body[access_token]}
               - id: when-a865
                 description: Banco == 33
                 expression:
@@ -655,32 +622,6 @@
                         simple:
                           id: simple-dec0
                           expression: ${exchangeProperty.bancoDadosEspecificos[url_oauth]}
-                  - toD:
-                      id: to-c3f7
-                      disabled: true
-                      uri: >-
-                        https://trust-sandbox.api.santander.com.br/auth/oauth/v2/token
-                      parameters:
-                        httpMethod: POST
-                        bridgeEndpoint: true
-                        logHttpActivity: false
-                        sslContextParameters: "#${exchangeProperty.sslBeanId}"
-                        httpUri: >-
-                          trust-sandbox.api.santander.com.br/auth/oauth/v2/token?disableContentCompression=false
-                  - unmarshal:
-                      id: unmarshal-b606
-                      disabled: true
-                      json:
-                        id: json-a967
-                  - setProperty:
-                      id: setProperty-santander-token
-                      description: "Variavel: tokenBancario"
-                      disabled: true
-                      name: tokenBancario
-                      expression:
-                        simple:
-                          id: simple-santander-token
-                          expression: ${body[access_token]}
               - id: when-334f
                 description: Banco == 341
                 expression:
@@ -703,29 +644,6 @@
                         simple:
                           id: simple-d711
                           expression: ${exchangeProperty.bancoDadosEspecificos[url_oauth]}
-                  - toD:
-                      id: to-8221
-                      disabled: true
-                      uri: https
-                      parameters:
-                        httpUri: sandbox.devportal.itau.com.br/api/oauth/jwt
-                        bridgeEndpoint: true
-                        httpMethod: POST
-                        logHttpActivity: false
-                  - unmarshal:
-                      id: unmarshal-5ae8
-                      disabled: true
-                      json:
-                        id: json-c585
-                  - setProperty:
-                      id: setProperty-f268
-                      description: "Variavel: tokenBancario"
-                      disabled: true
-                      name: tokenBancario
-                      expression:
-                        simple:
-                          id: simple-721a
-                          expression: ${body[access_token]}
               - id: when-cd7b
                 description: Banco == 748
                 expression:
@@ -763,20 +681,6 @@
                         simple:
                           id: simple-eb50
                           expression: ${exchangeProperty.bancoDadosEspecificos[url_oauth]}
-                  - toD:
-                      id: to-726c
-                      disabled: true
-                      uri: https
-                      parameters:
-                        httpUri: api-parceiro.sicredi.com.br/sb/auth/openapi/token
-                        bridgeEndpoint: true
-                        httpMethod: POST
-                        logHttpActivity: false
-                  - unmarshal:
-                      id: unmarshal-a880
-                      disabled: true
-                      json:
-                        id: json-0752
               - id: when-ef06
                 description: Banco == 136
                 expression:
@@ -790,17 +694,25 @@
                         simple:
                           id: simple-af2e
                           expression: >-
-                            nomeUsuario=${exchangeProperty.bancoDadosEspecificos[nomeUsuario]}&senha=${exchangeProperty.bancoDadosEspecificos[senha]}
+                            {"nomeUsuario":"${exchangeProperty.bancoDadosEspecificos[nomeUsuario]}","senha":"${exchangeProperty.bancoDadosEspecificos[senha]}"}
                   - log:
                       id: log-3cb9
                       message: ${body}
-                  - setHeader:
-                      id: setHeader-7082
-                      name: apiKey
-                      expression:
-                        simple:
-                          id: simple-7af5
-                          expression: ${exchangeProperty.bancoApiKey}
+                  - setHeaders:
+                      id: setHeaders-05d4
+                      headers:
+                        - id: setHeader-c8c7
+                          name: apiKey
+                          expression:
+                            simple:
+                              id: simple-57c4
+                              expression: ${exchangeProperty.bancoAppKey}
+                        - id: setHeader-d200
+                          name: Content-Type
+                          expression:
+                            simple:
+                              id: simple-dcda
+                              expression: application/json
                   - setProperty:
                       id: setProperty-badb
                       description: bancoOAuthUrl
@@ -809,14 +721,6 @@
                         simple:
                           id: simple-7a04
                           expression: ${exchangeProperty.bancoDadosEspecificos[url_oauth]}
-                  - toD:
-                      id: to-81ca
-                      disabled: true
-                      uri: https
-                      parameters:
-                        httpUri: ${exchangeProperty.bancoOAuthUrl}
-                        bridgeEndpoint: true
-                        httpMethod: POST
             otherwise:
               id: otherwise-auth2-identifica-banco
               steps:
@@ -875,16 +779,20 @@
                             message: "# AUTH COM CERT #"
                         - toD:
                             id: to-efb5
-                            uri: https
+                            uri: >-
+                              https://trust-sandbox.api.santander.com.br/auth/oauth/v2/token
                             parameters:
-                              httpUri: >-
-                                trust-sandbox.api.santander.com.br/auth/oauth/v2/token?disableContentCompression=false
-                              bridgeEndpoint: true
                               httpMethod: POST
+                              bridgeEndpoint: true
+                              logHttpActivity: false
                               sslContextParameters: "#${exchangeProperty.sslBeanId}"
+                              httpUri: ${exchangeProperty.bancoOAuthUrl}
                   otherwise:
                     id: otherwise-e094
                     steps:
+                      - log:
+                          id: log-4a29
+                          message: ${body}
                       - log:
                           id: log-badf
                           description: "# AUTH SEM CERT #"
@@ -908,14 +816,57 @@
             id: log-0097
             description: "# COMU. OAUTH2 FINALIZADA #"
             message: "# COMU. OAUTH2 FINALIZADA #"
-        - setProperty:
-            id: setProperty-aed8
-            description: "Variavel: tokenBancario"
-            name: tokenBancario
-            expression:
-              simple:
-                id: simple-c618
-                expression: ${body[access_token]}
+        - choice:
+            id: choice-f7f2
+            when:
+              - id: when-2f6f
+                description: Existe access_token
+                expression:
+                  simple:
+                    id: simple-071a
+                    expression: >-
+                      ${body[access_token]} != null &&
+                      ${body[access_token].trim} != ''
+                steps:
+                  - setProperty:
+                      id: setProperty-bd24
+                      description: "Variavel: tokenExpiresIn"
+                      name: tokenExpiresIn
+                      expression:
+                        simple:
+                          id: simple-4596
+                          expression: ${body[expires_in]}
+                  - setProperty:
+                      id: setProperty-aed8
+                      description: "Variavel: tokenBancario"
+                      name: tokenBancario
+                      expression:
+                        simple:
+                          id: simple-c618
+                          expression: ${body[access_token]}
+            otherwise:
+              id: otherwise-52dd
+              steps:
+                - setProperty:
+                    id: setProperty-116d
+                    description: "Unicredi: tokenBancario"
+                    name: tokenBancario
+                    expression:
+                      simple:
+                        id: simple-9b58
+                        expression: ${body[accessToken]}
+                - setProperty:
+                    id: setProperty-dc60
+                    description: "Unicredi: tokenExpiresIn"
+                    name: tokenExpiresIn
+                    expression:
+                      simple:
+                        id: simple-75c0
+                        expression: ${body[tokenExpirationTime]}
+        - log:
+            id: log-064f
+            description: "# ALIM. TOKENBANCARIO #"
+            message: "# ALIM. TOKENBANCARIO #"
         - choice:
             id: choice-valida-recebeu-token
             disabled: false
@@ -944,7 +895,7 @@
                       expression:
                         simple:
                           id: simple-934c
-                          expression: ${body[expires_in]}
+                          expression: ${exchangeProperty.tokenExpiresIn}
                   - setBody:
                       id: setBody-1cd4
                       disabled: false
@@ -952,7 +903,13 @@
                         simple:
                           id: simple-ecb2
                           expression: >-
-                            {"Senha":"${exchangeProperty.bancoSenhaCertificado}","token":"${exchangeProperty.tokenBancario}","arquivo":"${exchangeProperty.bancoArquivoCertificado}"}
+                            {"Senha":"${exchangeProperty.bancoSenhaCertificado}",
+
+                            "token":"${exchangeProperty.tokenBancario}",
+
+                            "arquivo":"${exchangeProperty.bancoArquivoCertificado}"
+
+                            }
                   - to:
                       id: to-redis-set-token
                       description: CriaToken
