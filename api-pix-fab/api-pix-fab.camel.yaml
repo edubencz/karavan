@@ -134,7 +134,7 @@
             id: to-busca-token-redis
             uri: direct
             parameters:
-              name: busca-dados-banco-para-token
+              name: busca-dados-bancarios
         - choice:
             id: choice-redis-existe-token
             description: Choice:ExisteToken
@@ -197,11 +197,11 @@
             id: to-8cfe
             uri: direct
             parameters:
-              name: route-valida-banco
+              name: route-payload-banco
         - log:
             id: log-f58b
-            description: "LOG: FIM DO PROCESSO"
-            message: ${body}
+            description: "# AQUI RECEBE O RETORNO FINAL DO BANCOS #"
+            message: "# AQUI RECEBE O RETORNO FINAL DO BANCOS #"
         - convertBodyTo:
             id: convertBodyTo-string
             disabled: true
@@ -215,17 +215,17 @@
                 expression: ${body}
 - route:
     id: busca-dados-banco-para-token
-    description: busca-dados-banco-para-token
+    description: busca-dados-bancarios
     from:
-      id: from-redis-valida-token
+      id: from-redis-valida-token2
       uri: direct
       parameters:
-        name: busca-dados-banco-para-token
+        name: busca-dados-bancarios
       steps:
         - log:
             id: log-89a1
-            description: "###ROUTE-DADOS-BANCO-PARA-TOKEN###"
-            message: "###ROUTE-DADOS-BANCO-PARA-TOKEN###"
+            description: "# ROUTE-DADOS-BANCARIOS #"
+            message: "# ROUTE-DADOS-BANCARIOS #"
         - setHeader:
             id: setHeader-9267
             name: CamelRedis.Key
@@ -265,8 +265,8 @@
                         command: GET
                   - log:
                       id: log-62ea
-                      description: "### RETORNO COM DADOS DO BANCO PARA TOKEN####"
-                      message: "### RETORNO COM DADOS DO BANCO PARA TOKEN####"
+                      description: "# RRECEBEU DADOS DO BANCO #"
+                      message: "# RRECEBEU DADOS DO BANCO #"
                   - unmarshal:
                       id: unmarshal-busca-chaves
                       json:
@@ -330,14 +330,15 @@
                           expression: ${body}
                   - log:
                       id: log-48c2
-                      description: "### FINALIZOU BUSCA DADOS BANCO ####"
-                      message: "### FINALIZOU BUSCA DADOS BANCO ####"
+                      description: "# FINALIZOU VARIAVEIS DADOS BANCO #"
+                      message: "# FINALIZOU VARIAVEIS DADOS BANCO #"
             otherwise:
               id: otherwise-efaf
               steps:
                 - log:
                     id: log-6c3f
-                    message: "### ERRO CHAVE NAO ENCONTRADA###"
+                    description: "# DADOS BANCO NÃO ENCONTRADO #"
+                    message: "# DADOS BANCO NÃO ENCONTRADO #"
                 - setHeader:
                     id: setHeader-nao-existe-banco
                     name: CamelHttpResponseCode
@@ -369,8 +370,8 @@
       steps:
         - log:
             id: log-ab81
-            description: "### ROUTE-BUSCA-TOKEN-BANCO"
-            message: "### ROUTE-BUSCA-TOKEN-BANCO: ${exchangeProperty.bancoCertificado}"
+            description: "# ROUTE-BUSCA-TOKEN-BANCO #"
+            message: "# ROUTE-BUSCA-TOKEN-BANCO #"
         - choice:
             id: choice-71cc
             description: Geração de Certificado
@@ -381,9 +382,13 @@
                   simple:
                     id: simple-d539
                     expression: >-
-                      ${exchangeProperty.bancoCertificado != null &&
-                      exchangeProperty.bancoCertificado.trim() != ""}
+                      ${exchangeProperty.bancoCertificado} != null &&
+                      ${exchangeProperty.bancoCertificado.trim} != ''
                 steps:
+                  - log:
+                      id: log-f18d
+                      description: "# GERA CERTIFICADO #"
+                      message: "# GERA CERTIFICADO #"
                   - setProperty:
                       id: setProperty-a5e2
                       description: "Certificado: sslBeanId"
@@ -529,7 +534,8 @@
                             return id
                   - log:
                       id: log-5bcb
-                      message: "### PASSOU PELA GERACAO DE CERTIFICADO ####"
+                      description: "# ARQ. CERT. GERADO PELO GROOVY #"
+                      message: "# ARQ. CERT. GERADO PELO GROOVY #"
             otherwise:
               id: otherwise-1b5b
         - setHeader:
@@ -542,8 +548,8 @@
                 expression: application/x-www-form-urlencoded
         - log:
             id: log-f2fa
-            description: "## VALIDA BANCO PARA SOLIC TOKEN ###"
-            message: "## VALIDA BANCO PARA SOLIC TOKEN ###"
+            description: "# VALIDA BANCO PARA AUTH2 #"
+            message: "# VALIDA BANCO PARA AUTH2 #"
         - choice:
             id: choice-auth2-identifica-banco
             when:
@@ -745,6 +751,10 @@
             id: unmarshal-bb71
             json:
               id: json-5bc3
+        - log:
+            id: log-0097
+            description: "# COMU. OAUTH2 FINALIZADA #"
+            message: "# COMU. OAUTH2 FINALIZADA #"
         - setProperty:
             id: setProperty-aed8
             description: "Variavel: tokenBancario"
@@ -766,7 +776,8 @@
                 steps:
                   - log:
                       id: log-afe0
-                      message: "## PREPARANDO PARA SALVAR TOKEN NO REDIS ##"
+                      description: "# TOKEN RECEBIDO #"
+                      message: "# TOKEN RECEBIDO #"
                   - setHeader:
                       id: setHeader-e778
                       name: CamelRedis.Key
@@ -781,14 +792,6 @@
                         simple:
                           id: simple-934c
                           expression: ${body[expires_in]}
-                  - setHeader:
-                      id: setHeader-9175
-                      disabled: true
-                      name: CamelRedis.Value
-                      expression:
-                        simple:
-                          id: simple-32fe
-                          expression: ${exchangeProperty.tokenBancario}
                   - setBody:
                       id: setBody-1cd4
                       disabled: false
@@ -797,10 +800,6 @@
                           id: simple-ecb2
                           expression: >-
                             {"Senha":"${exchangeProperty.bancoSenhaCertificado}","token":"${exchangeProperty.tokenBancario}","arquivo":"${exchangeProperty.bancoArquivoCertificado}"}
-                  - log:
-                      id: log-2cee
-                      description: "##SALVANDO DADOS TOKEN REDIS ###"
-                      message: "##SALVANDO DADOS TOKEN REDIS ###"
                   - to:
                       id: to-redis-set-token
                       description: CriaToken
@@ -811,7 +810,8 @@
                         command: SETEX
                   - log:
                       id: log-4a23
-                      message: "####TOKEN-SALVO-BANCO#####"
+                      description: "# TOKEN SALVO NO REDIS #"
+                      message: "# TOKEN SALVO NO REDIS #"
             otherwise:
               id: otherwise-5ab6
               steps:
@@ -824,24 +824,18 @@
                 - stop:
                     id: stop-678a
 - route:
-    id: route-valida-banco
-    nodePrefixId: route-valida-banco
+    id: route-payload-banco
+    nodePrefixId: route-payload-banco
     from:
       id: from-redis-valida-token
       uri: direct
       parameters:
-        name: route-valida-banco
+        name: route-payload-banco
       steps:
         - log:
             id: log-05db
-            description: "#### ROUTE-VALIDA-BANCO: "
-            message: >-
-              #### ROUTE-VALIDA-BANCO:
-              ${exchangeProperty[tokenArquivoCertificado]}
-        - removeHeaders:
-            id: removeHeaders-e305
-            disabled: true
-            pattern: remove-headers-antes-envio
+            description: "# ROUTE-PAYLOAD-BANCO #"
+            message: "# ROUTE-PAYLOAD-BANCO #"
         - setBody:
             id: setBody-96ff
             expression:
@@ -874,9 +868,9 @@
                 steps:
                   - log:
                       id: log-4635
-                      description: "## ARQUIVO ANEXAR ENVIO###"
+                      description: "# BUSCA ARQ CERT. GROOVY #"
                       message: >-
-                        ## ARQUIVO ANEXAR ENVIO:
+                        # BUSCA ARQ CERT. GROOVY:
                         ${exchangeProperty.tokenArquivoCertificado}
                   - setProperty:
                       id: setProperty-c337
@@ -1057,10 +1051,8 @@
       steps:
         - log:
             id: log-4a6b
-            message: "####ROUTE-BB-COBRANCA#####"
-        - log:
-            id: log-aa16
-            message: "TOKEN: ${exchangeProperty.tokenBancario}"
+            description: "# ROUTE-BB-COBRANCA #"
+            message: "# ROUTE-BB-COBRANCA #"
         - setHeader:
             id: setHeader-content-type-bb-cobranca
             name: Content-Type
@@ -1091,11 +1083,8 @@
                   - stop:
                       id: stop-erro
             steps:
-              - log:
-                  id: log-5e1d
-                  message: ${body}
               - setHeader:
-                  id: setHeader-authorization
+                  id: setHeader-authorization-BB
                   name: Authorization
                   expression:
                     simple:
@@ -1108,7 +1097,7 @@
                   expression:
                     simple:
                       id: simple-gwkey
-                      expression: 143851dc56ae48a794078dbe3c964d42
+                      expression: ${exchangeProperty.bancoAppKey}
               - log:
                   id: log-c7e4
                   description: "## APPKEY BB ##"
@@ -1124,7 +1113,8 @@
                       steps:
                         - log:
                             id: log-aefa
-                            message: "### ENVIANDO-INCLUSAO-COBRANCA-BB#####"
+                            description: "# BB-REGISTRO-BOLETO #"
+                            message: "# BB-REGISTRO-BOLETO #"
                         - toD:
                             id: toD-bb-cobranca
                             uri: https://api.hm.bb.com.br/cobrancas/v2/boletos
@@ -1135,6 +1125,7 @@
                               httpUri: https://api.hm.bb.com.br/cobrancas/v2/boletos
                         - setBody:
                             id: setBody-bb-aceito
+                            disabled: true
                             expression:
                               simple:
                                 id: simple-bb-aceito
@@ -1142,6 +1133,7 @@
                         - log:
                             id: log-response-success-inclusao
                             description: "## RESPOSTA BB ###"
+                            disabled: true
                             message: "Resposta BB: ${body}"
                             loggingLevel: INFO
                             logName: bb-cobranca
@@ -1162,6 +1154,7 @@
                               bridgeEndpoint: false
                         - setBody:
                             id: setBody-bb-alteracao
+                            disabled: true
                             expression:
                               simple:
                                 id: simple-bb-alteracao
@@ -1169,6 +1162,7 @@
                         - log:
                             id: log-response-success-alteracao
                             description: "## RESPOSTA BB ###"
+                            disabled: true
                             message: "Resposta BB: ${body}"
                             loggingLevel: INFO
                             logName: bb-cobranca
@@ -1200,6 +1194,10 @@
       parameters:
         name: santander-cobranca
       steps:
+        - log:
+            id: log-4eef
+            description: "# ROUTE-SANTANDER-COBRANCA #"
+            message: "# ROUTE-SANTANDER-COBRANCA #"
         - doTry:
             id: doTry-ee75
             doCatch:
@@ -1215,8 +1213,8 @@
             steps:
               - log:
                   id: log-14bd
-                  description: "### BUSCA WORKSPACE ###"
-                  message: "### BUSCA WORKSPACE ###"
+                  description: "# SANT. BUSCA WORKSPACE #"
+                  message: "# SANT. BUSCA WORKSPACE #"
               - setHeader:
                   id: setHeader-5e38
                   name: CamelRedis.Key
@@ -1254,8 +1252,8 @@
                         trust-sandbox.api.santander.com.br/collection_bill_management/v2/workspaces/${exchangeProperty[santanderWorkspace]}/bank_slips
         - log:
             id: log-018e
-            description: "##ENVIO AO SANTANDER###"
-            message: "##ENVIO AO SANTANDER###"
+            description: "# ENVIO AO SANTANDER #"
+            message: "# ENVIO AO SANTANDER #"
         - setHeaders:
             id: setHeaders-90f8
             headers:
@@ -1264,28 +1262,20 @@
                 expression:
                   simple:
                     id: simple-847a
-                    expression: ymANIxoAnezEd9QAM9FLA4AvQLczOAxj
+                    expression: ${exchangeProperty.bancoClientId}
               - id: setHeader-bcfe
                 name: Authorization
                 expression:
                   simple:
                     id: simple-674c
                     expression: Bearer ${exchangeProperty[tokenBancario]}
-        - log:
-            id: log-5f7b
-            description: SANTANDER - X-Application-Key
-            message: "X-Application-Key: ${exchangeProperty[bancoClientId]}"
         - setBody:
             id: setBody-6cf5
+            disabled: false
             expression:
               simple:
                 id: simple-1919
                 expression: ${exchangeProperty[payloadEnvio]}
-        - log:
-            id: log-8b2a
-            description: "### BODY PARA SANTANDER"
-            disabled: false
-            message: "### BODY PARA SANTANDER: ${body}"
         - toD:
             id: to-69a2
             uri: https
@@ -1295,8 +1285,6 @@
               logHttpActivity: false
               httpUri: ${exchangeProperty[santanderURL]}
               sslContextParameters: "#${exchangeProperty.sslBeanId}"
-        - stop:
-            id: stop-b8e3
 - route:
     id: itau-cobranca
     nodePrefixId: route-ecf
@@ -1309,8 +1297,8 @@
       steps:
         - log:
             id: log-76e2
-            description: "### ITAU COBRANCA ###"
-            message: "### ITAU COBRANCA ###"
+            description: "# ROUTE ITAU COBRANCA #"
+            message: "# ROUTE ITAU COBRANCA #"
         - removeHeader:
             id: removeHeader-f09d
             name: itau-RemoveHeade
@@ -1444,11 +1432,6 @@
               httpMethod: POST
               bridgeEndpoint: true
               logHttpActivity: false
-        - log:
-            id: log-29fe
-            message: ${body}
-        - stop:
-            id: stop-42d2
 - route:
     id: sicredi-cobranca
     nodePrefixId: route-ecf
@@ -1460,8 +1443,8 @@
       steps:
         - log:
             id: log-8ca5
-            description: "# ENVIO SICREDI # "
-            message: "# ENVIO SICREDI #  "
+            description: "# ROUTE SICREDI COBRANCA #"
+            message: "# ROUTE SICREDI COBRANCA #"
         - setHeaders:
             id: setHeaders-abe7
             headers:
@@ -1489,11 +1472,38 @@
                   simple:
                     id: simple-e6ac
                     expression: Bearer ${exchangeProperty.tokenBancario}
-        - toD:
-            id: to-5df9
-            uri: https
-            parameters:
-              httpUri: api-parceiro.sicredi.com.br/sb/cobranca/boleto/v1/boletos
-              bridgeEndpoint: true
-              httpMethod: POST
-              logHttpActivity: false
+        - setBody:
+            id: setBody-be6b
+            expression:
+              simple:
+                id: simple-a7e6
+                expression: ${exchangeProperty[payloadEnvio]}
+        - doTry:
+            id: doTry-225c
+            doCatch:
+              - id: doCatch-4c66
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setHeader:
+                      id: setHeader-592d
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-5624
+                          expression: ${header.CamelHttpResponseCode}
+                  - setBody:
+                      id: setBody-ab12
+                      expression:
+                        simple:
+                          id: simple-9577
+                          expression: ${exception.getResponseBody()}
+            steps:
+              - toD:
+                  id: to-5df9
+                  uri: https
+                  parameters:
+                    httpUri: api-parceiro.sicredi.com.br/sb/cobranca/boleto/v1/boletos
+                    bridgeEndpoint: true
+                    httpMethod: POST
+                    logHttpActivity: false
