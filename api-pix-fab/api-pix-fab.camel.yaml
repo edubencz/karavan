@@ -532,12 +532,30 @@
                             registrado com ID: " + id)
 
                             return id
+                  - setProperty:
+                      id: setProperty-346d
+                      description: securityContext
+                      name: securityContext
+                      expression:
+                        simple:
+                          id: simple-4d2a
+                          expression: ${exchangeProperty.sslBeanId}
                   - log:
                       id: log-5bcb
                       description: "# ARQ. CERT. GERADO PELO GROOVY #"
                       message: "# ARQ. CERT. GERADO PELO GROOVY #"
             otherwise:
               id: otherwise-1b5b
+              steps:
+                - setProperty:
+                    id: setProperty-bbf4
+                    description: securityContext
+                    disabled: true
+                    name: securityContext
+                    expression:
+                      simple:
+                        id: simple-ced4
+                        expression: "\"\""
         - setHeader:
             id: setHeader-8770
             description: "Header: Content-Type"
@@ -576,8 +594,17 @@
                         simple:
                           id: simple-e6a0
                           expression: Basic ${exchangeProperty.bancoClientSecret}
+                  - setProperty:
+                      id: setProperty-d5ea
+                      description: bancoOAuthUrl
+                      name: bancoOAuthUrl
+                      expression:
+                        simple:
+                          id: simple-5a09
+                          expression: ${exchangeProperty.bancoDadosEspecificos[url_oauth]}
                   - toD:
                       id: to-req-oauth2-bb
+                      disabled: true
                       uri: https
                       parameters:
                         httpUri: oauth.hm.bb.com.br/oauth/token
@@ -620,8 +647,17 @@
                         simple:
                           id: simple-santander-certificate
                           expression: trust-sandbox.api.santander.com.br
+                  - setProperty:
+                      id: setProperty-237e
+                      description: bancoOAuthUrl
+                      name: bancoOAuthUrl
+                      expression:
+                        simple:
+                          id: simple-dec0
+                          expression: ${exchangeProperty.bancoDadosEspecificos[url_oauth]}
                   - toD:
                       id: to-c3f7
+                      disabled: true
                       uri: >-
                         https://trust-sandbox.api.santander.com.br/auth/oauth/v2/token
                       parameters:
@@ -659,8 +695,17 @@
                           id: simple-2942
                           expression: >-
                             grant_type=client_credentials&client_secret=${exchangeProperty[bancoClientSecret]}&client_id=${exchangeProperty[bancoClientId]}
+                  - setProperty:
+                      id: setProperty-7fde
+                      description: bancoOAuthUrl
+                      name: bancoOAuthUrl
+                      expression:
+                        simple:
+                          id: simple-d711
+                          expression: ${exchangeProperty.bancoDadosEspecificos[url_oauth]}
                   - toD:
                       id: to-8221
+                      disabled: true
                       uri: https
                       parameters:
                         httpUri: sandbox.devportal.itau.com.br/api/oauth/jwt
@@ -710,8 +755,17 @@
                             simple:
                               id: simple-24c6
                               expression: COBRANCA
+                  - setProperty:
+                      id: setProperty-0b29
+                      description: bancoOAuthUrl
+                      name: bancoOAuthUrl
+                      expression:
+                        simple:
+                          id: simple-eb50
+                          expression: ${exchangeProperty.bancoDadosEspecificos[url_oauth]}
                   - toD:
                       id: to-726c
+                      disabled: true
                       uri: https
                       parameters:
                         httpUri: api-parceiro.sicredi.com.br/sb/auth/openapi/token
@@ -723,6 +777,46 @@
                       disabled: true
                       json:
                         id: json-0752
+              - id: when-ef06
+                description: Banco == 136
+                expression:
+                  simple:
+                    id: simple-5985
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 136
+                steps:
+                  - setBody:
+                      id: setBody-f021
+                      expression:
+                        simple:
+                          id: simple-af2e
+                          expression: >-
+                            nomeUsuario=${exchangeProperty.bancoDadosEspecificos[nomeUsuario]}&senha=${exchangeProperty.bancoDadosEspecificos[senha]}
+                  - log:
+                      id: log-3cb9
+                      message: ${body}
+                  - setHeader:
+                      id: setHeader-7082
+                      name: apiKey
+                      expression:
+                        simple:
+                          id: simple-7af5
+                          expression: ${exchangeProperty.bancoApiKey}
+                  - setProperty:
+                      id: setProperty-badb
+                      description: bancoOAuthUrl
+                      name: bancoOAuthUrl
+                      expression:
+                        simple:
+                          id: simple-7a04
+                          expression: ${exchangeProperty.bancoDadosEspecificos[url_oauth]}
+                  - toD:
+                      id: to-81ca
+                      disabled: true
+                      uri: https
+                      parameters:
+                        httpUri: ${exchangeProperty.bancoOAuthUrl}
+                        bridgeEndpoint: true
+                        httpMethod: POST
             otherwise:
               id: otherwise-auth2-identifica-banco
               steps:
@@ -747,6 +841,65 @@
                           }
                 - stop:
                     id: stop-d54d
+        - doTry:
+            id: doTry-e0c4
+            doCatch:
+              - id: doCatch-d0a0
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setBody:
+                      id: setBody-36aa
+                      expression:
+                        simple:
+                          id: simple-498b
+                          expression: ${exception.getResponseBody()}
+                  - stop:
+                      id: stop-cebc
+            steps:
+              - choice:
+                  id: choice-5587
+                  when:
+                    - id: when-6491
+                      description: securityContext != ""
+                      expression:
+                        simple:
+                          id: simple-cd38
+                          expression: >-
+                            ${exchangeProperty.securityContext} != null &&
+                            ${exchangeProperty.securityContext.trim} != ''
+                      steps:
+                        - log:
+                            id: log-4fa5
+                            description: "# AUTH COM CERT #"
+                            message: "# AUTH COM CERT #"
+                        - toD:
+                            id: to-efb5
+                            uri: https
+                            parameters:
+                              httpUri: >-
+                                trust-sandbox.api.santander.com.br/auth/oauth/v2/token?disableContentCompression=false
+                              bridgeEndpoint: true
+                              httpMethod: POST
+                              sslContextParameters: "#${exchangeProperty.sslBeanId}"
+                  otherwise:
+                    id: otherwise-e094
+                    steps:
+                      - log:
+                          id: log-badf
+                          description: "# AUTH SEM CERT #"
+                          message: "# AUTH SEM CERT #"
+                      - toD:
+                          id: to-2051
+                          uri: https
+                          parameters:
+                            httpUri: ${exchangeProperty.bancoOAuthUrl}
+                            bridgeEndpoint: true
+                            httpMethod: POST
+              - log:
+                  id: log-6720
+                  description: "# TOKEN RECEBIDO #"
+                  message: "# TOKEN RECEBIDO #"
         - unmarshal:
             id: unmarshal-bb71
             json:
