@@ -788,9 +788,6 @@
                     id: otherwise-e094
                     steps:
                       - log:
-                          id: log-4a29
-                          message: ${body}
-                      - log:
                           id: log-badf
                           description: "# AUTH SEM CERT #"
                           message: "# AUTH SEM CERT #"
