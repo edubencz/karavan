@@ -1276,15 +1276,29 @@
               simple:
                 id: simple-1919
                 expression: ${exchangeProperty[payloadEnvio]}
-        - toD:
-            id: to-69a2
-            uri: https
-            parameters:
-              bridgeEndpoint: true
-              httpMethod: POST
-              logHttpActivity: false
-              httpUri: ${exchangeProperty[santanderURL]}
-              sslContextParameters: "#${exchangeProperty.sslBeanId}"
+        - doTry:
+            id: doTry-251b
+            doCatch:
+              - id: doCatch-bead
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setBody:
+                      id: setBody-acdb
+                      expression:
+                        simple:
+                          id: simple-6c63
+                          expression: ${exception.getResponseBody()}
+            steps:
+              - toD:
+                  id: to-69a2
+                  uri: https
+                  parameters:
+                    bridgeEndpoint: true
+                    httpMethod: POST
+                    logHttpActivity: false
+                    httpUri: ${exchangeProperty[santanderURL]}
+                    sslContextParameters: "#${exchangeProperty.sslBeanId}"
 - route:
     id: itau-cobranca
     nodePrefixId: route-ecf
@@ -1299,12 +1313,9 @@
             id: log-76e2
             description: "# ROUTE ITAU COBRANCA #"
             message: "# ROUTE ITAU COBRANCA #"
-        - removeHeader:
-            id: removeHeader-f09d
-            name: itau-RemoveHeade
         - setHeader:
             id: setHeader-a335
-            disabled: true
+            disabled: false
             name: x-itau-apikey
             expression:
               simple:
@@ -1423,15 +1434,29 @@
                       id_location: 789
                     }
                   }
-        - toD:
-            id: to-46fd
-            uri: https
-            parameters:
-              httpUri: >-
-                sandbox.devportal.itau.com.br/itau-ep9-gtw-pix-recebimentos-conciliacoes-v2-ext/v2/boletos_pix
-              httpMethod: POST
-              bridgeEndpoint: true
-              logHttpActivity: false
+        - doTry:
+            id: doTry-644e
+            doCatch:
+              - id: doCatch-9531
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setBody:
+                      id: setBody-5f8c
+                      expression:
+                        simple:
+                          id: simple-9b0b
+                          expression: ${exception.getResponseBody()}
+            steps:
+              - toD:
+                  id: to-46fd
+                  uri: https
+                  parameters:
+                    httpUri: >-
+                      sandbox.devportal.itau.com.br/itau-ep9-gtw-pix-recebimentos-conciliacoes-v2-ext/v2/boletos_pix
+                    httpMethod: POST
+                    bridgeEndpoint: true
+                    logHttpActivity: false
 - route:
     id: sicredi-cobranca
     nodePrefixId: route-ecf
@@ -1485,13 +1510,6 @@
                 exception:
                   - java.lang.Exception
                 steps:
-                  - setHeader:
-                      id: setHeader-592d
-                      name: CamelHttpResponseCode
-                      expression:
-                        simple:
-                          id: simple-5624
-                          expression: ${header.CamelHttpResponseCode}
                   - setBody:
                       id: setBody-ab12
                       expression:
