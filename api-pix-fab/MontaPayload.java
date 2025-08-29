@@ -11,7 +11,7 @@ public class MontaPayload {
     private MontaSantander montaSantander = new MontaSantander();
     private MontaItau montaItau = new MontaItau();
     private MontaSicredi montaSicredi = new MontaSicredi();
-    private MontaUnicredi montaUnicredi = new MontaUnicredi();
+    private MontaUnicred montaUnicred = new MontaUnicred();
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @SuppressWarnings("unchecked")
@@ -97,8 +97,8 @@ public class MontaPayload {
         else if (codigoBanco.intValue() == 748) { // Sicredi
             return processarSicredi(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
         }
-        else if (codigoBanco.intValue() == 136) { // Unicredi
-            return processarUnicredi(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+        else if (codigoBanco.intValue() == 136) { // Unicred
+            return processarUnicred(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
         }
         else {
             Map<String, Object> erro = new HashMap<>();
@@ -203,7 +203,7 @@ public class MontaPayload {
         }
     }  
 
-    private String processarUnicredi(String tipo, 
+    private String processarUnicred(String tipo, 
                               Map<String, Object> dadosBanco,
                               Map<String, Object> dadosBoleto,
                               Map<String, Object> pagador,
@@ -214,12 +214,12 @@ public class MontaPayload {
         
         switch (tipo.toLowerCase()) {
             case "registrar":
-                return montaUnicredi.montarEmissao(dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+                return montaUnicred.montarEmissao(dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
             case "alterar":
-                return montaUnicredi.montarAlteracao(dadosBanco, dadosBoleto, pagador, descontos);
+                return montaUnicred.montarAlteracao(dadosBanco, dadosBoleto, pagador, descontos);
             case "cancelamento":
             case "cancelar":
-                return montaUnicredi.montarCancelamento(dadosBanco, dadosBoleto);
+                return montaUnicred.montarCancelamento(dadosBanco, dadosBoleto);
             default:
                 Map<String, Object> erro = new HashMap<>();
                 erro.put("erro", "Tipo de operação não suportado: " + tipo);

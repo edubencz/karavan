@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-@BindToRegistry("montaUnicredi")
-public class MontaUnicredi {
+@BindToRegistry("montaUnicred")
+public class MontaUnicred {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
