@@ -202,17 +202,6 @@
             id: log-f58b
             description: "# AQUI RECEBE O RETORNO FINAL DO BANCOS #"
             message: "# AQUI RECEBE O RETORNO FINAL DO BANCOS #"
-        - convertBodyTo:
-            id: convertBodyTo-string
-            disabled: true
-            type: java.lang.String
-        - setBody:
-            id: setBody-fd1e
-            disabled: true
-            expression:
-              simple:
-                id: simple-cfba
-                expression: ${body}
 - route:
     id: busca-dados-banco-para-token
     description: busca-dados-bancarios
@@ -843,7 +832,7 @@
               steps:
                 - setProperty:
                     id: setProperty-116d
-                    description: "Unicredi: tokenBancario"
+                    description: "Unicred: tokenBancario"
                     name: tokenBancario
                     expression:
                       simple:
@@ -851,7 +840,7 @@
                         expression: ${body[accessToken]}
                 - setProperty:
                     id: setProperty-dc60
-                    description: "Unicredi: tokenExpiresIn"
+                    description: "Unicred: tokenExpiresIn"
                     name: tokenExpiresIn
                     expression:
                       simple:
@@ -1153,7 +1142,7 @@
                       id: to-068a
                       uri: direct
                       parameters:
-                        name: unicredi-cobranca
+                        name: Unicred-cobranca
             otherwise:
               id: otherwise-cb94
 - route:
@@ -1642,18 +1631,18 @@
                     httpMethod: POST
                     logHttpActivity: false
 - route:
-    id: unicredi-cobranca
+    id: Unicred-cobranca
     nodePrefixId: route-ecf
     from:
-      id: from-unicredi-cobranca
+      id: from-Unicred-cobranca
       uri: direct
       parameters:
-        name: unicredi-cobranca
+        name: Unicred-cobranca
       steps:
         - log:
             id: log-920c
-            description: "# ROUTE UNICREDI COBRANCA #"
-            message: "# ROUTE UNICREDI COBRANCA #"
+            description: "# ROUTE Unicred COBRANCA #"
+            message: "# ROUTE Unicred COBRANCA #"
         - doTry:
             id: doTry-6908
             doCatch:
@@ -1715,7 +1704,7 @@
                     httpUri: ${exchangeProperty.urlRegistroBoleto}
               - setProperty:
                   id: setProperty-2578
-                  description: "Unicredi: idBoleto"
+                  description: "Unicred: idBoleto"
                   name: idBoleto
                   expression:
                     simple:
@@ -1746,7 +1735,7 @@
                             expression: "5000"
                     - setProperty:
                         id: setProperty-66ff
-                        description: "Unicredi: urlBuscaBoleto"
+                        description: "Unicred: urlBuscaBoleto"
                         name: urlBuscaBoleto
                         expression:
                           simple:
