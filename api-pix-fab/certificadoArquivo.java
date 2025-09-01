@@ -104,32 +104,65 @@ public class certificadoArquivo {
     }
 
     /**
-     * Busca o arquivo de certificado com base nas propriedades do Exchange.
+     * Busca o arquivo de certificado, valida sua existência e configura o SSLContextParameters.
      * 
      * @param exchange O Exchange Camel contendo as propriedades necessárias
-     * @return O caminho do arquivo de certificado
+     * @return O ID do SSLContextParameters registrado no contexto Camel
      * @throws Exception Se o arquivo não for encontrado ou ocorrer algum erro
      */
     public String buscarArquivoCertificado(Exchange exchange) throws Exception {
-        // Obtém o caminho do arquivo de certificado da propriedade do exchange
-        String certificadoPath = (String) exchange.getProperty("bancoArquivoCertificado");
+        // Recebe o nome do arquivo do certificado já existente e a senha
+        String arquivo = (String) exchange.getProperty("bancoArquivoCertificado", String.class);
+        String senha = (String) exchange.getProperty("bancoSenhaCertificado", String.class);
 
-        System.out.println("[DEBUG] Buscando arquivo de certificado no caminho: " + certificadoPath);
+        System.out.println("[DEBUG] Iniciando processamento de certificado por nome de arquivo");
+        System.out.println("[DEBUG] Nome do arquivo recebido: " + arquivo);
+        System.out.println("[DEBUG] Senha recebida: " + (senha != null ? "***" : "null"));
 
-        // Verifica se o caminho está definido
-        if (certificadoPath == null || certificadoPath.isEmpty()) {
-            System.out.println("[ERROR] Caminho do certificado não definido no Exchange");
-            throw new RuntimeException("Caminho do certificado não definido no Exchange");
+        if (arquivo == null || senha == null) {
+            System.out.println("[ERROR] Nome do arquivo ou senha ausentes");
+            throw new RuntimeException("Nome do arquivo ou senha ausentes");
         }
 
-        // Verifica se o arquivo existe
-        File certFile = new File(certificadoPath);
-        if (!certFile.exists() || !certFile.isFile()) {
-            System.out.println("[ERROR] Arquivo de certificado não encontrado: " + certificadoPath);
-            throw new RuntimeException("Arquivo de certificado não encontrado: " + certificadoPath);
+        File certFile = new File(arquivo);
+        if (!certFile.exists()) {
+            System.out.println("[ERROR] Arquivo de certificado não encontrado: " + arquivo);
+            throw new RuntimeException("Arquivo de certificado não encontrado: " + arquivo);
         }
 
-        System.out.println("[DEBUG] Arquivo de certificado encontrado: " + certificadoPath);
-        return certificadoPath;
+        System.out.println("[DEBUG] Arquivo existe? " + certFile.exists());
+        System.out.println("[DEBUG] Tamanho do arquivo: " + certFile.length() + " bytes");
+        System.out.println("[DEBUG] Permissões do arquivo: " + certFile.canRead() + ", " + certFile.canWrite());
+
+        // Opcional: ler os primeiros bytes para garantir que não está corrompido
+        byte[] headBytes = Files.readAllBytes(Paths.get(arquivo));
+        byte[] firstBytes = new byte[Math.min(16, headBytes.length)];
+        System.arraycopy(headBytes, 0, firstBytes, 0, firstBytes.length);
+        String hexBytes = IntStream.range(0, firstBytes.length)
+            .mapToObj(i -> String.format("%02X", firstBytes[i]))
+            .collect(Collectors.joining(" "));
+        System.out.println("[DEBUG] Primeiros bytes do arquivo: " + hexBytes);
+
+        // Criar e configurar SSL Context Parameters para o Camel
+        KeyStoreParameters kp = new KeyStoreParameters();
+        kp.setResource("file:" + arquivo);
+        kp.setType("PKCS12");
+        kp.setPassword(senha);
+        System.out.println("[DEBUG] KeyStoreParameters configurado: resource=file:" + arquivo + ", type=PKCS12, password=***");
+
+        KeyManagersParameters km = new KeyManagersParameters();
+        km.setKeyStore(kp);
+        km.setKeyPassword(senha);
+        System.out.println("[DEBUG] KeyManagersParameters configurado");
+
+        SSLContextParameters ssl = new SSLContextParameters();
+        ssl.setKeyManagers(km);
+        System.out.println("[DEBUG] SSLContextParameters criado");
+
+        String id = "camel-ssl-" + exchange.getExchangeId();
+        exchange.getContext().getRegistry().bind(id, ssl);
+        System.out.println("[DEBUG] SSL Context configurado e registrado com ID: " + id);
+
+        return id;
     }
 }

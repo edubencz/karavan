@@ -12,6 +12,7 @@ public class MontaPayload {
     private MontaItau montaItau = new MontaItau();
     private MontaSicredi montaSicredi = new MontaSicredi();
     private MontaUnicred montaUnicred = new MontaUnicred();
+    private MontaSicoob montaSicoob = new MontaSicoob();
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @SuppressWarnings("unchecked")
@@ -84,9 +85,7 @@ public class MontaPayload {
             return objectMapper.writeValueAsString(erro);
         }
 
-        // Por enquanto só temos BB implementado
         if (codigoBanco.intValue() == 1) { // Banco do Brasil
-            //return processarBB(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
             return montaBB.montaBB(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
         } 
         else if (codigoBanco.intValue() == 33) { // Santander
@@ -99,8 +98,10 @@ public class MontaPayload {
             return montaSicredi.montaSicredi(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
         }
         else if (codigoBanco.intValue() == 136) { // Unicred
-            //return processarUnicred(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
             return montaUnicred.montaUnicred(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+        }
+        else if (codigoBanco.intValue() == 756) { // Sicoob
+            return montaSicoob.montaSicoob(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
         }
         else {
             Map<String, Object> erro = new HashMap<>();

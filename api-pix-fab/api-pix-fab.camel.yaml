@@ -130,6 +130,18 @@
               redisHost: fesc-sql-dev01.fesc.sgusuite.com.br
               redisPort: 6379
               command: EXISTS
+        - log:
+            id: log-74ed
+            description: "# EXISTE TOKEN: "
+            message: "# EXISTE TOKEN: ${exchangeProperty.redisToken}"
+        - setProperty:
+            id: setProperty-8c66
+            description: "Var: existeToken"
+            name: existeToken
+            expression:
+              simple:
+                id: simple-8a3b
+                expression: ${body}
         - to:
             id: to-busca-token-redis
             uri: direct
@@ -143,8 +155,19 @@
                 expression:
                   simple:
                     id: simple-97dd
-                    expression: ${body} == true
+                    expression: ${exchangeProperty.existeToken} == true
                 steps:
+                  - log:
+                      id: log-534a
+                      description: "# EXISTE TOKEN SEGUE PARA PAYLOAD #"
+                      message: "# EXISTE TOKEN SEGUE PARA PAYLOAD #"
+                  - setHeader:
+                      id: setHeader-0bd3
+                      name: CamelRedis.Key
+                      expression:
+                        simple:
+                          id: simple-3627
+                          expression: ${exchangeProperty.redisToken}
                   - to:
                       id: to-95c5
                       description: BuscaToken
@@ -158,6 +181,10 @@
                       disabled: false
                       json:
                         id: json-4933
+                  - log:
+                      id: log-ff50
+                      disabled: true
+                      message: ${body}
                   - setProperty:
                       id: setProperty-token-valido
                       description: "TOKEN: tokenBancario"
@@ -166,6 +193,10 @@
                         simple:
                           id: simple-f024
                           expression: ${body[token]}
+                  - log:
+                      id: log-0ccb
+                      disabled: true
+                      message: ${exchangeProperty.tokenBancario}
                   - setProperty:
                       id: setProperty-6c47
                       description: "TOKEN: bancoArquivoCertificado"
@@ -185,6 +216,10 @@
             otherwise:
               id: otherwise-78e1
               steps:
+                - log:
+                    id: log-b652
+                    description: "# NAO EXISTE TOKEN SEGUE OAUTH #"
+                    message: "# NAO EXISTE TOKEN SEGUE OAUTH #"
                 - to:
                     id: to-bfe7
                     uri: direct
@@ -386,8 +421,9 @@
                   simple:
                     id: simple-d539
                     expression: >-
-                      ${exchangeProperty.bancoCertificado} != null &&
-                      ${exchangeProperty.bancoCertificado.trim} != ''
+                      ${exchangeProperty.bancoPayloadDados[Certificado]} != null
+                      && ${exchangeProperty.bancoPayloadDados[Certificado].trim}
+                      != ''
                 steps:
                   - log:
                       id: log-f18d
@@ -416,8 +452,8 @@
                           expression: ${exchangeProperty.sslBeanId}
                   - log:
                       id: log-5bcb
-                      description: "# ARQ. CERT. GERADO PELO GROOVY #"
-                      message: "# ARQ. CERT. GERADO PELO GROOVY #"
+                      description: "# ARQ. CERT. GERADO PELO JAVA#"
+                      message: "# ARQ. CERT. GERADO PELO JAVA#"
             otherwise:
               id: otherwise-1b5b
         - setHeader:
@@ -436,7 +472,7 @@
             id: choice-auth2-identifica-banco
             when:
               - id: when-auth2-bb
-                description: Banco == 1
+                description: BB (1)
                 expression:
                   simple:
                     id: simple-a0b6
@@ -469,7 +505,7 @@
                           id: simple-5a09
                           expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
               - id: when-a865
-                description: Banco == 33
+                description: Santander (33)
                 expression:
                   simple:
                     id: simple-c13b
@@ -499,7 +535,7 @@
                           id: simple-dec0
                           expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
               - id: when-334f
-                description: Banco == 341
+                description: Itau (341)
                 expression:
                   simple:
                     id: simple-3f18
@@ -521,7 +557,7 @@
                           id: simple-d711
                           expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
               - id: when-cd7b
-                description: Banco == 748
+                description: Sicredi (748)
                 expression:
                   simple:
                     id: simple-6c66
@@ -533,7 +569,7 @@
                         simple:
                           id: simple-28a3
                           expression: >-
-                            username=${exchangeProperty.bancoPayloadDados[username]}&password=${exchangeProperty.bancoPayloadDados[password]}&grant_type=${exchangeProperty.bancoPayloadDados[grant_type]}&scope=${exchangeProperty.bancoScopes}
+                            username=${exchangeProperty.bancoPayloadDados[username]}&password=${exchangeProperty.bancoPayloadDados[password]}&grant_type=${exchangeProperty.bancoPayloadDados[grant_type]}&scope=${exchangeProperty.bancoPayloadDados[Scopes]}
                   - setHeaders:
                       id: setHeaders-3a3a
                       headers:
@@ -558,7 +594,7 @@
                           id: simple-eb50
                           expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
               - id: when-ef06
-                description: Banco == 136
+                description: Unicred (136)
                 expression:
                   simple:
                     id: simple-5985
@@ -594,6 +630,26 @@
                         simple:
                           id: simple-7a04
                           expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
+              - id: when-6c47
+                description: Sicoob (756)
+                expression:
+                  simple:
+                    id: simple-030a
+                    expression: ${exchangeProperty.bancoPayloadDados[codigoBanco]} == 756
+                steps:
+                  - setBody:
+                      id: setBody-c673
+                      expression:
+                        simple:
+                          id: simple-59ef
+                          expression: >-
+                            grant_type=client_credentials&scope=boletos_inclusao
+                            boletos_consulta
+                            boletos_alteracao&client_id=${exchangeProperty.bancoPayloadDados[ClinetID]}
+                  - log:
+                      id: log-deb4
+                      description: "# NÃO FUNCIONA O AUTH SEM URL NA DOC #"
+                      message: "# NÃO FUNCIONA O AUTH SEM URL NA DOC #"
             otherwise:
               id: otherwise-auth2-identifica-banco
               steps:
@@ -773,7 +829,7 @@
                         simple:
                           id: simple-ecb2
                           expression: >-
-                            {"Senha":"${exchangeProperty.bancoSenhaCertificado}",
+                            {"Senha":"${exchangeProperty.bancoPayloadDados[Senha]}",
 
                             "token":"${exchangeProperty.tokenBancario}",
 
@@ -844,8 +900,9 @@
                   simple:
                     id: simple-a692
                     expression: >-
-                      ${exchangeProperty.bancoCertificado != null &&
-                      exchangeProperty.bancoArquivoCertificado != ""}
+                      ${exchangeProperty.bancoPayloadDados[Certificado]} != null
+                      && ${exchangeProperty.bancoPayloadDados[Certificado]} !=
+                      ""
                 steps:
                   - log:
                       id: log-4635
@@ -929,6 +986,18 @@
                       uri: direct
                       parameters:
                         name: Unicred-cobranca
+              - id: when-020f
+                description: Sicoob (756)
+                expression:
+                  simple:
+                    id: simple-48b6
+                    expression: ${exchangeProperty.bancoPayloadDados[codigoBanco]} == 756
+                steps:
+                  - to:
+                      id: to-79fd
+                      uri: direct
+                      parameters:
+                        name: Sicoob-cobranca
             otherwise:
               id: otherwise-cb94
 - route:
@@ -1167,7 +1236,7 @@
             expression:
               simple:
                 id: simple-1919
-                expression: ${exchangeProperty[payloadEnvio]}
+                expression: ${exchangeProperty.payloadEnvio}
         - doTry:
             id: doTry-251b
             doCatch:
@@ -1562,3 +1631,19 @@
                           httpMethod: GET
                           bridgeEndpoint: true
                           logHttpActivity: false
+- route:
+    id: Sicoob-cobranca
+    nodePrefixId: route-ecf
+    from:
+      id: from-Sicoob-cobranca
+      uri: direct
+      parameters:
+        name: Sicoob-cobranca
+      steps:
+        - log:
+            id: log-34fd
+            description: "# ROUTE SICOOB COBRANCA #"
+            message: "# ROUTE SICOOB COBRANCA #"
+        - log:
+            id: log-2989
+            message: ${body}
