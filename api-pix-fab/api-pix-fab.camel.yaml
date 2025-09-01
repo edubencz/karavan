@@ -381,6 +381,7 @@
                   - setProperty:
                       id: setProperty-a5e2
                       description: "Certificado: sslBeanId"
+                      disabled: true
                       name: sslBeanId
                       expression:
                         groovy:
@@ -521,6 +522,18 @@
                             registrado com ID: " + id)
 
                             return id
+                  - bean:
+                      id: bean-f5f9
+                      ref: criarArquivoCertificado
+                      method: criarArquivoCertificado
+                  - setProperty:
+                      id: setProperty-0f32
+                      description: "Certificado: sslBeanId"
+                      name: sslBeanId
+                      expression:
+                        simple:
+                          id: simple-9966
+                          expression: ${body}
                   - setProperty:
                       id: setProperty-346d
                       description: securityContext
@@ -1203,10 +1216,15 @@
                     simple:
                       id: simple-gwkey
                       expression: ${exchangeProperty.bancoAppKey}
+              - log:
+                  id: log-c7e4
+                  description: "## APPKEY BB ##"
+                  message: ${exchangeProperty.bancoAppKey}
               - choice:
                   id: choice-rota-saida
                   when:
                     - id: envio-bb-inclusao
+                      disabled: false
                       expression:
                         simple:
                           id: simple-envio-bb-inclusao
