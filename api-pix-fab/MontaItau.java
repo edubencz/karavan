@@ -10,15 +10,6 @@ public class MontaItau {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    public String tratarData(String data, String formato) throws Exception {
-        if (data == null || data.isEmpty()) {
-            return null;
-        }
-        SimpleDateFormat sdfEntrada = new SimpleDateFormat("yyyy-MM-dd");
-        Date d = sdfEntrada.parse(data);
-        return new SimpleDateFormat(formato).format(d);
-    }
-
     @SuppressWarnings("unchecked")
     private Map<String, Object> getNestedMap(Map<String, Object> source, String key) {
         Object value = source.get(key);
@@ -44,6 +35,29 @@ public class MontaItau {
         return new ArrayList<>();
     }
 
+    public String montaItau(String tipo, 
+                                Map<String, Object> dadosBanco,
+                                Map<String, Object> dadosBoleto,
+                                Map<String, Object> dadosPagador,
+                                Map<String, Object> dadosBeneficiario,
+                                List<String> instrucoes,
+                                List<String> mensagens,
+                                Map<String, Object> dadosDescontos) throws Exception {
+        switch (tipo.toLowerCase()) {
+            case "registrar":
+                return montarEmissao(dadosBanco, dadosBoleto, dadosPagador, dadosBeneficiario, instrucoes, mensagens, dadosDescontos);
+            case "alterar":
+                return montarAlteracao(dadosBanco, dadosBoleto);
+            case "cancelamento":
+            case "cancelar":
+                return montarCancelamento(dadosBanco, dadosBoleto);
+            default:
+                Map<String, Object> erro = new HashMap<>();
+                erro.put("erro", "Tipo de operação não suportado: " + tipo);
+                return objectMapper.writeValueAsString(erro);
+        }
+
+    }
     public String montarEmissao(Map<String, Object> dadosBanco,
                                Map<String, Object> dadosBoleto,
                                Map<String, Object> dadosPagador,

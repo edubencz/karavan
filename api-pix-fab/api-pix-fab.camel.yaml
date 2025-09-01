@@ -1203,10 +1203,6 @@
                     simple:
                       id: simple-gwkey
                       expression: ${exchangeProperty.bancoAppKey}
-              - log:
-                  id: log-c7e4
-                  description: "## APPKEY BB ##"
-                  message: ${exchangeProperty.bancoAppKey}
               - choice:
                   id: choice-rota-saida
                   when:
@@ -1225,7 +1221,7 @@
                             uri: https://api.hm.bb.com.br/cobrancas/v2/boletos
                             parameters:
                               httpMethod: POST
-                              logHttpActivity: true
+                              logHttpActivity: false
                               bridgeEndpoint: true
                               httpUri: https://api.hm.bb.com.br/cobrancas/v2/boletos
                         - setBody:

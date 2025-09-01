@@ -86,19 +86,21 @@ public class MontaPayload {
 
         // Por enquanto só temos BB implementado
         if (codigoBanco.intValue() == 1) { // Banco do Brasil
-            return processarBB(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+            //return processarBB(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+            return montaBB.montaBB(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
         } 
         else if (codigoBanco.intValue() == 33) { // Santander
-            return processarSantander(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+            return montaSantander.montaSantander(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
         }
         else if (codigoBanco.intValue() == 341) { // Itau
-            return processarItau(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+            return montaItau.montaItau(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
         }
         else if (codigoBanco.intValue() == 748) { // Sicredi
-            return processarSicredi(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+            return montaSicredi.montaSicredi(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
         }
         else if (codigoBanco.intValue() == 136) { // Unicred
-            return processarUnicred(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+            //return processarUnicred(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+            return montaUnicred.montaUnicred(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
         }
         else {
             Map<String, Object> erro = new HashMap<>();
@@ -106,124 +108,4 @@ public class MontaPayload {
             return objectMapper.writeValueAsString(erro);
         }
     }
-
-    private String processarBB(String tipo, 
-                              Map<String, Object> dadosBanco,
-                              Map<String, Object> dadosBoleto,
-                              Map<String, Object> pagador,
-                              Map<String, Object> beneficiario,
-                              List<String> instrucoes,
-                              List<String> mensagens,
-                              Map<String, Object> descontos) throws Exception {
-        
-        switch (tipo.toLowerCase()) {
-            case "registrar":
-                return montaBB.montarEmissao(dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
-            case "alterar":
-                return montaBB.montarAlteracao(dadosBanco, dadosBoleto);
-            case "cancelamento":
-            case "cancelar":
-                return montaBB.montarCancelamento(dadosBanco, dadosBoleto);
-            default:
-                Map<String, Object> erro = new HashMap<>();
-                erro.put("erro", "Tipo de operação não suportado: " + tipo);
-                return objectMapper.writeValueAsString(erro);
-        }
-    }
-
-    private String processarSantander(String tipo, 
-                              Map<String, Object> dadosBanco,
-                              Map<String, Object> dadosBoleto,
-                              Map<String, Object> pagador,
-                              Map<String, Object> beneficiario,
-                              List<String> instrucoes,
-                              List<String> mensagens,
-                              Map<String, Object> descontos) throws Exception {
-        
-        switch (tipo.toLowerCase()) {
-            case "registrar":
-                return montaSantander.montarEmissao(dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
-            case "alterar":
-                return montaSantander.montarAlteracao(dadosBanco, dadosBoleto);
-            case "cancelamento":
-            case "cancelar":
-                return montaSantander.montarCancelamento(dadosBanco, dadosBoleto);
-            default:
-                Map<String, Object> erro = new HashMap<>();
-                erro.put("erro", "Tipo de operação não suportado: " + tipo);
-                return objectMapper.writeValueAsString(erro);
-        }
-    }
-
-    private String processarItau(String tipo, 
-                              Map<String, Object> dadosBanco,
-                              Map<String, Object> dadosBoleto,
-                              Map<String, Object> pagador,
-                              Map<String, Object> beneficiario,
-                              List<String> instrucoes,
-                              List<String> mensagens,
-                              Map<String, Object> descontos) throws Exception {
-        
-        switch (tipo.toLowerCase()) {
-            case "registrar":
-                return montaItau.montarEmissao(dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
-            case "alterar":
-                return montaItau.montarAlteracao(dadosBanco, dadosBoleto);
-            case "cancelamento":
-            case "cancelar":
-                return montaItau.montarCancelamento(dadosBanco, dadosBoleto);
-            default:
-                Map<String, Object> erro = new HashMap<>();
-                erro.put("erro", "Tipo de operação não suportado: " + tipo);
-                return objectMapper.writeValueAsString(erro);
-        }
-    }    
-
-    private String processarSicredi(String tipo, 
-                              Map<String, Object> dadosBanco,
-                              Map<String, Object> dadosBoleto,
-                              Map<String, Object> pagador,
-                              Map<String, Object> beneficiario,
-                              List<String> instrucoes,
-                              List<String> mensagens,
-                              Map<String, Object> descontos) throws Exception {
-        
-        switch (tipo.toLowerCase()) {
-            case "registrar":
-                return montaSicredi.montarEmissao(dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
-            case "alterar":
-                return montaSicredi.montarAlteracao(dadosBanco, dadosBoleto, pagador, descontos);
-            case "cancelamento":
-            case "cancelar":
-                return montaSicredi.montarCancelamento(dadosBanco, dadosBoleto);
-            default:
-                Map<String, Object> erro = new HashMap<>();
-                erro.put("erro", "Tipo de operação não suportado: " + tipo);
-                return objectMapper.writeValueAsString(erro);
-        }
-    }  
-
-    private String processarUnicred(String tipo, 
-                              Map<String, Object> dadosBanco,
-                              Map<String, Object> dadosBoleto,
-                              Map<String, Object> pagador,
-                              Map<String, Object> beneficiario,
-                              List<String> instrucoes,
-                              List<String> mensagens,
-                              Map<String, Object> descontos) throws Exception {
-        
-        switch (tipo.toLowerCase()) {
-            case "registrar":
-                return montaUnicred.montarEmissao(dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
-            case "alterar":
-                return montaUnicred.montarAlteracao(dadosBanco, dadosBoleto, pagador, descontos);
-            case "cancelamento":
-            case "cancelar":
-                return montaUnicred.montarCancelamento(dadosBanco, dadosBoleto);
-            default:
-                Map<String, Object> erro = new HashMap<>();
-                erro.put("erro", "Tipo de operação não suportado: " + tipo);
-                return objectMapper.writeValueAsString(erro);
-        }
-    }   
 }

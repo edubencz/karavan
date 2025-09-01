@@ -44,6 +44,29 @@ public class MontaBB {
         return new ArrayList<>();
     }
 
+    public String montaBB(String tipo,
+                                Map<String, Object> dadosBanco,
+                                Map<String, Object> dadosBoleto,
+                                Map<String, Object> dadosPagador,
+                                Map<String, Object> dadosBeneficiario,
+                                List<String> instrucoes,
+                                List<String> mensagens,
+                                Map<String, Object> dadosDescontos) throws Exception {
+        switch (tipo.toLowerCase()) {
+            case "registrar":
+                return montarEmissao(dadosBanco, dadosBoleto, dadosPagador, dadosBeneficiario, instrucoes, mensagens, dadosDescontos);
+            case "alterar":
+                return montarAlteracao(dadosBanco, dadosBoleto, dadosPagador, dadosDescontos);
+            case "cancelamento":
+            case "cancelar":
+                return montarCancelamento(dadosBanco, dadosBoleto);
+            default:
+                Map<String, Object> erro = new HashMap<>();
+                erro.put("erro", "Tipo de operação não suportado: " + tipo);
+                return objectMapper.writeValueAsString(erro);
+        }
+    }
+
     public String montarEmissao(Map<String, Object> dadosBanco,
                                Map<String, Object> dadosBoleto,
                                Map<String, Object> dadosPagador,
@@ -214,10 +237,154 @@ public class MontaBB {
     }
 
     public String montarAlteracao(Map<String, Object> dadosBanco,
-                                 Map<String, Object> dadosBoleto) throws Exception {
+                                 Map<String, Object> dadosBoleto,
+                                 Map<String, Object> dadosPagador,
+                                 Map<String, Object> dadosDescontos) throws Exception {
         Map<String, Object> payload = new LinkedHashMap<>();
+        
+        // Campo obrigatório - número do convênio
         payload.put("numeroConvenio", dadosBanco.get("convenio"));
-        payload.put("motivoAlteracao", "alteracao via API");
+        
+        // Alteração de data de vencimento
+        payload.put("indicadorNovaDataVencimento", "S");
+        Map<String, Object> alteracaoData = new LinkedHashMap<>();
+        alteracaoData.put("novaDataVencimento", tratarData((String) dadosBoleto.get("dataVencimento"), "dd.MM.yyyy"));
+        payload.put("alteracaoData", alteracaoData);
+        
+        // Alteração de valor nominal
+        payload.put("indicadorNovoValorNominal", "S");
+        Map<String, Object> alteracaoValor = new LinkedHashMap<>();
+        alteracaoValor.put("novoValorNominal", dadosBoleto.get("valorNominal"));
+        payload.put("alteracaoValor", alteracaoValor);
+        
+        // Protesto - se houver dias de protesto configurados
+        Number diasProtesto = (Number) dadosBoleto.get("quantidadeDiasProtesto");
+        if (diasProtesto != null && diasProtesto.intValue() > 0) {
+            payload.put("indicadorProtestar", "S");
+            Map<String, Object> protesto = new LinkedHashMap<>();
+            protesto.put("quantidadeDiasProtesto", diasProtesto);
+            payload.put("protesto", protesto);
+        }
+        
+        // Juros
+        Number tipoJuros = (Number) dadosBoleto.get("tipoJuros");
+        Number valorJuros = (Number) dadosBoleto.get("valorJuros");
+        Number percentualJuros = (Number) dadosBoleto.get("percentualJuros");
+        
+        if (tipoJuros != null) {
+            payload.put("indicadorCobrarJuros", "S");
+            Map<String, Object> juros = new LinkedHashMap<>();
+            juros.put("tipoJuros", tipoJuros);
+            
+            if (tipoJuros.intValue() == 1 && valorJuros != null && valorJuros.doubleValue() > 0) {
+                juros.put("valorJuros", valorJuros);
+            } else if (tipoJuros.intValue() == 2 && percentualJuros != null && percentualJuros.doubleValue() > 0) {
+                juros.put("taxaJuros", percentualJuros);
+            }
+            
+            payload.put("juros", juros);
+        }
+        
+        // Multa
+        Number tipoMulta = (Number) dadosBoleto.get("tipoMulta");
+        Number percentualMulta = (Number) dadosBoleto.get("percentualMulta");
+        Number valorMulta = (Number) dadosBoleto.get("valorMulta");
+        
+        if (tipoMulta != null) {
+            payload.put("indicadorCobrarMulta", "S");
+            Map<String, Object> multa = new LinkedHashMap<>();
+            multa.put("tipoMulta", tipoMulta);
+            
+            if (dadosBoleto.get("dataMulta") != null) {
+                multa.put("dataInicioMulta", tratarData((String) dadosBoleto.get("dataMulta"), "dd.MM.yyyy"));
+            }
+            
+            if (tipoMulta.intValue() == 1 && valorMulta != null) {
+                multa.put("valorMulta", valorMulta);
+            } else if (tipoMulta.intValue() == 2 && percentualMulta != null) {
+                multa.put("taxaMulta", percentualMulta);
+            }
+            
+            payload.put("multa", multa);
+        }
+        
+        // Negativação se existir configuração
+        Number diasNegativacao = (Number) dadosBoleto.get("quantidadeDiasNegativacao");
+        if (diasNegativacao != null && diasNegativacao.intValue() > 0) {
+            payload.put("indicadorNegativar", "S");
+            Map<String, Object> negativacao = new LinkedHashMap<>();
+            negativacao.put("quantidadeDiasNegativacao", diasNegativacao);
+            negativacao.put("tipoNegativacao", 2); // Valor padrão conforme documentação BB
+            
+            if (dadosBoleto.get("orgaoNegativador") != null) {
+                negativacao.put("orgaoNegativador", dadosBoleto.get("orgaoNegativador"));
+            }
+            
+            payload.put("negativacao", negativacao);
+        }
+        
+        // Alteração de prazo para aceite de boleto vencido
+        if (dadosBoleto.get("aceiteTituloVencido") != null && 
+            "S".equals(dadosBoleto.get("aceiteTituloVencido"))) {
+            
+            payload.put("indicadorAlterarPrazoBoletoVencido", "S");
+            Map<String, Object> alteracaoPrazo = new LinkedHashMap<>();
+            alteracaoPrazo.put("quantidadeDiasAceite", dadosBoleto.get("numeroDiasLimiteRecebimento"));
+            payload.put("alteracaoPrazo", alteracaoPrazo);
+        }
+        
+        // Desconto
+        Number valorDesconto = (Number) dadosDescontos.get("valorDesconto");
+        Number percentualDesconto = (Number) dadosDescontos.get("percentualDesconto");
+        if (valorDesconto != null && valorDesconto.doubleValue() > 0) {
+            payload.put("indicadorAtribuirDesconto", "S");
+            Map<String, Object> desconto = new LinkedHashMap<>();
+            desconto.put("tipoPrimeiroDesconto", 1);
+            desconto.put("valorPrimeiroDesconto", valorDesconto);
+            
+            if (percentualDesconto != null && percentualDesconto.doubleValue() > 0) {
+                desconto.put("percentualPrimeiroDesconto", percentualDesconto);
+            }
+            
+            desconto.put("dataPrimeiroDesconto", tratarData((String) dadosBoleto.get("dataVencimento"), "dd.MM.yyyy"));
+            payload.put("desconto", desconto);
+        }
+        
+        // Alteração de endereço do pagador
+        Map<String, Object> enderecoPagador = getNestedMap(dadosPagador, "endereco");
+        if (!enderecoPagador.isEmpty()) {
+            payload.put("indicadorAlterarEnderecoPagador", "S");
+            Map<String, Object> alteracaoEndereco = new LinkedHashMap<>();
+            
+            if (enderecoPagador.get("logradouro") != null) {
+                alteracaoEndereco.put("enderecoPagador", enderecoPagador.get("logradouro"));
+            }
+            
+            if (enderecoPagador.get("bairro") != null) {
+                alteracaoEndereco.put("bairroPagador", enderecoPagador.get("bairro"));
+            }
+            
+            if (enderecoPagador.get("cidade") != null) {
+                alteracaoEndereco.put("cidadePagador", enderecoPagador.get("cidade"));
+            }
+            
+            if (enderecoPagador.get("uf") != null) {
+                alteracaoEndereco.put("UFPagador", enderecoPagador.get("uf"));
+            }
+            
+            if (enderecoPagador.get("cep") != null) {
+                String cepStr = enderecoPagador.get("cep").toString();
+                cepStr = cepStr.replaceAll("[^0-9]", "");
+                try {
+                    alteracaoEndereco.put("CEPPagador", Long.valueOf(cepStr));
+                } catch (NumberFormatException e) {
+                    alteracaoEndereco.put("CEPPagador", cepStr);
+                }
+            }
+            
+            payload.put("alteracaoEndereco", alteracaoEndereco);
+        }
+        
         return objectMapper.writeValueAsString(payload);
     }
 
@@ -225,7 +392,6 @@ public class MontaBB {
                                    Map<String, Object> dadosBoleto) throws Exception {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("numeroConvenio", dadosBanco.get("convenio"));
-        payload.put("motivoCancelamento", "Solicitado pelo cliente");
         return objectMapper.writeValueAsString(payload);
     }
 }
