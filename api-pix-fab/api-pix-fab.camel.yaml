@@ -264,6 +264,7 @@
                   - setProperty:
                       id: setProperty-appKey
                       description: "Banco: bancoAppKey"
+                      disabled: true
                       name: bancoAppKey
                       expression:
                         simple:
@@ -272,6 +273,7 @@
                   - setProperty:
                       id: setProperty-ClientId
                       description: "Banco: bancoClientId"
+                      disabled: true
                       name: bancoClientId
                       expression:
                         simple:
@@ -280,6 +282,7 @@
                   - setProperty:
                       id: setProperty-ClientSecret
                       description: "Banco: bancoClientSecret"
+                      disabled: true
                       name: bancoClientSecret
                       expression:
                         simple:
@@ -288,6 +291,7 @@
                   - setProperty:
                       id: setProperty-banco-certificado
                       description: "Banco: bancoCertificado"
+                      disabled: true
                       name: bancoCertificado
                       expression:
                         simple:
@@ -296,6 +300,7 @@
                   - setProperty:
                       id: setProperty-banco-senhaCert
                       description: "Banco: bancoSenhaCertificado"
+                      disabled: true
                       name: bancoSenhaCertificado
                       expression:
                         simple:
@@ -304,6 +309,7 @@
                   - setProperty:
                       id: setProperty-banco-scopes
                       description: "Banco: bancoScopes"
+                      disabled: true
                       name: bancoScopes
                       expression:
                         simple:
@@ -312,10 +318,19 @@
                   - setProperty:
                       id: setProperty-ae79
                       description: "Banco: bancoDadosEspecificos"
+                      disabled: true
                       name: bancoDadosEspecificos
                       expression:
                         simple:
                           id: simple-ecfa
+                          expression: ${body}
+                  - setProperty:
+                      id: setProperty-29d1
+                      description: "Banco: bancoPayloadDados"
+                      name: bancoPayloadDados
+                      expression:
+                        simple:
+                          id: simple-881f
                           expression: ${body}
                   - log:
                       id: log-48c2
@@ -380,8 +395,9 @@
                       message: "# GERA CERTIFICADO #"
                   - bean:
                       id: bean-f5f9
-                      ref: certificadoCriarArquivo
-                      method: certificadoCriarArquivo
+                      description: "Bean: criarArquivoCertificado"
+                      ref: certificadoArquivo
+                      method: criarArquivoCertificado
                   - setProperty:
                       id: setProperty-0f32
                       description: "Certificado: sslBeanId"
@@ -433,7 +449,7 @@
                           id: simple-8bb0
                           expression: >-
                             grant_type=client_credentials&scopes:
-                            ${exchangeProperty[bancoScopes]}
+                            ${exchangeProperty.bancoPayloadDados[Scopes]}
                   - setHeader:
                       id: setHeader-7a86
                       description: "Header: Authorization"
@@ -441,7 +457,9 @@
                       expression:
                         simple:
                           id: simple-e6a0
-                          expression: Basic ${exchangeProperty.bancoClientSecret}
+                          expression: >-
+                            Basic
+                            exchangeProperty.bancoPayloadDados[ClientSecret]
                   - setProperty:
                       id: setProperty-d5ea
                       description: bancoOAuthUrl
@@ -449,7 +467,7 @@
                       expression:
                         simple:
                           id: simple-5a09
-                          expression: ${exchangeProperty.bancoDadosEspecificos[url_oauth]}
+                          expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
               - id: when-a865
                 description: Banco == 33
                 expression:
@@ -463,7 +481,7 @@
                         simple:
                           id: simple-a586
                           expression: >-
-                            grant_type=client_credentials&client_secret=${exchangeProperty[bancoClientSecret]}&client_id=${exchangeProperty[bancoClientId]}
+                            grant_type=client_credentials&client_secret=${exchangeProperty.bancoPayloadDados[ClientSecret]}&client_id=${exchangeProperty.bancoPayloadDados[ClientID]}
                   - setHeader:
                       id: setHeader-santander-ssl-certificate
                       description: "Host: Santander"
@@ -479,7 +497,7 @@
                       expression:
                         simple:
                           id: simple-dec0
-                          expression: ${exchangeProperty.bancoDadosEspecificos[url_oauth]}
+                          expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
               - id: when-334f
                 description: Banco == 341
                 expression:
@@ -493,7 +511,7 @@
                         simple:
                           id: simple-2942
                           expression: >-
-                            grant_type=client_credentials&client_secret=${exchangeProperty[bancoClientSecret]}&client_id=${exchangeProperty[bancoClientId]}
+                            grant_type=client_credentials&client_secret=${exchangeProperty.bancoPayloadDados[ClientSecret]}&client_id=${exchangeProperty.bancoPayloadDados[ClientID]}
                   - setProperty:
                       id: setProperty-7fde
                       description: bancoOAuthUrl
@@ -501,7 +519,7 @@
                       expression:
                         simple:
                           id: simple-d711
-                          expression: ${exchangeProperty.bancoDadosEspecificos[url_oauth]}
+                          expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
               - id: when-cd7b
                 description: Banco == 748
                 expression:
@@ -515,7 +533,7 @@
                         simple:
                           id: simple-28a3
                           expression: >-
-                            username=${exchangeProperty.bancoDadosEspecificos[username]}&password=${exchangeProperty.bancoDadosEspecificos[password]}&grant_type=${exchangeProperty.bancoDadosEspecificos[grant_type]}&scope=${exchangeProperty.bancoScopes}
+                            username=${exchangeProperty.bancoPayloadDados[username]}&password=${exchangeProperty.bancoPayloadDados[password]}&grant_type=${exchangeProperty.bancoPayloadDados[grant_type]}&scope=${exchangeProperty.bancoScopes}
                   - setHeaders:
                       id: setHeaders-3a3a
                       headers:
@@ -524,7 +542,7 @@
                           expression:
                             simple:
                               id: simple-b699
-                              expression: ${exchangeProperty.bancoClientId}
+                              expression: ${exchangeProperty.bancoPayloadDados[ClientID]}
                         - id: setHeader-f63c
                           name: context
                           expression:
@@ -538,7 +556,7 @@
                       expression:
                         simple:
                           id: simple-eb50
-                          expression: ${exchangeProperty.bancoDadosEspecificos[url_oauth]}
+                          expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
               - id: when-ef06
                 description: Banco == 136
                 expression:
@@ -552,7 +570,7 @@
                         simple:
                           id: simple-af2e
                           expression: >-
-                            {"nomeUsuario":"${exchangeProperty.bancoDadosEspecificos[nomeUsuario]}","senha":"${exchangeProperty.bancoDadosEspecificos[senha]}"}
+                            {"nomeUsuario":"${exchangeProperty.bancoPayloadDados[nomeUsuario]}","senha":"${exchangeProperty.bancoPayloadDados[senha]}"}
                   - setHeaders:
                       id: setHeaders-05d4
                       headers:
@@ -561,7 +579,7 @@
                           expression:
                             simple:
                               id: simple-57c4
-                              expression: ${exchangeProperty.bancoAppKey}
+                              expression: ${exchangeProperty.bancoPayloadDados[AppKey]}
                         - id: setHeader-d200
                           name: Content-Type
                           expression:
@@ -575,7 +593,7 @@
                       expression:
                         simple:
                           id: simple-7a04
-                          expression: ${exchangeProperty.bancoDadosEspecificos[url_oauth]}
+                          expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
             otherwise:
               id: otherwise-auth2-identifica-banco
               steps:
@@ -806,6 +824,7 @@
                 expression: ${exchangeProperty.dadosRecebidos}
         - bean:
             id: bean-4a67
+            description: "Bean: MontaJsonPayload"
             ref: montaPayload
             method: montarPayload
         - setProperty:
@@ -830,123 +849,21 @@
                 steps:
                   - log:
                       id: log-4635
-                      description: "# BUSCA ARQ CERT. GROOVY #"
-                      message: >-
-                        # BUSCA ARQ CERT. GROOVY:
-                        ${exchangeProperty.tokenArquivoCertificado}
+                      description: "# BUSCA ARQ CERT. JAVA #"
+                      message: "# BUSCA ARQ CERT. JAVA #"
+                  - bean:
+                      id: bean-6f72
+                      description: "Bean: buscaArquivoCertificado"
+                      ref: certificadoArquivo
+                      method: buscarArquivoCertificado
                   - setProperty:
-                      id: setProperty-c337
-                      description: "SSL: Add certificado"
-                      disabled: false
+                      id: setProperty-08bc
+                      description: "SSL: addCertificado"
                       name: sslBeanId
                       expression:
-                        groovy:
-                          id: groovy-1cc6
-                          expression: >
-                            import java.io.File
-
-                            import java.nio.file.Files
-
-                            import java.nio.file.Paths
-
-                            // Recebe o nome do arquivo do certificado já
-                            existente
-
-                            // e a senha em bancoSenhaCertificado
-
-
-                            def arquivo =
-                            exchange.getProperty('bancoArquivoCertificado',
-                            String) // agora é o nome do arquivo
-
-
-                            def senha =
-                            exchange.getProperty('bancoSenhaCertificado',
-                            String)
-
-
-                            println("[DEBUG] Iniciando processamento de
-                            certificado por nome de arquivo")
-
-                            println("[DEBUG] Nome do arquivo recebido: " +
-                            arquivo)
-
-                            println("[DEBUG] Senha recebida: " + (senha ? "***"
-                            : "null"))
-
-
-                            if (arquivo == null || senha == null) {
-                              println("[ERROR] Nome do arquivo ou senha ausentes")
-                              throw new RuntimeException('Nome do arquivo ou senha ausentes')
-                            }
-
-
-                            def certFile = new File(arquivo)
-
-                            if (!certFile.exists()) {
-                              println("[ERROR] Arquivo de certificado não encontrado: " + arquivo)
-                              throw new RuntimeException('Arquivo de certificado não encontrado: ' + arquivo)
-                            }
-
-                            println("[DEBUG] Arquivo existe? " +
-                            certFile.exists())
-
-                            println("[DEBUG] Tamanho do arquivo: " +
-                            certFile.length() + " bytes")
-
-                            println("[DEBUG] Permissões do arquivo: " +
-                            certFile.canRead() + ", " + certFile.canWrite())
-
-                            // Opcional: ler os primeiros bytes para garantir
-                            que não está corrompido
-
-                            def headBytes =
-                            Files.readAllBytes(Paths.get(arquivo))[0..15]
-
-                            println("[DEBUG] Primeiros bytes do arquivo: " +
-                            headBytes.collect{String.format("%02X", it)}.join("
-                            "))
-
-                            // Criar e configurar SSL Context Parameters para o
-                            Camel
-
-                            def kp = new
-                            org.apache.camel.support.jsse.KeyStoreParameters()
-
-                            kp.setResource("file:" + arquivo)
-
-                            kp.setType("PKCS12")
-
-                            kp.setPassword(senha)
-
-                            println("[DEBUG] KeyStoreParameters configurado:
-                            resource=file:" + arquivo + ", type=PKCS12,
-                            password=***")
-
-                            def km = new
-                            org.apache.camel.support.jsse.KeyManagersParameters()
-
-                            km.setKeyStore(kp)
-
-                            km.setKeyPassword(senha)
-
-                            println("[DEBUG] KeyManagersParameters configurado")
-
-                            def ssl = new
-                            org.apache.camel.support.jsse.SSLContextParameters()
-
-                            ssl.setKeyManagers(km)
-
-                            println("[DEBUG] SSLContextParameters criado")
-
-                            exchange.getContext().getRegistry().bind("camel-ssl-"
-                            + exchange.getExchangeId(), ssl)
-
-                            println("[DEBUG] SSL Context configurado e
-                            registrado com ID: camel-ssl-" +
-                            exchange.getExchangeId())
-
-                            return "camel-ssl-" + exchange.getExchangeId()
+                        simple:
+                          id: simple-586c
+                          expression: ${body}
             otherwise:
               id: otherwise-c99e
         - choice:
@@ -1027,13 +944,6 @@
             id: log-4a6b
             description: "# ROUTE-BB-COBRANCA #"
             message: "# ROUTE-BB-COBRANCA #"
-        - setHeader:
-            id: setHeader-content-type-bb-cobranca
-            name: Content-Type
-            expression:
-              constant:
-                id: constant-content-type-bb-cobranca
-                expression: application/json
         - doTry:
             id: doTry-bb-cobranca
             doCatch:
@@ -1058,6 +968,13 @@
                       id: stop-erro
             steps:
               - setHeader:
+                  id: setHeader-content-type-bb-cobranca
+                  name: Content-Type
+                  expression:
+                    constant:
+                      id: constant-content-type-bb-cobranca
+                      expression: application/json
+              - setHeader:
                   id: setHeader-authorization-BB
                   name: Authorization
                   expression:
@@ -1071,11 +988,11 @@
                   expression:
                     simple:
                       id: simple-gwkey
-                      expression: ${exchangeProperty.bancoAppKey}
+                      expression: ${exchangeProperty.bancoPayloadDados[AppKey]}
               - log:
                   id: log-c7e4
                   description: "## APPKEY BB ##"
-                  message: ${exchangeProperty.bancoAppKey}
+                  message: ${exchangeProperty.dadosEspecificos[AppKey]}
               - choice:
                   id: choice-rota-saida
                   when:
@@ -1218,7 +1135,7 @@
                       expression: ${body[Workspace]}
               - setProperty:
                   id: setProperty-bdc8
-                  description: URL
+                  description: Santander URL
                   name: santanderURL
                   expression:
                     simple:
@@ -1237,7 +1154,7 @@
                 expression:
                   simple:
                     id: simple-847a
-                    expression: ${exchangeProperty.bancoClientId}
+                    expression: ${exchangeProperty.bancoPayloadDados[ClientID]}
               - id: setHeader-bcfe
                 name: Authorization
                 expression:
@@ -1295,7 +1212,7 @@
             expression:
               simple:
                 id: simple-544c
-                expression: ${exchangeProperty.bancoClientId}
+                expression: ${exchangeProperty.bancoPayloadDados[ClientID]}
         - setHeader:
             id: setHeader-1a16
             disabled: false
@@ -1303,7 +1220,7 @@
             expression:
               simple:
                 id: simple-c2a2
-                expression: ${exchangeProperty.bancoClientSecret}
+                expression: ${exchangeProperty.bancoPayloadDados[ClientSecret]}
         - setHeader:
             id: setHeader-8b9c
             disabled: false
@@ -1453,19 +1370,19 @@
                 expression:
                   simple:
                     id: simple-fdf4
-                    expression: ${exchangeProperty.bancoClientId}
+                    expression: ${exchangeProperty.bancoPayloadDados[ClientID]}
               - id: setHeader-cooperativa
                 name: cooperativa
                 expression:
                   simple:
                     id: simple-38cb
-                    expression: ${exchangeProperty.bancoDadosEspecificos[cooperativa]}
+                    expression: ${exchangeProperty.bancoPayloadDados[cooperativa]}
               - id: setHeader-posto
                 name: posto
                 expression:
                   simple:
                     id: simple-3188
-                    expression: ${exchangeProperty.bancoDadosEspecificos[posto]}
+                    expression: ${exchangeProperty.bancoPayloadDados[posto]}
               - id: setHeader-authorization
                 name: Authorization
                 expression:
@@ -1535,7 +1452,7 @@
                     simple:
                       id: simple-1c7c
                       expression: >-
-                        api.e-unicred.com.br/homolog/cobranca/v2/beneficiarios/${exchangeProperty.bancoDadosEspecificos[idBeneficiario]}/titulos
+                        api.e-unicred.com.br/homolog/cobranca/v2/beneficiarios/${exchangeProperty.bancoPayloadDados[idBeneficiario]}/titulos
               - setHeaders:
                   id: setHeaders-09b2
                   headers:
@@ -1550,14 +1467,13 @@
                       expression:
                         simple:
                           id: simple-784c
-                          expression: >-
-                            ${exchangeProperty.bancoDadosEspecificos[cooperativa]}
+                          expression: ${exchangeProperty.bancoPayloadDados[cooperativa]}
                     - id: setHeader-403b
                       name: apiKey
                       expression:
                         simple:
                           id: simple-5f83
-                          expression: ${exchangeProperty.bancoAppKey}
+                          expression: ${exchangeProperty.bancoPayloadDados[AppKey]}
                     - id: setHeader-6661
                       name: Content-Type
                       expression:
@@ -1572,6 +1488,12 @@
                     httpMethod: POST
                     logHttpActivity: false
                     httpUri: ${exchangeProperty.urlRegistroBoleto}
+              - log:
+                  id: log-a63e
+                  description: "# RECEBEU ID BOLETO UNICRED #"
+                  message: "# RECEBEU ID BOLETO UNICRED # ${body}"
+              - stop:
+                  id: stop-e85e
               - setProperty:
                   id: setProperty-2578
                   description: "Unicred: idBoleto"
@@ -1580,9 +1502,6 @@
                     simple:
                       id: simple-a3d4
                       expression: ${body}
-              - log:
-                  id: log-4efb
-                  message: ${exchangeProperty.idBoleto}
               - doTry:
                   id: doTry-4e04
                   doCatch:
@@ -1611,7 +1530,7 @@
                           simple:
                             id: simple-ac4b
                             expression: >-
-                              api.e-unicred.com.br/homolog/cobranca/v2/beneficiarios/${exchangeProperty.bancoDadosEspecificos[idBeneficiario]}/titulos/${exchangeProperty.idBoleto}/status
+                              api.e-unicred.com.br/homolog/cobranca/v2/beneficiarios/${exchangeProperty.bancoPayloadDados[idBeneficiario]}/titulos/${exchangeProperty.idBoleto}/status
                     - setHeaders:
                         id: setHeaders-40d0
                         headers:
@@ -1627,13 +1546,13 @@
                               simple:
                                 id: simple-4115
                                 expression: >-
-                                  ${exchangeProperty.bancoDadosEspecificos[cooperativa]}
+                                  ${exchangeProperty.bancoPayloadDados[cooperativa]}
                           - id: setHeader-be64
                             name: apiKey
                             expression:
                               simple:
                                 id: simple-1fdf
-                                expression: ${exchangeProperty.bancoAppKey}
+                                expression: ${exchangeProperty.dadosEspecificos[AppKey]}
                     - toD:
                         id: toD-8f94
                         disabled: false
