@@ -265,9 +265,6 @@
               redisHost: fesc-sql-dev01.fesc.sgusuite.com.br
               redisPort: 6379
               command: EXISTS
-        - log:
-            id: log-16c1
-            message: ${body}
         - choice:
             id: choice-dadd
             disabled: false
@@ -478,32 +475,30 @@
                     id: simple-a0b6
                     expression: ${exchangeProperty.rota[codigoBanco]} == 1
                 steps:
+                  - setHeaders:
+                      id: setHeaders-2cb9
+                      headers:
+                        - id: setHeader-392d
+                          name: Authorization
+                          expression:
+                            simple:
+                              id: simple-7f7d
+                              expression: >-
+                                Basic
+                                ${exchangeProperty.bancoPayloadDados[ClientSecret]}
+                        - id: setHeader-67e2
+                          name: Content-Type
+                          expression:
+                            simple:
+                              id: simple-b51f
+                              expression: application/x-www-form-urlencoded
                   - setBody:
                       id: setBody-auth2-bb-scopes
                       expression:
                         simple:
                           id: simple-8bb0
                           expression: >-
-                            grant_type=client_credentials&scopes:
-                            ${exchangeProperty.bancoPayloadDados[Scopes]}
-                  - setHeader:
-                      id: setHeader-7a86
-                      description: "Header: Authorization"
-                      name: Authorization
-                      expression:
-                        simple:
-                          id: simple-e6a0
-                          expression: >-
-                            Basic
-                            exchangeProperty.bancoPayloadDados[ClientSecret]
-                  - setProperty:
-                      id: setProperty-d5ea
-                      description: bancoOAuthUrl
-                      name: bancoOAuthUrl
-                      expression:
-                        simple:
-                          id: simple-5a09
-                          expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
+                            grant_type=client_credentials&scopes=${exchangeProperty.bancoPayloadDados[Scopes]}
               - id: when-a865
                 description: Santander (33)
                 expression:
@@ -707,6 +702,22 @@
                           }
                 - stop:
                     id: stop-d54d
+        - log:
+            id: log-a28f
+            description: "# AUTH HEADERS #"
+            message: "# AUTH HEADERS # ${headers}"
+        - log:
+            id: log-2fe9
+            description: "# AUTH BODY #"
+            message: "# AUTH BODY # ${body}"
+        - setProperty:
+            id: setProperty-eaef
+            description: bancoOAuthUrl
+            name: bancoOAuthUrl
+            expression:
+              simple:
+                id: simple-4609
+                expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
         - doTry:
             id: doTry-e0c4
             doCatch:
@@ -763,7 +774,7 @@
                             httpUri: ${exchangeProperty.bancoOAuthUrl}
                             bridgeEndpoint: true
                             httpMethod: POST
-                            logHttpActivity: true
+                            logHttpActivity: false
               - log:
                   id: log-6720
                   description: "# TOKEN RECEBIDO #"
@@ -1060,6 +1071,7 @@
                 steps:
                   - setHeader:
                       id: setHeader-http-status
+                      disabled: true
                       name: CamelHttpResponseCode
                       expression:
                         simple:
@@ -1071,119 +1083,35 @@
                         simple:
                           id: simple-erro
                           expression: ${exception.getResponseBody()}
-                  - stop:
-                      id: stop-erro
             steps:
-              - setHeader:
-                  id: setHeader-content-type-bb-cobranca
-                  name: Content-Type
-                  expression:
-                    constant:
-                      id: constant-content-type-bb-cobranca
-                      expression: application/json
-              - setHeader:
-                  id: setHeader-authorization-BB
-                  name: Authorization
-                  expression:
-                    simple:
-                      id: simple-authorization
-                      expression: Bearer ${exchangeProperty.tokenBancario}
-              - setHeader:
-                  id: setHeader-gwkey
-                  disabled: false
-                  name: X-Developer-Application-Key
-                  expression:
-                    simple:
-                      id: simple-gwkey
-                      expression: ${exchangeProperty.bancoPayloadDados[AppKey]}
-              - log:
-                  id: log-c7e4
-                  description: "## APPKEY BB ##"
-                  message: ${exchangeProperty.dadosEspecificos[AppKey]}
-              - choice:
-                  id: choice-rota-saida
-                  when:
-                    - id: envio-bb-inclusao
-                      disabled: false
+              - setHeaders:
+                  id: setHeaders-9f41
+                  headers:
+                    - id: setHeader-2f73
+                      name: Content-Type
                       expression:
                         simple:
-                          id: simple-envio-bb-inclusao
-                          expression: ${exchangeProperty.rota[tipo]} == "registrar"
-                      steps:
-                        - log:
-                            id: log-aefa
-                            description: "# BB-REGISTRO-BOLETO #"
-                            message: "# BB-REGISTRO-BOLETO #"
-                        - toD:
-                            id: toD-bb-cobranca
-                            uri: https://api.hm.bb.com.br/cobrancas/v2/boletos
-                            parameters:
-                              httpMethod: POST
-                              logHttpActivity: false
-                              bridgeEndpoint: true
-                              httpUri: https://api.hm.bb.com.br/cobrancas/v2/boletos
-                        - setBody:
-                            id: setBody-bb-aceito
-                            disabled: true
-                            expression:
-                              simple:
-                                id: simple-bb-aceito
-                                expression: ${body}
-                        - log:
-                            id: log-response-success-inclusao
-                            description: "## RESPOSTA BB ###"
-                            disabled: true
-                            message: "Resposta BB: ${body}"
-                            loggingLevel: INFO
-                            logName: bb-cobranca
-                    - id: envio-bb-alteracao
+                          id: simple-e000
+                          expression: application/json
+                    - id: setHeader-2f11
+                      name: Authorization
                       expression:
                         simple:
-                          id: simple-envio-bb-alteracao
-                          expression: ${exchangeProperty.rota[tipo]} != "registrar"
-                      steps:
-                        - toD:
-                            id: toD-bb-cobranca-alteracao
-                            uri: >-
-                              https://api.hm.bb.com.br/cobrancas/v2/boletos/${exchangeProperty.dadosBoleto[numeroNossoNumero]}
-                            parameters:
-                              gwDevAppKey: ${exchangeProperty.appKey}
-                              httpMethod: PATCH
-                              logHttpActivity: false
-                              bridgeEndpoint: false
-                        - setBody:
-                            id: setBody-bb-alteracao
-                            disabled: true
-                            expression:
-                              simple:
-                                id: simple-bb-alteracao
-                                expression: ${body}
-                        - log:
-                            id: log-response-success-alteracao
-                            description: "## RESPOSTA BB ###"
-                            disabled: true
-                            message: "Resposta BB: ${body}"
-                            loggingLevel: INFO
-                            logName: bb-cobranca
-                  otherwise:
-                    id: otherwise-bb-operacao-desconhecida
-                    steps:
-                      - setHeader:
-                          id: setHeader-bb-erro
-                          name: CamelHttpResponseCode
-                          expression:
-                            simple:
-                              id: simple-status-erro-bb
-                              expression: "400"
-                      - setBody:
-                          id: setBody-bb-erro
-                          expression:
-                            simple:
-                              id: simple-erro-operacao
-                              expression: |
-                                {
-                                  "mensagem": "Operação não suportada: ${exchangeProperty.rota[tipo]}"
-                                }
+                          id: simple-c988
+                          expression: Bearer ${exchangeProperty.tokenBancario}
+                    - id: setHeader-86a4
+                      name: X-Developer-Application-Key
+                      expression:
+                        simple:
+                          id: simple-d939
+                          expression: ${exchangeProperty.bancoPayloadDados[AppKey]}
+              - toD:
+                  id: to-241b
+                  uri: https
+                  parameters:
+                    httpUri: api.hm.bb.com.br/cobrancas/v2/boletos
+                    bridgeEndpoint: true
+                    httpMethod: POST
 - route:
     id: santander-cobranca
     nodePrefixId: route-ecf
