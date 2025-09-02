@@ -635,7 +635,7 @@
                 expression:
                   simple:
                     id: simple-030a
-                    expression: ${exchangeProperty.bancoPayloadDados[codigoBanco]} == 756
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 756
                 steps:
                   - setBody:
                       id: setBody-c673
@@ -650,6 +650,39 @@
                       id: log-deb4
                       description: "# NÃO FUNCIONA O AUTH SEM DOC #"
                       message: "# NÃO FUNCIONA O AUTH SEM DOC #"
+              - id: when-8aed
+                description: Safra (422)
+                expression:
+                  simple:
+                    id: simple-327f
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 422
+                steps:
+                  - removeHeaders:
+                      id: removeHeaders-96cb
+                      pattern: "*"
+                  - setHeader:
+                      id: setHeader-8be4
+                      disabled: false
+                      name: Content-Type
+                      expression:
+                        simple:
+                          id: simple-0dfd
+                          expression: application/x-www-form-urlencoded
+                  - setBody:
+                      id: setBody-c9ec
+                      expression:
+                        simple:
+                          id: simple-f22b
+                          expression: >-
+                            username=${exchangeProperty.bancoPayloadDados[nomeUsuario]}&password=${exchangeProperty.bancoPayloadDados[senha]}&grant_type=password&client_id=${exchangeProperty.bancoPayloadDados[ClientID]}
+                  - setProperty:
+                      id: setProperty-18f2
+                      description: bancoOAuthUrl
+                      name: bancoOAuthUrl
+                      expression:
+                        simple:
+                          id: simple-beaf
+                          expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
             otherwise:
               id: otherwise-auth2-identifica-banco
               steps:
@@ -730,6 +763,7 @@
                             httpUri: ${exchangeProperty.bancoOAuthUrl}
                             bridgeEndpoint: true
                             httpMethod: POST
+                            logHttpActivity: true
               - log:
                   id: log-6720
                   description: "# TOKEN RECEBIDO #"
