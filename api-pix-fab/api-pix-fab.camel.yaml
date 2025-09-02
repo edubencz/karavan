@@ -648,8 +648,8 @@
                             boletos_alteracao&client_id=${exchangeProperty.bancoPayloadDados[ClinetID]}
                   - log:
                       id: log-deb4
-                      description: "# NÃO FUNCIONA O AUTH SEM URL NA DOC #"
-                      message: "# NÃO FUNCIONA O AUTH SEM URL NA DOC #"
+                      description: "# NÃO FUNCIONA O AUTH SEM DOC #"
+                      message: "# NÃO FUNCIONA O AUTH SEM DOC #"
             otherwise:
               id: otherwise-auth2-identifica-banco
               steps:
@@ -923,6 +923,10 @@
                           expression: ${body}
             otherwise:
               id: otherwise-c99e
+        - log:
+            id: log-2197
+            description: "# ROTA PARA ENVIO #"
+            message: "# ROTA PARA ENVIO: ${exchangeProperty.rota[codigoBanco]}"
         - choice:
             id: choice-ec60
             when:
@@ -991,7 +995,7 @@
                 expression:
                   simple:
                     id: simple-48b6
-                    expression: ${exchangeProperty.bancoPayloadDados[codigoBanco]} == 756
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 756
                 steps:
                   - to:
                       id: to-79fd
@@ -1274,6 +1278,9 @@
             id: log-76e2
             description: "# ROUTE ITAU COBRANCA #"
             message: "# ROUTE ITAU COBRANCA #"
+        - removeHeaders:
+            id: removeHeaders-10be
+            pattern: "*"
         - setHeader:
             id: setHeader-a335
             disabled: false
@@ -1644,6 +1651,68 @@
             id: log-34fd
             description: "# ROUTE SICOOB COBRANCA #"
             message: "# ROUTE SICOOB COBRANCA #"
-        - log:
-            id: log-2989
-            message: ${body}
+        - doTry:
+            id: doTry-6f61
+            doCatch:
+              - id: doCatch-8edb
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setBody:
+                      id: setBody-d3d6
+                      expression:
+                        simple:
+                          id: simple-3258
+                          expression: ${exception.getResponseBody()}
+            steps:
+              - setProperty:
+                  id: setProperty-6375
+                  description: urlRegistroBoleto
+                  name: urlRegistroBoleto
+                  expression:
+                    simple:
+                      id: simple-e6e1
+                      expression: >-
+                        sandbox.sicoob.com.br/sicoob/sandbox/cobranca-bancaria/v3/boletos
+              - removeHeaders:
+                  id: removeHeaders-b322
+                  pattern: "*"
+              - log:
+                  id: log-9746
+                  description: "# OBRIGATORIO A REMOCAO DE HEADERS #"
+                  message: "# OBRIGATORIO A REMOCAO DE HEADERS #"
+              - setHeaders:
+                  id: setHeaders-7430
+                  headers:
+                    - id: setHeader-3a63
+                      name: Authorization
+                      expression:
+                        simple:
+                          id: simple-a07b
+                          expression: Bearer ${exchangeProperty.tokenBancario}
+                    - id: setHeader-11f1
+                      name: client_id
+                      expression:
+                        simple:
+                          id: simple-df40
+                          expression: ${exchangeProperty.bancoPayloadDados[ClientID]}
+                    - id: setHeader-f69a
+                      name: Accept
+                      expression:
+                        simple:
+                          id: simple-ca03
+                          expression: application/json
+                    - id: setHeader-34da
+                      name: Content-Type
+                      expression:
+                        simple:
+                          id: simple-2263
+                          expression: application/json
+              - toD:
+                  id: to-f030
+                  uri: https
+                  parameters:
+                    httpUri: ${exchangeProperty.urlRegistroBoleto}
+                    bridgeEndpoint: true
+                    httpMethod: POST
+                    logHttpActivity: false
