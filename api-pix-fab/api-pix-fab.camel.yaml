@@ -332,7 +332,7 @@
                   - setProperty:
                       id: setProperty-banco-senhaCert
                       description: "Banco: bancoSenhaCertificado"
-                      disabled: true
+                      disabled: false
                       name: bancoSenhaCertificado
                       expression:
                         simple:
@@ -976,7 +976,7 @@
             id: choice-ec60
             when:
               - id: when-b0f4
-                description: Banco == 1
+                description: BB (1)
                 expression:
                   simple:
                     id: simple-8b31
@@ -988,7 +988,7 @@
                       parameters:
                         name: bb-cobranca
               - id: when-1254
-                description: Banco == 33
+                description: Santander (33)
                 expression:
                   simple:
                     id: simple-a57d
@@ -1000,7 +1000,7 @@
                       parameters:
                         name: santander-cobranca
               - id: when-dd24
-                description: Banco == 341
+                description: Itau (341)
                 expression:
                   simple:
                     id: simple-8a5c
@@ -1012,7 +1012,7 @@
                       parameters:
                         name: itau-cobranca
               - id: when-579f
-                description: Banco == 748
+                description: Sicredi (748)
                 expression:
                   simple:
                     id: simple-4d54
@@ -1024,7 +1024,7 @@
                       parameters:
                         name: sicredi-cobranca
               - id: when-1cc5
-                description: Banco == 136
+                description: Unicred (136)
                 expression:
                   simple:
                     id: simple-fa4b
