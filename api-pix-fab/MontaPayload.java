@@ -13,6 +13,7 @@ public class MontaPayload {
     private MontaSicredi montaSicredi = new MontaSicredi();
     private MontaUnicred montaUnicred = new MontaUnicred();
     private MontaSicoob montaSicoob = new MontaSicoob();
+    private MontaSafra montaSafra = new MontaSafra();
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @SuppressWarnings("unchecked")
@@ -102,6 +103,9 @@ public class MontaPayload {
         }
         else if (codigoBanco.intValue() == 756) { // Sicoob
             return montaSicoob.montaSicoob(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+        }
+        else if (codigoBanco.intValue() == 422) { // Safra
+            return montaSafra.montaSafra(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
         }
         else {
             Map<String, Object> erro = new HashMap<>();
