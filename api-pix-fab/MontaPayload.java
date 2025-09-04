@@ -54,9 +54,11 @@ public class MontaPayload {
         Map<String, Object> rota = getNestedMap(jsonCompleto, "rota");
         Map<String, Object> dadosBoleto = getNestedMap(jsonCompleto, "dadosBoleto");
         Map<String, Object> dadosBanco = getNestedMap(jsonCompleto, "dadosBanco");
+        Map<String, Object> dadosMulta = getNestedMap(jsonCompleto, "dadosMulta");
+        Map<String, Object> dadosJuros = getNestedMap(jsonCompleto, "dadosJuros");
         Map<String, Object> pagador = getNestedMap(jsonCompleto, "pagador");
         Map<String, Object> beneficiario = getNestedMap(jsonCompleto, "beneficiario");
-        Map<String, Object> descontos = getNestedMap(jsonCompleto, "descontos");
+        Map<String, Object> dadosDesconto = getNestedMap(jsonCompleto, "descontos");
         
         // Extrair arrays
         List<String> instrucoes = getStringList(jsonCompleto, "instrucoes");
@@ -87,26 +89,28 @@ public class MontaPayload {
         }
 
         if (codigoBanco.intValue() == 1) { // Banco do Brasil
-            return montaBB.montaBB(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+            return montaBB.montaBB(tipo, dadosBanco, dadosBoleto, dadosJuros, dadosMulta, pagador, beneficiario, instrucoes, mensagens, dadosDesconto);
         } 
+        /*
         else if (codigoBanco.intValue() == 33) { // Santander
-            return montaSantander.montaSantander(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+            return montaSantander.montaSantander(tipo, dadosBanco, dadosBoleto, dadosJuros, dadosMulta, pagador, beneficiario, instrucoes, mensagens, dadosDesconto);
         }
         else if (codigoBanco.intValue() == 341) { // Itau
-            return montaItau.montaItau(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+            return montaItau.montaItau(tipo, dadosBanco, dadosBoleto, dadosJuros, dadosMulta, pagador, beneficiario, instrucoes, mensagens, dadosDesconto);
         }
         else if (codigoBanco.intValue() == 748) { // Sicredi
-            return montaSicredi.montaSicredi(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+            return montaSicredi.montaSicredi(tipo, dadosBanco, dadosBoleto, dadosJuros, dadosMulta, pagador, beneficiario, instrucoes, mensagens, dadosDesconto);
         }
         else if (codigoBanco.intValue() == 136) { // Unicred
-            return montaUnicred.montaUnicred(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+            return montaUnicred.montaUnicred(tipo, dadosBanco, dadosBoleto, dadosJuros, dadosMulta, pagador, beneficiario, instrucoes, mensagens, dadosDesconto);
         }
         else if (codigoBanco.intValue() == 756) { // Sicoob
-            return montaSicoob.montaSicoob(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+            return montaSicoob.montaSicoob(tipo, dadosBanco, dadosBoleto, dadosJuros, dadosMulta, pagador, beneficiario, instrucoes, mensagens, dadosDesconto);
         }
         else if (codigoBanco.intValue() == 422) { // Safra
-            return montaSafra.montaSafra(tipo, dadosBanco, dadosBoleto, pagador, beneficiario, instrucoes, mensagens, descontos);
+            return montaSafra.montaSafra(tipo, dadosBanco, dadosBoleto, dadosJuros, dadosMulta, pagador, beneficiario, instrucoes, mensagens, dadosDesconto);
         }
+        */
         else {
             Map<String, Object> erro = new HashMap<>();
             erro.put("erro", "Banco não suportado: " + codigoBanco);

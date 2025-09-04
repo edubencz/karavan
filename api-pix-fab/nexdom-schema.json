@@ -14,177 +14,123 @@
       "additionalProperties": false
     },
     "dadosBoleto": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
-        "numeroDocumento": { "type": "string" },
-        "dataVencimento": { "type": "string", "format": "date" },
-        "dataEmissao": { "type": "string", "format": "date" },
-        "tipoJuros": { "type": "integer" },
-        "tipoMulta": { "type": "integer" },
-        "dataMulta": { "type": "string", "format": "date" },
-        "valorNominal": { "type": "number" },
-        "valorJuros": { "type": "number" },
-        "percentualJuros": { "type": "number" },
-        "percentualMulta": { "type": "number" },
-        "numeroNossoNumero": { "type": "string" },
-        "linhaDigitavel": { "type": "string" },
-        "codigoBarras": { "type": "string" },
-        "especieDocumento": { "type": "string" },
-        "tipoDoc": { "type": "string" },
-        "aceite": { "type": "string" },
-        "dataProcessamento": { "type": "string", "format": "date" },
-        "quantidadeDiasProtesto": { "type": "integer" },
-        "quantidadeDiasNegativacao": { "type": "integer" },
-        "orgaoNegativador": { "type": ["null", "string"] },
-        "aceiteTituloVencido": { "type": "string" },
-        "numeroDiasLimiteRecebimento": { "type": "integer" },
-        "mensagemBloquetoOcorrencia": { "type": ["null", "string"] },
-        "codigoTipoTitulo": { "type": "integer" }
+        "numeroDocumento": { "type": ["string", "null"] },
+        "dataVencimento": { "type": ["string", "null"], "format": "date" },
+        "numeroNossoNumero": { "type": ["string", "null"] },
+        "dataEmissao": { "type": ["string", "null"], "format": "date" },
+        "valorTitulo": { "type": ["number", "null"] },
+        "especieDocumento": { "type": ["string", "null"] },
+        "tipoDoc": { "type": ["string", "null"] },
+        "dataProcessamento": { "type": ["string", "null"], "format": "date" },
+        "protestar": { "type": ["string", "null"] },
+        "quantidadeDiasProtesto": { "type": ["integer", "null"] },
+        "negativar": { "type": ["string", "null"] },
+        "quantidadeDiasNegativacao": { "type": ["integer", "null"] },
+        "orgaoNegativador": { "type": ["string", "null"] },
+        "aceiteTituloVencido": { "type": ["string", "null"] },
+        "numeroDiasLimiteRecebimento": { "type": ["integer", "null"] },
+        "pagamentoParcial": { "type": ["string", "null"] },
+        "pagamentoParcialMin": { "type": ["number", "null"] },
+        "pagamentoParcialMax": { "type": ["number", "null"] },
+        "pagamentoQtd": { "type": ["integer", "null"] }
       },
-      "required": [
-        "numeroDocumento",
-        "dataVencimento",
-        "dataEmissao",
-        "tipoJuros",
-        "tipoMulta",
-        "dataMulta",
-        "valorNominal",
-        "valorJuros",
-        "percentualJuros",
-        "percentualMulta",
-        "numeroNossoNumero",
-        "linhaDigitavel",
-        "codigoBarras",
-        "especieDocumento",
-        "aceite",
-        "dataProcessamento",
-        "quantidadeDiasProtesto",
-        "quantidadeDiasNegativacao",
-        "orgaoNegativador",
-        "aceiteTituloVencido",
-        "numeroDiasLimiteRecebimento",
-        "mensagemBloquetoOcorrencia",
-        "codigoTipoTitulo"
-      ],
+      "additionalProperties": false
+    },
+    "dadosMulta": {
+      "type": ["object", "null"],
+      "properties": {
+        "dataMulta": { "type": ["string", "null"], "format": "date" },
+        "valorMulta": { "type": ["number", "null"] },
+        "percentualMulta": { "type": ["number", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "dadosJuros": {
+      "type": ["object", "null"],
+      "properties": {
+        "dataJuros": { "type": ["string", "null"], "format": "date" },
+        "valorJuros": { "type": ["number", "null"] },
+        "percentualJuros": { "type": ["number", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "dadosDesconto": {
+      "type": ["object", "null"],
+      "properties": {
+        "valorDesconto": { "type": ["number", "null"] },
+        "percentualDesconto": { "type": ["number", "null"] }
+      },
       "additionalProperties": false
     },
     "dadosBanco": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
-        "codigoBanco": { "type": "integer" },
-        "nomeBanco": { "type": "string" },
-        "agencia": { "type": "string" },
-        "digitoAgencia": { "type": "string" },
-        "conta": { "type": "string" },
-        "digitoConta": { "type": "string" },
-        "convenio": { "type": "string" },
-        "carteira": { "type": "string" },
-        "variacao": { "type": "integer" },
-        "codigoModalidade": { "type": "integer" }
+        "codigoBanco": { "type": ["integer", "null"] },
+        "nomeBanco": { "type": ["string", "null"] },
+        "agencia": { "type": ["string", "null"] },
+        "digitoAgencia": { "type": ["string", "null"] },
+        "conta": { "type": ["string", "null"] },
+        "digitoConta": { "type": ["string", "null"] },
+        "convenio": { "type": ["string", "null"] },
+        "carteira": { "type": ["string", "null"] },
+        "variacao": { "type": ["integer", "null"] }
       },
-      "required": [
-        "codigoBanco",
-        "nomeBanco",
-        "agencia",
-        "digitoAgencia",
-        "conta",
-        "digitoConta",
-        "convenio",
-        "carteira",
-        "variacao",
-        "codigoModalidade"
-      ],
       "additionalProperties": false
     },
     "beneficiario": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
-        "nome": { "type": "string" },
-        "documento": { "type": "string" },
-        "tipoPessoa": { "type": "string" },
-        "tipoPessoaNumero": { "type": "integer" },
+        "nome": { "type": ["string", "null"] },
+        "documento": { "type": ["string", "null"] },
+        "tipoPessoa": { "type": ["string", "null"] },
         "endereco": {
-          "type": "object",
+          "type": ["object", "null"],
           "properties": {
-            "logradouro": { "type": "string" },
-            "cidade": { "type": "string" },
-            "uf": { "type": "string" },
-            "cep": { "type": "string" }
+            "logradouro": { "type": ["string", "null"] },
+            "cidade": { "type": ["string", "null"] },
+            "uf": { "type": ["string", "null"] },
+            "cep": { "type": ["string", "null"] }
           },
-          "required": ["logradouro", "cidade", "uf", "cep"],
           "additionalProperties": false
         },
-        "telefone": { "type": "string" }
+        "telefone": { "type": ["string", "null"] }
       },
-      "required": ["nome", "documento", "tipoPessoa", "tipoPessoaNumero", "endereco", "telefone"],
       "additionalProperties": false
     },
     "pagador": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
-        "nome": { "type": "string" },
-        "documento": { "type": "string" },
-        "tipoPessoaNumero": { "type": "integer" },
-        "tipoPessoa": { "type": "string" },
+        "nome": { "type": ["string", "null"] },
+        "documento": { "type": ["string", "null"] },
+        "tipoPessoa": { "type": ["string", "null"] },
         "endereco": {
-          "type": "object",
+          "type": ["object", "null"],
           "properties": {
-            "logradouro": { "type": "string" },
-            "bairro": { "type": "string" },
-            "cidade": { "type": "string" },
-            "uf": { "type": "string" },
-            "cep": { "type": "string" },
-            "complemento": { "type": ["null", "string"] }
+            "logradouro": { "type": ["string", "null"] },
+            "bairro": { "type": ["string", "null"] },
+            "cidade": { "type": ["string", "null"] },
+            "uf": { "type": ["string", "null"] },
+            "cep": { "type": ["string", "null"] },
+            "complemento": { "type": ["string", "null"] }
           },
-          "required": ["logradouro", "bairro", "cidade", "uf", "cep", "complemento"],
           "additionalProperties": false
         },
-        "telefone": { "type": "string" }
+        "telefone": { "type": ["string", "null"] },
+        "email": { "type": ["string", "null"] }
       },
-      "required": ["nome", "documento", "tipoPessoaNumero", "tipoPessoa", "endereco", "telefone"],
       "additionalProperties": false
     },
     "instrucoes": {
-      "type": "array",
-      "items": { "type": "string" }
+      "type": ["array", "null"],
+      "items": { "type": ["string", "null"] }
     },
     "mensagens": {
-      "type": "array",
-      "items": { "type": "string" }
-    },
-    "descontos": {
-      "type": "object",
-      "properties": {
-        "valorDesconto": { "type": "number" },
-        "percentualDesconto": { "type": "number" }
-      },
-      "required": ["valorDesconto", "percentualDesconto"],
-      "additionalProperties": false
-    },
-    "controlesInternos": {
-      "type": "object",
-      "properties": {
-        "numeroFatura": { "type": "string" },
-        "codigoUnimed": { "type": "string" },
-        "contratoVenda": { "type": "string" },
-        "tipoContrato": { "type": ["null", "string"] },
-        "numeroProcesso": { "type": ["null", "string"] },
-        "competencia": { "type": ["null", "string"] }
-      },
-      "required": ["numeroFatura", "codigoUnimed", "contratoVenda", "tipoContrato", "numeroProcesso", "competencia"],
-      "additionalProperties": false
+      "type": ["array", "null"],
+      "items": { "type": ["string", "null"] }
     }
   },
-  "required": [
-    "rota",
-    "dadosBoleto",
-    "dadosBanco",
-    "beneficiario",
-    "pagador",
-    "instrucoes",
-    "mensagens",
-    "descontos",
-    "controlesInternos"
-  ],
+  "required": ["rota"],
   "additionalProperties": false
 }

@@ -1118,6 +1118,9 @@
                         simple:
                           id: simple-d939
                           expression: ${exchangeProperty.bancoPayloadDados[AppKey]}
+              - log:
+                  id: log-1369
+                  message: ${body}
               - toD:
                   id: to-241b
                   uri: https
@@ -1125,6 +1128,7 @@
                     httpUri: api.hm.bb.com.br/cobrancas/v2/boletos
                     bridgeEndpoint: true
                     httpMethod: POST
+                    logHttpActivity: true
 - route:
     id: santander-cobranca
     nodePrefixId: route-ecf
