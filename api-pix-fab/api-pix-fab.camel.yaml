@@ -92,6 +92,14 @@
                     simple:
                       id: simple-d8fd
                       expression: ${exchangeProperty.redisKey}:token
+              - setProperty:
+                  id: setProperty-ef66
+                  description: "Variavel: redisDadosBanco"
+                  name: redisDadosBanco
+                  expression:
+                    simple:
+                      id: simple-d82c
+                      expression: apipix:banco:${exchangeProperty.rota[codigoBanco]}
               - marshal:
                   id: marshal-payload-json
                   json:
@@ -100,7 +108,105 @@
                   id: to-validate-banco
                   uri: direct
                   parameters:
-                    name: redis-valida-token
+                    name: busca-url-banco
+- route:
+    id: route-busca-url-banco
+    nodePrefixId: route-busca-url-banco
+    from:
+      id: from-route-busca-url-token
+      uri: direct
+      parameters:
+        name: busca-url-banco
+      steps:
+        - log:
+            id: log-8f30
+            description: "# ROUTE-BUSCA-URL-BANCO #"
+            message: "# ROUTE-BUSCA-URL-BANCO #"
+        - setHeader:
+            id: setHeader-290b
+            name: CamelRedis.Key
+            expression:
+              simple:
+                id: simple-9bed
+                expression: ${exchangeProperty.redisDadosBanco}
+        - to:
+            id: to-e7aa
+            uri: kamelet:redis-sink
+            parameters:
+              redisHost: fesc-sql-dev01.fesc.sgusuite.com.br
+              redisPort: 6379
+              command: EXISTS
+        - setProperty:
+            id: setProperty-b9ef
+            description: "Variavel: existeDadosBancoURL"
+            name: existeDadosBancoURL
+            expression:
+              simple:
+                id: simple-6072
+                expression: ${body}
+        - choice:
+            id: choice-976a
+            when:
+              - id: when-6171
+                expression:
+                  simple:
+                    id: simple-e534
+                    expression: ${exchangeProperty.existeDadosBancoURL} == true
+                steps:
+                  - to:
+                      id: to-7c7b
+                      uri: kamelet:redis-sink
+                      parameters:
+                        redisHost: fesc-sql-dev01.fesc.sgusuite.com.br
+                        redisPort: 6379
+                        command: GET
+                  - unmarshal:
+                      id: unmarshal-7ee9
+                      disabled: false
+                      json:
+                        id: json-7c87
+                  - setProperty:
+                      id: setProperty-7ac7
+                      description: bancoOAuthUrl
+                      disabled: false
+                      name: bancoOAuthUrl
+                      expression:
+                        simple:
+                          id: simple-0374
+                          expression: ${body[oauth]}
+                  - setProperty:
+                      id: setProperty-ac52
+                      description: "Variavel: bancoURL"
+                      name: bancoURL
+                      expression:
+                        simple:
+                          id: simple-8cc6
+                          expression: ${body[url]}
+            otherwise:
+              id: otherwise-4b5e
+              steps:
+                - setBody:
+                    id: setBody-2eac
+                    expression:
+                      simple:
+                        id: simple-4bdf
+                        expression: >-
+                          { "erro": "Não foi encontrado os dados da URL do banco
+                          informado" }
+                - log:
+                    id: log-ad4e
+                    disabled: true
+                    message: ${body}
+                - log:
+                    id: log-6e94
+                    message: ${exchangeProperty.bancoOAuthUrl}
+                - stop:
+                    id: stop-6568
+        - to:
+            id: to-5bb3
+            uri: direct
+            parameters:
+              name: redis-valida-token
 - route:
     id: redis-valida-token
     nodePrefixId: route-redis-valida
@@ -524,6 +630,7 @@
                   - setProperty:
                       id: setProperty-237e
                       description: bancoOAuthUrl
+                      disabled: true
                       name: bancoOAuthUrl
                       expression:
                         simple:
@@ -583,6 +690,7 @@
                   - setProperty:
                       id: setProperty-0b29
                       description: bancoOAuthUrl
+                      disabled: true
                       name: bancoOAuthUrl
                       expression:
                         simple:
@@ -590,6 +698,7 @@
                           expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
               - id: when-ef06
                 description: Unicred (136)
+                disabled: false
                 expression:
                   simple:
                     id: simple-5985
@@ -620,6 +729,7 @@
                   - setProperty:
                       id: setProperty-badb
                       description: bancoOAuthUrl
+                      disabled: true
                       name: bancoOAuthUrl
                       expression:
                         simple:
@@ -714,6 +824,7 @@
         - setProperty:
             id: setProperty-eaef
             description: bancoOAuthUrl
+            disabled: true
             name: bancoOAuthUrl
             expression:
               simple:
@@ -1120,15 +1231,16 @@
                           expression: ${exchangeProperty.bancoPayloadDados[AppKey]}
               - log:
                   id: log-1369
+                  disabled: true
                   message: ${body}
               - toD:
                   id: to-241b
                   uri: https
                   parameters:
-                    httpUri: api.hm.bb.com.br/cobrancas/v2/boletos
+                    httpUri: ${exchangeProperty.bancoURL}
                     bridgeEndpoint: true
                     httpMethod: POST
-                    logHttpActivity: true
+                    logHttpActivity: false
 - route:
     id: santander-cobranca
     nodePrefixId: route-ecf
@@ -1185,19 +1297,19 @@
                     simple:
                       id: simple-541f
                       expression: ${body[Workspace]}
-              - setProperty:
-                  id: setProperty-bdc8
-                  description: Santander URL
-                  name: santanderURL
-                  expression:
-                    simple:
-                      id: simple-0e37
-                      expression: >-
-                        trust-sandbox.api.santander.com.br/collection_bill_management/v2/workspaces/${exchangeProperty[santanderWorkspace]}/bank_slips
         - log:
             id: log-018e
             description: "# ENVIO AO SANTANDER #"
             message: "# ENVIO AO SANTANDER #"
+        - setProperty:
+            id: setProperty-bdc8
+            description: Santander URL
+            name: santanderURL
+            expression:
+              simple:
+                id: simple-0e37
+                expression: >-
+                  ${exchangeProperty.bancoURL}/${exchangeProperty[santanderWorkspace]}/bank_slips
         - setHeaders:
             id: setHeaders-90f8
             headers:
@@ -1468,7 +1580,7 @@
                   id: to-5df9
                   uri: https
                   parameters:
-                    httpUri: api-parceiro.sicredi.com.br/sb/cobranca/boleto/v1/boletos
+                    httpUri: ${exchangeProperty.bancoURL}/boletos
                     bridgeEndpoint: true
                     httpMethod: POST
                     logHttpActivity: false
@@ -1507,7 +1619,7 @@
                     simple:
                       id: simple-1c7c
                       expression: >-
-                        api.e-unicred.com.br/homolog/cobranca/v2/beneficiarios/${exchangeProperty.bancoPayloadDados[idBeneficiario]}/titulos
+                        ${exchangeProperty.bancoURL}/${exchangeProperty.bancoPayloadDados[idBeneficiario]}/titulos
               - setHeaders:
                   id: setHeaders-09b2
                   headers:
@@ -1652,8 +1764,7 @@
                   expression:
                     simple:
                       id: simple-e6e1
-                      expression: >-
-                        sandbox.sicoob.com.br/sicoob/sandbox/cobranca-bancaria/v3/boletos
+                      expression: ${exchangeProperty.bancoURL}/boletos
               - removeHeaders:
                   id: removeHeaders-b322
                   pattern: "*"
@@ -1790,7 +1901,7 @@
                   id: to-8679
                   uri: https
                   parameters:
-                    httpUri: api-hml.safranegocios.com.br/gateway/cobrancas/v1/boletos
+                    httpUri: ${exchangeProperty.bancoURL}/boletos
                     bridgeEndpoint: true
                     httpMethod: POST
                     logHttpActivity: true

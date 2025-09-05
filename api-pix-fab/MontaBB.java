@@ -80,9 +80,19 @@ public class MontaBB {
                                Map<String, Object> dadosDescontos) throws Exception {
         
         Map<String, Object> payload = new LinkedHashMap<>();
-        
-        payload.put("numeroConvenio", dadosBanco.get("convenio"));
-        payload.put("numeroCarteira", dadosBanco.get("carteira"));
+        Object convenioObj = dadosBanco.get("convenio");
+        Object carteiraObj = dadosBanco.get("carteira");
+
+        Integer convenio = convenioObj instanceof Number 
+            ? ((Number) convenioObj).intValue() 
+            : Integer.valueOf(convenioObj.toString());
+
+        Integer carteira = carteiraObj instanceof Number 
+            ? ((Number) carteiraObj).intValue() 
+            : Integer.valueOf(carteiraObj.toString());
+
+        payload.put("numeroConvenio", convenio);
+        payload.put("numeroCarteira", carteira);
         payload.put("numeroVariacaoCarteira", dadosBanco.get("variacao"));
         payload.put("codigoModalidade", 1); //Valor fixo 01 - SIMPLES
         payload.put("dataEmissao", tratarData((String) dadosBoleto.get("dataEmissao"), "dd.MM.yyyy"));
@@ -101,17 +111,42 @@ public class MontaBB {
         }
 
         payload.put("indicadorAceiteTituloVencido", dadosBoleto.getOrDefault("aceiteTituloVencido", "N"));
-        payload.put("numeroDiasLimiteRecebimento", dadosBoleto.get("numeroDiasLimiteRecebimento"));
-        //payload.put("codigoAceite", dadosBoleto.get("aceite"));
-        payload.put("codigoTipoTitulo", dadosBoleto.get("tipoDoc"));
-        switch ((String) dadosBoleto.get("tipoDoc")) {
+
+        Number diasLimiteRecebimento = (Number) dadosBoleto.get("numeroDiasLimiteRecebimento");
+        if (diasLimiteRecebimento != null && diasLimiteRecebimento.intValue() > 0) {
+            payload.put("numeroDiasLimiteRecebimento", diasLimiteRecebimento);
+        }
+        /*
+         1- CHEQUE, 2- DUPLICATA MERCANTIL, 3- DUPLICATA MTIL POR INDICACAO, 4- DUPLICATA DE SERVICO, 5- DUPLICATA DE SRVC P/INDICACAO, 
+         6- DUPLICATA RURAL, 7- LETRA DE CAMBIO, 8- NOTA DE CREDITO COMERCIAL, 9- NOTA DE CREDITO A EXPORTACAO, 10- NOTA DE CREDITO INDULTRIAL, 
+         11- NOTA DE CREDITO RURAL, 12- NOTA PROMISSORIA, 13- NOTA PROMISSORIA RURAL, 14- TRIPLICATA MERCANTIL, 15- TRIPLICATA DE SERVICO, 
+         16- NOTA DE SEGURO, 17- RECIBO, 18- FATURA, 19- NOTA DE DEBITO, 20- APOLICE DE SEGURO, 21- MENSALIDADE ESCOLAR, 22- PARCELA DE CONSORCIO, 
+         23- DIVIDA ATIVA DA UNIAO, 24- DIVIDA ATIVA DE ESTADO, 25- DIVIDA ATIVA DE MUNICIPIO, 31- CARTAO DE CREDITO, 32- BOLETO PROPOSTA, 
+         33- BOLETO APORTE, 99- OUTROS.
+        */
+       switch ((String) dadosBoleto.get("especieDocumento")) {
             case "CH":
+                payload.put("codigoTipoTitulo", 1);
                 payload.put("descricaoTipoTitulo", "CHEQUE");
                 break;
             case "DM":
+                payload.put("codigoTipoTitulo", 2);
                 payload.put("descricaoTipoTitulo", "DUPLICATA MERCANTIL");
                 break;
+            case "DS":
+                payload.put("codigoTipoTitulo", 3);
+                payload.put("descricaoTipoTitulo", "DUPLICATA MTIL POR INDICACAO");
+                break;
+            case "NF":
+                payload.put("codigoTipoTitulo", 18);
+                payload.put("descricaoTipoTitulo", "NOTA FISCAL");
+                break;
+            case "ND":
+                payload.put("codigoTipoTitulo", 19);
+                payload.put("descricaoTipoTitulo", "NOTA DE DEBITO");
+                break;
             default:
+                payload.put("codigoTipoTitulo", 99); //OUTROS
                 payload.put("descricaoTipoTitulo", "OUTROS");
         }
 
@@ -160,16 +195,9 @@ public class MontaBB {
         }
 
         // Multa
-        Number valorMulta = (Number) dadosBoleto.get("valorMulta");
         Number percentualMulta = (Number) dadosBoleto.get("percentualMulta");
         Map<String, Object> multa = new LinkedHashMap<>();
-        if (valorMulta != null && valorMulta.doubleValue() > 0) {
-            multa.put("tipo", 1); //DIAS DE ATRASO
-            multa.put("data", tratarData((String) dadosMulta.get("dataMulta"), "dd.MM.yyyy"));
-            multa.put("valor", valorMulta);
-            payload.put("multa", multa);
-        }
-        else if (percentualMulta != null && percentualMulta.doubleValue() > 0) {
+        if (percentualMulta != null && percentualMulta.doubleValue() > 0) {
             multa.put("tipo", 2); //TAXA MENSAL
             multa.put("data", tratarData((String) dadosMulta.get("dataMulta"), "dd.MM.yyyy"));
             multa.put("porcentagem", percentualMulta);

@@ -22,7 +22,6 @@
         "dataEmissao": { "type": ["string", "null"], "format": "date" },
         "valorTitulo": { "type": ["number", "null"] },
         "especieDocumento": { "type": ["string", "null"] },
-        "tipoDoc": { "type": ["string", "null"] },
         "dataProcessamento": { "type": ["string", "null"], "format": "date" },
         "protestar": { "type": ["string", "null"] },
         "quantidadeDiasProtesto": { "type": ["integer", "null"] },
@@ -42,7 +41,6 @@
       "type": ["object", "null"],
       "properties": {
         "dataMulta": { "type": ["string", "null"], "format": "date" },
-        "valorMulta": { "type": ["number", "null"] },
         "percentualMulta": { "type": ["number", "null"] }
       },
       "additionalProperties": false
