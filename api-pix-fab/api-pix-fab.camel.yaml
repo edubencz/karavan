@@ -1852,6 +1852,9 @@
                 exception:
                   - java.lang.Exception
                 steps:
+                  - log:
+                      id: log-1b5c
+                      message: ${body}
                   - setBody:
                       id: setBody-550a
                       expression:
@@ -1887,6 +1890,7 @@
                                     expression: ${header.CamelHttpResponseCode}
                             - setBody:
                                 id: setBody-9833
+                                disabled: true
                                 expression:
                                   simple:
                                     id: simple-5342
@@ -1921,12 +1925,13 @@
                           expression: application/json
               - log:
                   id: log-7052
+                  disabled: true
                   message: ${body}
               - toD:
                   id: to-8679
                   uri: https
                   parameters:
-                    httpUri: ${exchangeProperty.bancoURL}/boletos
+                    httpUri: ${exchangeProperty.bancoURL}
                     bridgeEndpoint: true
                     httpMethod: POST
-                    logHttpActivity: true
+                    logHttpActivity: false

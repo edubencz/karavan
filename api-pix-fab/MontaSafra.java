@@ -52,6 +52,8 @@ public class MontaSafra {
     public String montaSafra(String tipo,
                                 Map<String, Object> dadosBanco,
                                 Map<String, Object> dadosBoleto,
+                                Map<String, Object> dadosJuros,
+                                Map<String, Object> dadosMulta,
                                 Map<String, Object> dadosPagador,
                                 Map<String, Object> dadosBeneficiario,
                                 List<String> instrucoes,
@@ -59,9 +61,9 @@ public class MontaSafra {
                                 Map<String, Object> dadosDescontos) throws Exception {
         switch (tipo.toLowerCase()) {
             case "registrar":
-                return montarEmissao(dadosBanco, dadosBoleto, dadosPagador, dadosBeneficiario, instrucoes, mensagens, dadosDescontos);
+                return montarEmissao(dadosBanco, dadosBoleto, dadosJuros, dadosMulta, dadosPagador, dadosBeneficiario, instrucoes, mensagens, dadosDescontos);
             case "alterar":
-                return montarAlteracao(dadosBanco, dadosBoleto, dadosPagador, dadosDescontos);
+                return montarAlteracao(dadosBanco, dadosBoleto, dadosJuros, dadosMulta, dadosPagador, dadosDescontos);
             case "cancelamento":
             case "cancelar":
                 return montarCancelamento(dadosBanco, dadosBoleto);
@@ -73,29 +75,80 @@ public class MontaSafra {
 
     }
     public String montarEmissao(Map<String, Object> dadosBanco,
-                               Map<String, Object> dadosBoleto,
-                               Map<String, Object> dadosPagador,
-                               Map<String, Object> dadosBeneficiario,
-                               List<String> instrucoes,
-                               List<String> mensagens,
-                               Map<String, Object> dadosDescontos) throws Exception {
+                                Map<String, Object> dadosBoleto,
+                                Map<String, Object> dadosJuros,
+                                Map<String, Object> dadosMulta,
+                                Map<String, Object> dadosPagador,
+                                Map<String, Object> dadosBeneficiario,
+                                List<String> instrucoes,
+                                List<String> mensagens,
+                                Map<String, Object> dadosDescontos) throws Exception {
         
         Map<String, Object> payload = new LinkedHashMap<>();
         
         // Campos obrigatórios
         Integer agencia = parseInteger(dadosBanco.get("agencia"));
         Integer conta = parseInteger(dadosBanco.get("conta"));
-        payload.put("agencia", agencia);
         payload.put("conta", conta);
+        payload.put("agencia", agencia);
 
         Map<String, Object> documento = new LinkedHashMap<>();
         documento.put("numero", dadosBoleto.get("numeroDocumento"));
         documento.put("numeroCliente", dadosBoleto.get("numeroDocumento"));
-        //documento.put("diasDevolucao", dadosBoleto.get("diasDevolucao"));
-        documento.put("especie", 1); // 1 DM
+
+        /*
+        01–Duplicata mercantil, 02–Nota promissória, 03–Nota de seguro, 05–Recibo, 09–Duplicata de serviço
+        */
+        switch ((String) dadosBoleto.get("especieDocumento")) {
+            case "DM":
+                documento.put("especie", "01");
+                break;
+            case "DS":
+                documento.put("especie", "09");
+                break;
+            case "NS":
+                documento.put("especie", "03");
+                break;
+            case "NP":
+                documento.put("especie", "02");
+                break;
+            default:
+                throw new RuntimeException("EspecieDocumento não suportada: " + dadosBoleto.get("especieDocumento"));
+        }
         documento.put("dataVencimento", dadosBoleto.get("dataVencimento"));
-        documento.put("valor", dadosBoleto.get("valorNominal"));
+        documento.put("valor", dadosBoleto.get("valorTitulo"));
         documento.put("codigoMoeda", 0); //0 Fixo Layout
+
+        //Protestar
+        if (dadosBoleto.get("protestar") != null && dadosBoleto.get("protestar").equals("S")) {
+            documento.put("quantidadeDiasProtesto", dadosBoleto.get("quantidadeDiasProtesto")); //Dias para protesto
+        }
+
+        //PagamentoParcial
+        if (dadosBoleto.get("pagamentoParcial") != null && dadosBoleto.get("pagamentoParcial").equals("S")) {
+            documento.put("valorMinimo", dadosBoleto.get("pagamentoParcialMin"));            
+            documento.put("valorMaximo", dadosBoleto.get("pagamentoParcialMax"));
+            documento.put("quantidadeParcelas", dadosBoleto.get("pagamentoParcialQtd"));
+            documento.put("tipoPagamento", 1); //Aceita qualquer valor
+            documento.put("tipoValor", 2); //Valor
+        }
+
+        //Multa / Juros
+        Map<String, Object> multa = new LinkedHashMap<>();
+        Number percentualMulta = (Number) dadosMulta.get("percentualMulta");
+        Number valorJuros = (Number) dadosJuros.get("valorJuros");
+        Number percentualJuros = (Number) dadosJuros.get("percentualJuros");
+        if (percentualMulta != null && percentualMulta.doubleValue() > 0) {
+            multa.put("dataMulta", dadosMulta.get("dataMulta"));
+            multa.put("taxaMulta", percentualMulta);
+        }
+        if (percentualJuros != null && percentualJuros.doubleValue() > 0) {
+            multa.put("dataJuros", dadosJuros.get("dataJuros"));
+            multa.put("taxaJuros", percentualJuros);
+        }
+        if (!multa.isEmpty()) {
+            documento.put("multa", multa);
+        }
 
         Map<String, Object> pagador = new LinkedHashMap<>();
         pagador.put("tipoPessoa", dadosPagador.get("tipoPessoa"));
@@ -116,15 +169,6 @@ public class MontaSafra {
         pagador.put("endereco", endereco);
 
         documento.put("pagador", pagador);
-        /*
-        Map<String, Object> enderecoPagador = getNestedMap(dadosPagador, "endereco");
-        pagador.put("endereco", enderecoPagador.get("logradouro"));
-        //pagador.put("bairro", enderecoPagador.get("bairro"));
-        pagador.put("cidade", enderecoPagador.get("cidade"));
-        pagador.put("uf", enderecoPagador.get("uf"));
-        pagador.put("cep", enderecoPagador.get("cep"));
-        payload.put("pagador", pagador);
-        */
 
         payload.put("documento", documento);
 
@@ -132,9 +176,11 @@ public class MontaSafra {
     }
 
     public String montarAlteracao(Map<String, Object> dadosBanco,
-                                 Map<String, Object> dadosBoleto,
-                                 Map<String, Object> dadosPagador,
-                                 Map<String, Object> dadosDescontos) throws Exception {
+                                    Map<String, Object> dadosBoleto,
+                                    Map<String, Object> dadosJuros,
+                                    Map<String, Object> dadosMulta,
+                                    Map<String, Object> dadosPagador,
+                                    Map<String, Object> dadosDescontos) throws Exception {
         Map<String, Object> payload = new LinkedHashMap<>();
         
         return "";//objectMapper.writeValueAsString(payload);

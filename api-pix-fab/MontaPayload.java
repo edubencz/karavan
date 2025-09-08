@@ -103,12 +103,12 @@ public class MontaPayload {
         else if (codigoBanco.intValue() == 756) { // Sicoob
             return montaSicoob.montaSicoob(tipo, dadosBanco, dadosBoleto, dadosJuros, dadosMulta, pagador, beneficiario, instrucoes, mensagens, dadosDesconto);
         }
+        else if (codigoBanco.intValue() == 422) { // Safra
+            return montaSafra.montaSafra(tipo, dadosBanco, dadosBoleto, dadosJuros, dadosMulta, pagador, beneficiario, instrucoes, mensagens, dadosDesconto);
+        }
         /*
         else if (codigoBanco.intValue() == 341) { // Itau
             return montaItau.montaItau(tipo, dadosBanco, dadosBoleto, dadosJuros, dadosMulta, pagador, beneficiario, instrucoes, mensagens, dadosDesconto);
-        }
-        else if (codigoBanco.intValue() == 422) { // Safra
-            return montaSafra.montaSafra(tipo, dadosBanco, dadosBoleto, dadosJuros, dadosMulta, pagador, beneficiario, instrucoes, mensagens, dadosDesconto);
         }
         */
         else {
