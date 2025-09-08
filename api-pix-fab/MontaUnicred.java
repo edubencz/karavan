@@ -38,6 +38,8 @@ public class MontaUnicred {
     public String montaUnicred(String tipo,
                                 Map<String, Object> dadosBanco,
                                 Map<String, Object> dadosBoleto,
+                                Map<String, Object> dadosJuros,
+                                Map<String, Object> dadosMulta,
                                 Map<String, Object> dadosPagador,
                                 Map<String, Object> dadosBeneficiario,
                                 List<String> instrucoes,
@@ -45,9 +47,9 @@ public class MontaUnicred {
                                 Map<String, Object> dadosDescontos) throws Exception {
         switch (tipo.toLowerCase()) {
             case "registrar":
-                return montarEmissao(dadosBanco, dadosBoleto, dadosPagador, dadosBeneficiario, instrucoes, mensagens, dadosDescontos);
+                return montarEmissao(dadosBanco, dadosBoleto, dadosJuros, dadosMulta, dadosPagador, dadosBeneficiario, instrucoes, mensagens, dadosDescontos);
             case "alterar":
-                return montarAlteracao(dadosBanco, dadosBoleto, dadosPagador, dadosDescontos);
+                return montarAlteracao(dadosBanco, dadosBoleto, dadosJuros, dadosMulta, dadosPagador, dadosDescontos);
             case "cancelamento":
             case "cancelar":
                 return montarCancelamento(dadosBanco, dadosBoleto);
@@ -60,6 +62,8 @@ public class MontaUnicred {
     }
     public String montarEmissao(Map<String, Object> dadosBanco,
                                Map<String, Object> dadosBoleto,
+                               Map<String, Object> dadosJuros,
+                               Map<String, Object> dadosMulta,
                                Map<String, Object> dadosPagador,
                                Map<String, Object> dadosBeneficiario,
                                List<String> instrucoes,
@@ -71,22 +75,28 @@ public class MontaUnicred {
         // Campos obrigatórios conforme documentação BB
         payload.put("beneficiarioVariacaoCarteira", dadosBanco.get("carteira"));
         payload.put("seuNumero", dadosBoleto.get("numeroDocumento"));
-        payload.put("valor", dadosBoleto.get("valorNominal"));
+        payload.put("valor", dadosBoleto.get("valorTitulo"));
         payload.put("vencimento", dadosBoleto.get("dataVencimento"));
         payload.put("nossoNumero", dadosBoleto.get("nossoNumero"));
         
         //Protesto
-        Number quantidadeDiasProtesto = (Number) dadosBoleto.get("quantidadeDiasProtesto");
-        if (quantidadeDiasProtesto != null && quantidadeDiasProtesto.doubleValue() > 0) {
-            payload.put("codigoParaProtesto", "DIAS_ÚTEIS");
-            payload.put("diasParaProtesto", quantidadeDiasProtesto.intValue());
+        Number quantidadeDiasProtesto = (Number) dadosBoleto.get("diasProtesto");
+        if (dadosBoleto.get("protestar") != null && dadosBoleto.get("protestar").equals("S")) {
+            payload.put("codigoParaProtesto", "DIAS_CORRIDOS");
+            payload.put("quantidadeDiasProtesto", quantidadeDiasProtesto.intValue());
+        }
+        else {
+            payload.put("codigoParaProtesto", "NAO_PROTESTAR");
         }
 
         //Negativação
-        Number numeroDiasLimiteRecebimento = (Number) dadosBoleto.get("numeroDiasLimiteRecebimento");
-        if (numeroDiasLimiteRecebimento != null && numeroDiasLimiteRecebimento.doubleValue() > 0) {
+        Number quantidadeDiasNegativacao = (Number) dadosBoleto.get("diasNegativacao");
+        if (dadosBoleto.get("negativar") != null && dadosBoleto.get("negativar").equals("S")) {
             payload.put("codigoParaNegativacao", "DIAS_CORRIDOS");
-            payload.put("diasParaNegativacao", numeroDiasLimiteRecebimento.intValue());
+            payload.put("quantidadeDiasNegativacao", quantidadeDiasNegativacao.intValue());
+        }
+        else {
+            payload.put("codigoParaNegativacao", "NAO_NEGATIVAR");
         }
 
         //Descontos
@@ -100,37 +110,43 @@ public class MontaUnicred {
         }
 
         //Juros
-        Number valorJuros = (Number) dadosBoleto.get("valorJuros");
-        Number percentualJuros = (Number) dadosBoleto.get("percentualJuros");
+        /*
+        '1' = Valor Diário (R$); '2' = Taxa diária (%); '3' = Taxa Mensal (%); '5' = Isento.
+        */
+        Number valorJuros = (Number) dadosJuros.get("valorJuros");
+        Number percentualJuros = (Number) dadosJuros.get("percentualJuros");
         if (valorJuros != null && valorJuros.doubleValue() > 0) {
             Map<String, Object> juros = new LinkedHashMap<>();
             juros.put("codigo", 1); //Valor diario
-            juros.put("dataInicio", dadosBoleto.get("dataMulta"));
+            juros.put("dataInicio", dadosJuros.get("dataJuros"));
             payload.put("juros", juros);
         }
         else if (percentualJuros != null && percentualJuros.doubleValue() > 0) {
             Map<String, Object> juros = new LinkedHashMap<>();
             juros.put("codigo", 2); //Percentual ao mês
-            juros.put("dataInicio", dadosBoleto.get("dataMulta"));
-            juros.put("valor", dadosBoleto.get("percentualJuros"));
+            juros.put("dataInicio", dadosJuros.get("dataJuros"));
+            juros.put("valor", dadosJuros.get("percentualJuros"));
             payload.put("juros", juros);
         }
 
         //Multa
-        Number valorMulta = (Number) dadosBoleto.get("valorMulta");
-        Number percentualMulta = (Number) dadosBoleto.get("percentualMulta");
+        /*
+        '1' = Valor Fixo (R$); '2' = Taxa (%); '3' = Isento. 
+        */
+        Number valorMulta = (Number) dadosMulta.get("valorMulta");
+        Number percentualMulta = (Number) dadosMulta.get("percentualMulta");
         if (valorMulta != null && valorMulta.doubleValue() > 0) {
             Map<String, Object> multa = new LinkedHashMap<>();
             multa.put("codigo", 1); //Valor diario
-            multa.put("dataInicio", dadosBoleto.get("dataMulta"));
-            multa.put("valor", dadosBoleto.get("valorMulta"));
+            multa.put("dataInicio", dadosMulta.get("dataMulta"));
+            multa.put("valor", dadosMulta.get("valorMulta"));
             payload.put("multa", multa);
         }
         else if (percentualMulta != null && percentualMulta.doubleValue() > 0) {
             Map<String, Object> multa = new LinkedHashMap<>();
             multa.put("codigo", 2); //Percentual ao mês
-            multa.put("dataInicio", dadosBoleto.get("dataMulta"));
-            multa.put("valor", dadosBoleto.get("percentualMulta"));
+            multa.put("dataInicio", dadosMulta.get("dataMulta"));
+            multa.put("valor", dadosMulta.get("percentualMulta"));
             payload.put("multa", multa);
         }
 
@@ -172,9 +188,11 @@ public class MontaUnicred {
     }
 
     public String montarAlteracao(Map<String, Object> dadosBanco,
-                                 Map<String, Object> dadosBoleto,
-                                 Map<String, Object> dadosPagador,
-                                 Map<String, Object> dadosDescontos) throws Exception {
+                                    Map<String, Object> dadosBoleto,
+                                    Map<String, Object> dadosJuros,
+                                    Map<String, Object> dadosMulta,
+                                    Map<String, Object> dadosPagador,
+                                    Map<String, Object> dadosDescontos) throws Exception {
         Map<String, Object> payload = new LinkedHashMap<>();
         
         return "";//objectMapper.writeValueAsString(payload);

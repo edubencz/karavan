@@ -38,6 +38,8 @@ public class MontaSicredi {
     public String montaSicredi(String tipo,
                                 Map<String, Object> dadosBanco,
                                 Map<String, Object> dadosBoleto,
+                                Map<String, Object> dadosJuros,
+                                Map<String, Object> dadosMulta,
                                 Map<String, Object> dadosPagador,
                                 Map<String, Object> dadosBeneficiario,
                                 List<String> instrucoes,
@@ -45,9 +47,9 @@ public class MontaSicredi {
                                 Map<String, Object> dadosDescontos) throws Exception { 
         switch (tipo.toLowerCase()) {
             case "registrar":
-                return montarEmissao(dadosBanco, dadosBoleto, dadosPagador, dadosBeneficiario, instrucoes, mensagens, dadosDescontos);
+                return montarEmissao(dadosBanco, dadosBoleto,  dadosJuros, dadosMulta, dadosPagador, dadosBeneficiario, instrucoes, mensagens, dadosDescontos);
             case "alterar":
-                return montarAlteracao(dadosBanco, dadosBoleto, dadosPagador, dadosDescontos);
+                return montarAlteracao(dadosBanco, dadosBoleto, dadosJuros, dadosMulta, dadosPagador, dadosDescontos);
             case "cancelamento":
             case "cancelar":
                 return montarCancelamento(dadosBanco, dadosBoleto);
@@ -61,6 +63,8 @@ public class MontaSicredi {
 
     public String montarEmissao(Map<String, Object> dadosBanco,
                                Map<String, Object> dadosBoleto,
+                               Map<String, Object> dadosJuros,
+                               Map<String, Object> dadosMulta,
                                Map<String, Object> dadosPagador,
                                Map<String, Object> dadosBeneficiario,
                                List<String> instrucoes,
@@ -85,37 +89,85 @@ public class MontaSicredi {
         
         Map<String, Object> enderecoPagador = getNestedMap(dadosPagador, "endereco");
         pagador.put("endereco", enderecoPagador.get("logradouro"));
-        //pagador.put("bairro", enderecoPagador.get("bairro"));
         pagador.put("cidade", enderecoPagador.get("cidade"));
         pagador.put("uf", enderecoPagador.get("uf"));
         pagador.put("cep", enderecoPagador.get("cep"));
+        if (enderecoPagador.get("telefone") != null) {
+            pagador.put("telefone", enderecoPagador.get("telefone"));
+        }
+        if (enderecoPagador.get("email") != null) {
+            pagador.put("email", enderecoPagador.get("email"));
+        }
         payload.put("pagador", pagador);
 
+        /*
+        DUPLICATA_MERCANTIL_INDICACAO, DUPLICATA_RURAL, NOTA_PROMISSORIA, NOTA_PROMISSORIA_RURAL,
+        NOTA_SEGUROS, RECIBO, LETRA_CAMBIO, NOTA_DEBITO, DUPLICATA_SERVICO_INDICACAO, OUTROS,
+        BOLETO_PROPOSTA, CARTAO_CREDITO, BOLETO_DEPOSITO
+        */
+        switch ((String) dadosBoleto.get("especieDocumento")) {
+            case "CH":
+                payload.put("especieDocumento", "OUTROS");
+                break;
+            case "DM":
+                payload.put("especieDocumento", "DUPLICATA_MERCANTIL_INDICACAO");
+                break;
+            case "NP":
+                payload.put("especieDocumento", "NOTA_PROMISSORIA");
+                break;
+            case "DS":
+                payload.put("especieDocumento", "DUPLICATA_SERVICO_INDICACAO");
+                break;
+            case "ND":
+                payload.put("especieDocumento", "NOTA_DEBITO");
+                break;  
+            default:
+                payload.put("especieDocumento", "OUTROS");
+        }
+
         payload.put("especieDocumento", "DUPLICATA_MERCANTIL_INDICACAO");
+
         String nossoNumero = (String) dadosBoleto.get("numeroDocumento");
         payload.put("nossoNumero", String.format("%09d", Long.parseLong(nossoNumero)));
         payload.put("seuNumero", dadosBoleto.get("numeroDocumento"));
         payload.put("dataVencimento", dadosBoleto.get("dataVencimento"));
 
-        Number quantidadeDiasProtesto = (Number) dadosBoleto.get("quantidadeDiasProtesto");
-        if (quantidadeDiasProtesto != null && quantidadeDiasProtesto.doubleValue() > 0) {
-            payload.put("diasProtestoAuto", quantidadeDiasProtesto);
+        //Protesto
+        if (dadosBoleto.get("protestar") == "S") {
+            payload.put("diasProtestoAuto", dadosBoleto.get("quantidadeDiasProtesto"));
         }
 
-        Number numeroDiasLimiteRecebimento = (Number) dadosBoleto.get("numeroDiasLimiteRecebimento");
-        if (numeroDiasLimiteRecebimento != null && numeroDiasLimiteRecebimento.doubleValue() > 0) {
-            payload.put("validadeAposVencimento", numeroDiasLimiteRecebimento);
+        //Negativação
+        if (dadosBoleto.get("negativar") == "S") {
+            payload.put("diasNegativacaoAuto", dadosBoleto.get("quantidadeDiasNegativacao"));
         }
 
-        payload.put("valor", dadosBoleto.get("valorNominal"));
+        //Baixa automática
+        Number validadeAposVencimento = (Number) dadosBoleto.get("numeroDiasLimiteRecebimento");
+        if (validadeAposVencimento != null && validadeAposVencimento.doubleValue() > 0) {
+            payload.put("validadeAposVencimento", validadeAposVencimento);
+        }
+
+        //Valor boleto
+        payload.put("valor", dadosBoleto.get("valorTitulo"));
+
+        //Descontos
         Number valorDesconto = (Number) dadosDescontos.get("valorDesconto");
+        Number percentualDesconto = (Number) dadosDescontos.get("percentualDesconto");
         if (valorDesconto != null && valorDesconto.doubleValue() > 0) {
+            payload.put("tipoDesconto", "VALOR");
             payload.put("valorDesconto1", valorDesconto);
+            payload.put("dataDesconto1", dadosBoleto.get("dataVencimento"));
+        } 
+        else if (percentualDesconto != null && percentualDesconto.doubleValue() > 0) {
+            payload.put("tipoDesconto", "PERCENTUAL");
+            payload.put("valorDesconto1", percentualDesconto);
             payload.put("dataDesconto1", dadosBoleto.get("dataVencimento"));
         }
 
-        Number valorJuros = (Number) dadosBoleto.get("valorJuros");
-        Number percentualJuros = (Number) dadosBoleto.get("percentualJuros");
+        //Juros
+        Number valorJuros = (Number) dadosJuros.get("valorJuros");
+        Number percentualJuros = (Number) dadosJuros.get("percentualJuros");
         if (valorJuros != null && valorJuros.doubleValue() > 0) {
             payload.put("tipoJuros", "VALOR");
             payload.put("juros", valorJuros);
@@ -124,17 +176,20 @@ public class MontaSicredi {
             payload.put("juros", percentualJuros);
         }
 
-        Number percentualMulta = (Number) dadosBoleto.get("percentualMulta");
-        Number valorMulta = (Number) dadosBoleto.get("valorMulta");
+        //Multa
+        Number percentualMulta = (Number) dadosMulta.get("percentualMulta");
+        Number valorMulta = (Number) dadosMulta.get("valorMulta");
         if (percentualMulta != null && percentualMulta.doubleValue() > 0) {
+            payload.put("tipoMulta", "PERCENTUAL");
             payload.put("multa", percentualMulta);
         } else {
+            payload.put("tipoMulta", "VALOR");
             payload.put("multa", valorMulta);
         }
 
         //instrucoes
         if (instrucoes != null && !instrucoes.isEmpty()) {
-            payload.put("instrucoes", instrucoes);
+            payload.put("informativo", instrucoes);
         }
         if (mensagens != null && !mensagens.isEmpty()) {
             payload.put("mensagens", mensagens);
@@ -145,9 +200,11 @@ public class MontaSicredi {
     }
 
     public String montarAlteracao(Map<String, Object> dadosBanco,
-                                 Map<String, Object> dadosBoleto,
-                                 Map<String, Object> dadosPagador,
-                                 Map<String, Object> dadosDescontos) throws Exception {
+                                    Map<String, Object> dadosBoleto,
+                                    Map<String, Object> dadosJuros,
+                                    Map<String, Object> dadosMulta,
+                                    Map<String, Object> dadosPagador,
+                                    Map<String, Object> dadosDescontos) throws Exception {
         Map<String, Object> payload = new LinkedHashMap<>();
         
         return "";//objectMapper.writeValueAsString(payload);

@@ -38,6 +38,8 @@ public class MontaSantander {
     public String montaSantander(String tipo,
                                 Map<String, Object> dadosBanco,
                                 Map<String, Object> dadosBoleto,
+                                Map<String, Object> dadosJuros,
+                                Map<String, Object> dadosMulta,
                                 Map<String, Object> dadosPagador,
                                 Map<String, Object> dadosBeneficiario,
                                 List<String> instrucoes,
@@ -45,7 +47,7 @@ public class MontaSantander {
                                 Map<String, Object> dadosDescontos) throws Exception {
         switch (tipo.toLowerCase()) {
             case "registrar":
-                return montarEmissao(dadosBanco, dadosBoleto, dadosPagador, dadosBeneficiario, instrucoes, mensagens, dadosDescontos);
+                return montarEmissao(dadosBanco, dadosBoleto, dadosJuros, dadosMulta, dadosPagador, dadosBeneficiario, instrucoes, mensagens, dadosDescontos);
             case "alterar":
                 return montarAlteracao(dadosBanco, dadosBoleto);
             case "cancelamento":
@@ -59,12 +61,14 @@ public class MontaSantander {
 
     }
     public String montarEmissao(Map<String, Object> dadosBanco,
-                               Map<String, Object> dadosBoleto,
-                               Map<String, Object> dadosPagador,
-                               Map<String, Object> dadosBeneficiario,
-                               List<String> instrucoes,
-                               List<String> mensagens,
-                               Map<String, Object> dadosDescontos) throws Exception {
+                                Map<String, Object> dadosBoleto,
+                                Map<String, Object> dadosJuros,
+                                Map<String, Object> dadosMulta,
+                                Map<String, Object> dadosPagador,
+                                Map<String, Object> dadosBeneficiario,
+                                List<String> instrucoes,
+                                List<String> mensagens,
+                                Map<String, Object> dadosDescontos) throws Exception {
         
         Map<String, Object> payload = new LinkedHashMap<>();
         
@@ -77,7 +81,11 @@ public class MontaSantander {
 
         //Dados Pagador        
         Map<String, Object> payer = new LinkedHashMap<>();
-        payer.put("documentType", dadosPagador.get("tipoPessoa"));
+        if (dadosPagador.get("tipoPessoa") != null && dadosPagador.get("tipoPessoa").equals("J")) {
+            payer.put("payerType", "CNPJ");
+        } else {
+            payer.put("payerType", "CPF");
+        }
         payer.put("documentNumber", dadosPagador.get("documento"));
         payer.put("name", dadosPagador.get("nome"));
         
@@ -92,8 +100,32 @@ public class MontaSantander {
         payload.put("bankNumber", dadosBoleto.get("numeroNossoNumero"));
         payload.put("dueDate", dadosBoleto.get("dataVencimento"));
         payload.put("issueDate", dadosBoleto.get("dataEmissao"));
-        payload.put("nominalValue", dadosBoleto.get("valorNominal"));
-        payload.put("documentKind", dadosBoleto.get("tipoDoc"));
+        payload.put("nominalValue", dadosBoleto.get("valorTitulo"));
+
+        /*
+        DUPLICATA_MERCANTIL, DUPLICATA_SERVICO, DUPLICATA_MERCANTIL_POR_INDICACAO, NOTA_PROMISSORIA,
+        NOTA_PROMISSORIA_RURAL, RECIBO, APOLICE_SEGURO, BOLETO_CARTAO_CREDITO, BOLETO_PROPOSTA,
+        BOLETO_DEPOSITO_APORTE, CHEQUE, NOTA_PROMISSORIA_DIRETA, OUTROS
+        */
+        switch ((String) dadosBoleto.get("especieDocumento")) {
+            case "CH":
+                payload.put("documentKind", "CHEQUE");
+                break;
+            case "DM":
+                payload.put("documentKind", "DUPLICATA MERCANTIL");
+                break;
+            case "DS":
+                payload.put("documentKind", "DUPLICATA MTIL POR INDICACAO");
+                break;
+            case "NF":
+                payload.put("documentKind", "NOTA FISCAL");
+                break;
+            case "ND":
+                payload.put("documentKind", "NOTA DE DEBITO");
+                break;
+            default:
+                payload.put("documentKind", "OUTROS");
+        }
 
         //Campo opicional, mas enviado sempre para seguir o CADASTRO_CONVENIO entre Unimed e Banco
         payload.put("protestType", "CADASTRO_CONVENIO");
@@ -115,11 +147,13 @@ public class MontaSantander {
             payload.put("discount", discount);
         }
 
-        //Juros
-        Number valorJuros = (Number) dadosDescontos.get("valorJuros");
-        if (valorJuros != null && valorJuros.doubleValue() > 0) {
-            payload.put("finePercentage", dadosBoleto.get("percentualJuros"));
-            payload.put("fineQuantityDays", (Number) 1);
+        //Multa e Juros
+        Number percentualJuros = (Number) dadosJuros.get("percentualJuros");
+        Number percentualMulta = (Number) dadosMulta.get("percentualMulta");
+        if (percentualMulta != null && percentualMulta.doubleValue() > 0) {
+            payload.put("finePercentage", percentualMulta);
+            payload.put("fineQuantityDays", 1); //1 dia após o vencimento
+            payload.put("interestPercentage", percentualJuros);
         }
 
         // Mensagens

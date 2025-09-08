@@ -91,12 +91,8 @@ public class MontaPayload {
         if (codigoBanco.intValue() == 1) { // Banco do Brasil
             return montaBB.montaBB(tipo, dadosBanco, dadosBoleto, dadosJuros, dadosMulta, pagador, beneficiario, instrucoes, mensagens, dadosDesconto);
         } 
-        /*
         else if (codigoBanco.intValue() == 33) { // Santander
             return montaSantander.montaSantander(tipo, dadosBanco, dadosBoleto, dadosJuros, dadosMulta, pagador, beneficiario, instrucoes, mensagens, dadosDesconto);
-        }
-        else if (codigoBanco.intValue() == 341) { // Itau
-            return montaItau.montaItau(tipo, dadosBanco, dadosBoleto, dadosJuros, dadosMulta, pagador, beneficiario, instrucoes, mensagens, dadosDesconto);
         }
         else if (codigoBanco.intValue() == 748) { // Sicredi
             return montaSicredi.montaSicredi(tipo, dadosBanco, dadosBoleto, dadosJuros, dadosMulta, pagador, beneficiario, instrucoes, mensagens, dadosDesconto);
@@ -107,14 +103,16 @@ public class MontaPayload {
         else if (codigoBanco.intValue() == 756) { // Sicoob
             return montaSicoob.montaSicoob(tipo, dadosBanco, dadosBoleto, dadosJuros, dadosMulta, pagador, beneficiario, instrucoes, mensagens, dadosDesconto);
         }
+        /*
+        else if (codigoBanco.intValue() == 341) { // Itau
+            return montaItau.montaItau(tipo, dadosBanco, dadosBoleto, dadosJuros, dadosMulta, pagador, beneficiario, instrucoes, mensagens, dadosDesconto);
+        }
         else if (codigoBanco.intValue() == 422) { // Safra
             return montaSafra.montaSafra(tipo, dadosBanco, dadosBoleto, dadosJuros, dadosMulta, pagador, beneficiario, instrucoes, mensagens, dadosDesconto);
         }
         */
         else {
-            Map<String, Object> erro = new HashMap<>();
-            erro.put("erro", "Banco não suportado: " + codigoBanco);
-            return objectMapper.writeValueAsString(erro);
+            throw new UnsupportedOperationException("Banco não suportado: " + codigoBanco);
         }
     }
 }

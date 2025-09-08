@@ -653,6 +653,7 @@
                   - setProperty:
                       id: setProperty-7fde
                       description: bancoOAuthUrl
+                      disabled: true
                       name: bancoOAuthUrl
                       expression:
                         simple:
@@ -1035,11 +1036,27 @@
               simple:
                 id: simple-b02e
                 expression: ${exchangeProperty.dadosRecebidos}
-        - bean:
-            id: bean-4a67
-            description: "Bean: MontaJsonPayload"
-            ref: montaPayload
-            method: montarPayload
+        - doTry:
+            id: doTry-fe70
+            doCatch:
+              - id: doCatch-61ed
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setBody:
+                      id: setBody-65aa
+                      expression:
+                        simple:
+                          id: simple-1778
+                          expression: "{\"erro\":\"${exception.message}\"}"
+                  - stop:
+                      id: stop-903d
+            steps:
+              - bean:
+                  id: bean-4a67
+                  description: "Bean: MontaJsonPayload"
+                  ref: montaPayload
+                  method: montarPayload
         - setProperty:
             id: setProperty-c7d8
             description: "Body: payloadEnvio"
@@ -1240,7 +1257,7 @@
                     httpUri: ${exchangeProperty.bancoURL}
                     bridgeEndpoint: true
                     httpMethod: POST
-                    logHttpActivity: false
+                    logHttpActivity: true
 - route:
     id: santander-cobranca
     nodePrefixId: route-ecf
@@ -1332,6 +1349,10 @@
               simple:
                 id: simple-1919
                 expression: ${exchangeProperty.payloadEnvio}
+        - log:
+            id: log-ea0b
+            description: "# Body# "
+            message: ${body}
         - doTry:
             id: doTry-251b
             doCatch:
@@ -1352,7 +1373,7 @@
                   parameters:
                     bridgeEndpoint: true
                     httpMethod: POST
-                    logHttpActivity: false
+                    logHttpActivity: true
                     httpUri: ${exchangeProperty[santanderURL]}
                     sslContextParameters: "#${exchangeProperty.sslBeanId}"
 - route:
@@ -1515,7 +1536,7 @@
                       sandbox.devportal.itau.com.br/itau-ep9-gtw-pix-recebimentos-conciliacoes-v2-ext/v2/boletos_pix
                     httpMethod: POST
                     bridgeEndpoint: true
-                    logHttpActivity: false
+                    logHttpActivity: true
 - route:
     id: sicredi-cobranca
     nodePrefixId: route-ecf
@@ -1580,10 +1601,10 @@
                   id: to-5df9
                   uri: https
                   parameters:
-                    httpUri: ${exchangeProperty.bancoURL}/boletos
+                    httpUri: ${exchangeProperty.bancoURL}
                     bridgeEndpoint: true
                     httpMethod: POST
-                    logHttpActivity: false
+                    logHttpActivity: true
 - route:
     id: Unicred-cobranca
     nodePrefixId: route-ecf
@@ -1729,7 +1750,7 @@
                           httpUri: ${exchangeProperty.urlBuscaBoleto}
                           httpMethod: GET
                           bridgeEndpoint: true
-                          logHttpActivity: false
+                          logHttpActivity: true
 - route:
     id: Sicoob-cobranca
     nodePrefixId: route-ecf
@@ -1799,6 +1820,10 @@
                         simple:
                           id: simple-2263
                           expression: application/json
+              - log:
+                  id: log-f2f8
+                  description: "# NÃO PODE USAR LOG ACTIVE#"
+                  message: ${body}
               - toD:
                   id: to-f030
                   uri: https
