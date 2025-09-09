@@ -134,11 +134,181 @@
             id: choice-d5f8
             when:
               - id: when-61d1
+                description: BB (1)
                 expression:
-                  groovy:
-                    id: groovy-2e53
+                  simple:
+                    id: simple-deec
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 1
+                steps:
+                  - log:
+                      id: log-8d7f
+                      description: "## BANCO BB ##"
+                      message: "## BANCO : ${exchangeProperty.rota[codigoBanco]}"
+                  - setProperty:
+                      id: bancoConsumo-bb
+                      description: bancoConsumo
+                      name: bancoConsumo
+                      expression:
+                        simple:
+                          id: simple-e370
+                          expression: BANCO_DO_BRASIL
+              - id: when-61d2
+                description: Santander (33)
+                expression:
+                  simple:
+                    id: simple-deec
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 33
+                steps:
+                  - log:
+                      id: log-8d7f1
+                      description: "## BANCO SANTANDER ##"
+                      message: "## BANCO : ${exchangeProperty.rota[codigoBanco]}"
+                  - setProperty:
+                      id: bancoConsumo-santander
+                      description: bancoConsumo
+                      name: bancoConsumo
+                      expression:
+                        simple:
+                          id: simple-e371
+                          expression: BANCO_SANTANDER
+              - id: when-61d3
+                description: Sicredi (748)
+                expression:
+                  simple:
+                    id: simple-deec
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 748
+                steps:
+                  - log:
+                      id: log-8d7f2
+                      description: "## BANCO SICREDI ##"
+                      message: "## BANCO : ${exchangeProperty.rota[codigoBanco]}"
+                  - setProperty:
+                      id: bancoConsumo-sicredi
+                      description: bancoConsumo
+                      name: bancoConsumo
+                      expression:
+                        simple:
+                          id: simple-e372
+                          expression: BANCO_SICREDI
+              - id: when-61d4
+                description: Unicred (136)
+                expression:
+                  simple:
+                    id: simple-deec
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 136
+                steps:
+                  - log:
+                      id: log-8d7f3
+                      description: "## BANCO UNICRED ##"
+                      message: "## BANCO : ${exchangeProperty.rota[codigoBanco]}"
+                  - setProperty:
+                      id: bancoConsumo-unicred
+                      description: bancoConsumo
+                      name: bancoConsumo
+                      expression:
+                        simple:
+                          id: simple-e373
+                          expression: BANCO_UNICRED
+              - id: when-61d5
+                description: Safra (422)
+                expression:
+                  simple:
+                    id: simple-deec
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 422
+                steps:
+                  - log:
+                      id: log-8d7f4
+                      description: "## BANCO SAFRA ##"
+                      message: "## BANCO : ${exchangeProperty.rota[codigoBanco]}"
+                  - setProperty:
+                      id: bancoConsumo-safra
+                      description: bancoConsumo
+                      name: bancoConsumo
+                      expression:
+                        simple:
+                          id: simple-e374
+                          expression: BANCO_SAFRA
+              - id: when-61d6
+                description: Sicoob (756)
+                expression:
+                  simple:
+                    id: simple-deec
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 756
+                steps:
+                  - log:
+                      id: log-8d7f5
+                      description: "## BANCO SICOOB ##"
+                      message: "## BANCO : ${exchangeProperty.rota[codigoBanco]}"
+                  - setProperty:
+                      id: bancoConsumo-sicoob
+                      description: bancoConsumo
+                      name: bancoConsumo
+                      expression:
+                        simple:
+                          id: simple-e375
+                          expression: BANCO_SICOOB
+              - id: when-61d7
+                description: Itau (341)
+                expression:
+                  simple:
+                    id: simple-deec
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 341
+                steps:
+                  - log:
+                      id: log-8d7f6
+                      description: "## BANCO ITAU ##"
+                      message: "## BANCO : ${exchangeProperty.rota[codigoBanco]}"
+                  - setProperty:
+                      id: bancoConsumo-itau
+                      description: bancoConsumo
+                      name: bancoConsumo
+                      expression:
+                        simple:
+                          id: simple-e376
+                          expression: BANCO_ITAU
             otherwise:
               id: otherwise-0ddb
+        - setHeader:
+            id: setHeader-0da8
+            name: Authorization
+            expression:
+              simple:
+                id: simple-4b69
+                expression: ${exchangeProperty.integradorAuthorization}
+        - log:
+            id: log-192e
+            message: "{{url_nintegrator}}/PIX/${exchangeProperty.bancoConsumo}"
+        - doTry:
+            id: doTry-e0ba
+            doCatch:
+              - id: doCatch-328e
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setBody:
+                      id: setBody-6084
+                      expression:
+                        simple:
+                          id: simple-55a6
+                          expression: ${exception.getResponseBody()}
+                  - log:
+                      id: log-9dc6
+                      description: "# ERRO WORKSPACE  #"
+                      message: "## ERRO WORKSPACE ${body}"
+            steps:
+              - toD:
+                  id: to-df6b
+                  uri: https
+                  parameters:
+                    httpUri: "{{url_nintegrator}}/PIX/${exchangeProperty.bancoConsumo}"
+                    bridgeEndpoint: false
+                    httpMethod: GET
+                    logHttpActivity: false
+              - log:
+                  id: log-9b2f
+                  message: ${body}
+        - stop:
+            id: stop-e7f3
         - setHeader:
             id: setHeader-290b
             name: CamelRedis.Key
