@@ -60,6 +60,14 @@
                   json:
                     id: json-unmarshal
               - setProperty:
+                  id: setProperty-0709
+                  description: integradorAuthorization
+                  name: integradorAuthorization
+                  expression:
+                    simple:
+                      id: simple-5b21
+                      expression: ${headers[authorization]}
+              - setProperty:
                   id: setProperty-15ee
                   description: dadosRecebidos
                   name: dadosRecebidos
@@ -122,6 +130,15 @@
             id: log-8f30
             description: "# ROUTE-BUSCA-URL-BANCO #"
             message: "# ROUTE-BUSCA-URL-BANCO #"
+        - choice:
+            id: choice-d5f8
+            when:
+              - id: when-61d1
+                expression:
+                  groovy:
+                    id: groovy-2e53
+            otherwise:
+              id: otherwise-0ddb
         - setHeader:
             id: setHeader-290b
             name: CamelRedis.Key
