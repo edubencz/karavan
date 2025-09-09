@@ -268,6 +268,28 @@
                           expression: BANCO_ITAU
             otherwise:
               id: otherwise-0ddb
+              steps:
+                - setHeader:
+                    id: setHeader-0e39
+                    name: CamelHttpResponseCode
+                    expression:
+                      simple:
+                        id: simple-11b8
+                        expression: "400"
+                - setBody:
+                    id: setBody-6e8c
+                    expression:
+                      simple:
+                        id: simple-b779
+                        expression: >-
+                          { erro: "Banco não idetificado para busca em
+                          Workspace",
+
+                          "codigoBanco": ${exchangeProperty.rota[codigoBanco]}
+
+                          }
+                - stop:
+                    id: stop-0096
         - setHeader:
             id: setHeader-0da8
             name: Authorization
