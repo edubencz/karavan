@@ -469,7 +469,10 @@
                 expression: ${exchangeProperty.integradorAuthorization}
         - log:
             id: log-192e
-            message: "{{url_nintegrator}}/PIX/${exchangeProperty.bancoConsumo}"
+            description: "# CONSUMO #"
+            message: >-
+              # CONSUMO:
+              {{url_nintegrator}}/PIX/${exchangeProperty.bancoConsumo}
         - doTry:
             id: doTry-e0ba
             doCatch:

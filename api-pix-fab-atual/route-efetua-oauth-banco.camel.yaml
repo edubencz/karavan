@@ -118,6 +118,9 @@
                     id: simple-c13b
                     expression: ${exchangeProperty.rota[codigoBanco]} == 33
                 steps:
+                  - removeHeaders:
+                      id: removeHeaders-2e1a
+                      pattern: "*"
                   - setBody:
                       id: setBody-2d3d
                       expression:
@@ -125,9 +128,6 @@
                           id: simple-a586
                           expression: >-
                             grant_type=${exchangeProperty.bancoPayloadDados[grantType]}&client_secret=${exchangeProperty.bancoPayloadDados[clientSecret]}&client_id=${exchangeProperty.bancoPayloadDados[clientId]}
-                  - removeHeaders:
-                      id: removeHeaders-2e1a
-                      pattern: "*"
                   - setHeader:
                       id: setHeader-santander-ssl-certificate
                       description: "Host: Santander"
@@ -136,21 +136,6 @@
                         simple:
                           id: simple-santander-certificate
                           expression: trust-sandbox.api.santander.com.br
-                  - setHeaders:
-                      id: setHeaders-8609
-                      headers:
-                        - id: setHeader-fc95
-                          name: Host
-                          expression:
-                            simple:
-                              id: simple-7d52
-                              expression: trust-sandbox.api.santander.com.br
-                        - id: setHeader-c54a
-                          name: Content-Type
-                          expression:
-                            simple:
-                              id: simple-81be
-                              expression: application/x-www-form-urlencoded
                   - setProperty:
                       id: setProperty-237e
                       description: bancoOAuthUrl
@@ -524,6 +509,12 @@
                         simple:
                           id: simple-934c
                           expression: ${exchangeProperty.tokenExpiresIn}
+                  - log:
+                      id: log-5755
+                      description: "# SENHA CERTIFICADO #"
+                      message: >-
+                        # SENHA CERTIFICADO:
+                        ${exchangeProperty.bancoPayloadDados[certificatePrivateKeyPassword]}
                   - setBody:
                       id: setBody-1cd4
                       disabled: false
@@ -531,7 +522,7 @@
                         simple:
                           id: simple-ecb2
                           expression: >-
-                            {"Senha":"${exchangeProperty.bancoPayloadDados[Senha]}",
+                            {"Senha":"${exchangeProperty.bancoPayloadDados[certificatePrivateKeyPassword]}",
 
                             "token":"${exchangeProperty.tokenBancario}",
 
