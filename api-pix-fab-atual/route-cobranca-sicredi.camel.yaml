@@ -1,0 +1,68 @@
+- route:
+    id: route-cobranca-sicredi
+    nodePrefixId: route-ecf
+    from:
+      id: from-route-cobranca-sicredi
+      uri: direct
+      parameters:
+        name: route-cobranca-sicredi
+      steps:
+        - log:
+            id: log-8ca5
+            description: "# ROUTE SICREDI COBRANCA #"
+            message: "# ROUTE SICREDI COBRANCA #"
+        - setHeaders:
+            id: setHeaders-abe7
+            headers:
+              - id: setHeader-x-api-key
+                name: x-api-key
+                expression:
+                  simple:
+                    id: simple-fdf4
+                    expression: ${exchangeProperty.bancoPayloadDados[ClientID]}
+              - id: setHeader-cooperativa
+                name: cooperativa
+                expression:
+                  simple:
+                    id: simple-38cb
+                    expression: ${exchangeProperty.bancoPayloadDados[cooperativa]}
+              - id: setHeader-posto
+                name: posto
+                expression:
+                  simple:
+                    id: simple-3188
+                    expression: ${exchangeProperty.bancoPayloadDados[posto]}
+              - id: setHeader-authorization
+                name: Authorization
+                expression:
+                  simple:
+                    id: simple-e6ac
+                    expression: Bearer ${exchangeProperty.tokenBancario}
+        - setBody:
+            id: setBody-be6b
+            expression:
+              simple:
+                id: simple-a7e6
+                expression: ${exchangeProperty[payloadEnvio]}
+        - doTry:
+            id: doTry-225c
+            doCatch:
+              - id: doCatch-4c66
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setBody:
+                      id: setBody-ab12
+                      expression:
+                        simple:
+                          id: simple-9577
+                          expression: ${exception.getResponseBody()}
+            steps:
+              - toD:
+                  id: to-5df9
+                  uri: https
+                  parameters:
+                    httpUri: ${exchangeProperty.bancoURL}
+                    bridgeEndpoint: true
+                    httpMethod: POST
+                    logHttpActivity: true

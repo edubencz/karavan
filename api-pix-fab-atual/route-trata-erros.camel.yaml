@@ -1,0 +1,196 @@
+- route:
+    id: route-trata-erros
+    from:
+      id: from-b5b2
+      uri: direct
+      parameters:
+        name: route-trata-erros
+      steps:
+        - choice:
+            id: choice-e5df
+            when:
+              - id: when-nullpointer
+                expression:
+                  simple:
+                    id: simple-npe
+                    expression: ${exception.class} == 'java.lang.NullPointerException'
+                steps:
+                  - setBody:
+                      id: setBody-npe
+                      expression:
+                        simple:
+                          id: simple-npe-body
+                          expression: >-
+                            { status: 400, error: "Erro interno de aplicação
+                            (NullPointerException)",
+                              ${exchangeProperty.errorRoute}, exception: "${exception.message}" }
+                  - setHeader:
+                      id: setHeader-npe
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-npe-header
+                          expression: "500"
+                  - log:
+                      id: log-npe
+                      message: "Erro NullPointerException tratado: ${exception.message}"
+              - id: when-resolve-endpoint
+                expression:
+                  simple:
+                    id: simple-15ab
+                    expression: >-
+                      ${exception.class} ==
+                      'org.apache.camel.ResolveEndpointFailedException'
+                steps:
+                  - setBody:
+                      id: setBody-ed4a
+                      expression:
+                        simple:
+                          id: simple-da57
+                          expression: >-
+                            { status: 500, error: "Falha ao resolver endpoint ou
+                            certificado inválido",
+                            ${exchangeProperty.errorRoute}, exception:
+                            "${exception.message}" }
+                  - setHeader:
+                      id: setHeader-9514
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-7f0b
+                          expression: "500"
+                  - log:
+                      id: log-813e
+                      message: "Erro SSL/endpoint tratado: ${exception.message}"
+              - id: when-0aee
+                expression:
+                  simple:
+                    id: simple-378c
+                    expression: ${exception.statusCode} == 400
+                steps:
+                  - setBody:
+                      id: setBody-48fa
+                      expression:
+                        simple:
+                          id: simple-8b32
+                          expression: ${exception.getResponseBody()}
+                  - setHeader:
+                      id: setHeader-c91d
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-30e0
+                          expression: ${exception.statusCode}
+                  - log:
+                      id: log-24b9
+                      message: "Erro 400 tratado (API externa): ${body}"
+              - id: when-400-interno
+                expression:
+                  simple:
+                    id: simple-8941
+                    expression: ${header.CamelHttpResponseCode} == 400
+                steps:
+                  - setBody:
+                      id: setBody-f12a
+                      expression:
+                        simple:
+                          id: simple-f6f7
+                          expression: |-
+                            { status: 400, error: "Informação não identificada",
+                              ${exchangeProperty.errorRoute} }
+                  - log:
+                      id: log-e1d0
+                      message: "Erro 400 tratado (choice interno): ${body}"
+              - id: when-f2ea
+                expression:
+                  simple:
+                    id: simple-ee9e
+                    expression: ${exception.statusCode} == 403
+                steps:
+                  - setBody:
+                      id: setBody-2854
+                      expression:
+                        simple:
+                          id: simple-174d
+                          expression: >-
+                            { status: 403, error: "Token inválido ou mal
+                            formatado", ${exchangeProperty.errorRoute},
+                            exception: "${exception.getResponseBody()}" }
+                  - setHeader:
+                      id: setHeader-cf28
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-fd86
+                          expression: ${exception.statusCode}
+                  - log:
+                      id: log-c91e
+                      message: "Erro 403 tratado: ${body}"
+              - id: when-cc34
+                expression:
+                  simple:
+                    id: simple-81f2
+                    expression: ${exception.statusCode} == 404
+                steps:
+                  - setBody:
+                      id: setBody-9ad0
+                      expression:
+                        simple:
+                          id: simple-4039
+                          expression: |-
+                            { status: 404, error: "NOT_FOUND",
+                              ${exchangeProperty.errorRoute}, exception:
+                              ${exception.getResponseBody()} }
+                  - setHeader:
+                      id: setHeader-d76a
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-106f
+                          expression: ${exception.statusCode}
+                  - log:
+                      id: log-ed5d
+                      message: "Erro 404 tratado: ${body}"
+              - id: when-c3ab
+                expression:
+                  simple:
+                    id: simple-6ee8
+                    expression: ${exception.statusCode} == 204
+                steps:
+                  - setBody:
+                      id: setBody-d453
+                      expression:
+                        simple:
+                          id: simple-2766
+                          expression: ${exception.getResponseBody()}
+                  - setHeader:
+                      id: setHeader-1f30
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-6086
+                          expression: ${exception.statusCode}
+                  - log:
+                      id: log-f15e
+                      message: "Erro 204 tratado: ${body}"
+            otherwise:
+              id: otherwise-6391
+              steps:
+                - setBody:
+                    id: setBody-0283
+                    expression:
+                      constant:
+                        id: constant-4331
+                        expression: "{ \"erro\": \"Falha interna ou não mapeada\" }"
+                - setHeader:
+                    id: setHeader-cb7d
+                    name: CamelHttpResponseCode
+                    expression:
+                      simple:
+                        id: simple-aedb
+                        expression: "500"
+                - log:
+                    id: log-6e31
+                    message: "Erro não mapeado: ${exception.message}"
+        - stop:
+            id: stop-09e3

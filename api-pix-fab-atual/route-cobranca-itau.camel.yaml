@@ -1,0 +1,161 @@
+- route:
+    id: route-cobranca-itau
+    nodePrefixId: route-ecf
+    from:
+      id: from-route-cobranca-itau
+      uri: direct
+      parameters:
+        name: route-cobranca-itau
+        synchronous: false
+      steps:
+        - log:
+            id: log-76e2
+            description: "# ROUTE ITAU COBRANCA #"
+            message: "# ROUTE ITAU COBRANCA #"
+        - removeHeaders:
+            id: removeHeaders-10be
+            pattern: "*"
+        - setHeader:
+            id: setHeader-a335
+            disabled: false
+            name: x-itau-apikey
+            expression:
+              simple:
+                id: simple-544c
+                expression: ${exchangeProperty.bancoPayloadDados[ClientID]}
+        - setHeader:
+            id: setHeader-1a16
+            disabled: false
+            name: x-itau-correlationID
+            expression:
+              simple:
+                id: simple-c2a2
+                expression: ${exchangeProperty.bancoPayloadDados[ClientSecret]}
+        - setHeader:
+            id: setHeader-8b9c
+            disabled: false
+            name: Authorization
+            expression:
+              simple:
+                id: simple-68ae
+                expression: ${exchangeProperty.tokenBancario}
+        - setBody:
+            id: setBody-e800
+            expression:
+              simple:
+                id: simple-27ef
+                expression: |-
+                  {
+                    etapa_processo_boleto: 'efetivacao',
+                    beneficiario: {
+                      id_beneficiario: '150000052061'
+                    },
+                    dado_boleto: {
+                      tipo_boleto: 'a vista',
+                      descricao_instrumento_cobranca: 'boleto_pix',
+                      texto_seu_numero: '000001',
+                      codigo_carteira: '110',
+                      valor_total_titulo: '90000000000030000',
+                      codigo_especie: '01',
+                      data_emissao: '2022-03-25',
+                      valor_abatimento: '00000000000000010',
+                      negativacao: {
+                        negativacao: '8',
+                        quantidade_dias_negativacao: '010'
+                      },
+                      pagador: {
+                        pessoa: {
+                          nome_pessoa: 'Joao Silva',
+                          nome_fantasia: 'Joao Silva',
+                          tipo_pessoa: {
+                            codigo_tipo_pessoa: 'F',
+                            numero_cadastro_pessoa_fisica: '26556923221'
+                          }
+                        },
+                        endereco: {
+                          nome_logradouro: 'Av do Estado, 5533',
+                          nome_bairro: 'Mooca',
+                          nome_cidade: 'Sao Paulo',
+                          sigla_UF: 'SP',
+                          numero_CEP: '04135010'
+                        }
+                      },
+                      sacador_avalista: {
+                        pessoa: {
+                          nome_pessoa: 'Sacador Teste',
+                          tipo_pessoa: {
+                            codigo_tipo_pessoa: 'F',
+                            numero_cadastro_pessoa_fisica: '38365972841'
+                          }
+                        },
+                        endereco: {
+                          nome_logradouro: 'Av do Estado, 5533',
+                          nome_bairro: 'Mooca',
+                          nome_cidade: 'Sao Paulo',
+                          sigla_UF: 'SP',
+                          numero_CEP: '04135010'
+                        }
+                      },
+                      dados_individuais_boleto: [
+                        {
+                          numero_nosso_numero: '12345678',
+                          data_vencimento: '2022-07-30',
+                          texto_uso_beneficiario: '000001',
+                          valor_titulo: '00000000000010001',
+                          data_limite_pagamento: '2022-10-30'
+                        }
+                      ],
+                      juros: {
+                        data_juros: '2022-09-30',
+                        codigo_tipo_juros: '93',
+                        valor_juros: '00000000000000010'
+                      },
+                      multa: {
+                        codigo_tipo_multa: '02',
+                        percentual_multa: '000000100001',
+                        data_multa: '2022-10-30'
+                      },
+                      lista_mensagem_cobranca: [
+                        {
+                          mensagem: 'mensagem 1'
+                        }
+                      ],
+                      desconto: {
+                        codigo_tipo_desconto: '02',
+                        descontos: [
+                          {
+                            data_desconto: '2022-06-30',
+                            valor_desconto: '00000000000010000',
+                            percentual_desconto: '000000001010'
+                          }
+                        ]
+                      }
+                    },
+                    dados_qrcode: {
+                      chave: 'pjoperador@gmail.com',
+                      id_location: 789
+                    }
+                  }
+        - doTry:
+            id: doTry-644e
+            doCatch:
+              - id: doCatch-9531
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setBody:
+                      id: setBody-5f8c
+                      expression:
+                        simple:
+                          id: simple-9b0b
+                          expression: ${exception.getResponseBody()}
+            steps:
+              - toD:
+                  id: to-46fd
+                  uri: https
+                  parameters:
+                    httpUri: >-
+                      sandbox.devportal.itau.com.br/itau-ep9-gtw-pix-recebimentos-conciliacoes-v2-ext/v2/boletos_pix
+                    httpMethod: POST
+                    bridgeEndpoint: true
+                    logHttpActivity: true

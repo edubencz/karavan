@@ -1,0 +1,73 @@
+- route:
+    id: route-cobranca-bb
+    nodePrefixId: route-ecf
+    from:
+      id: from-route-cobranca-bb
+      uri: direct
+      parameters:
+        name: route-cobranca-bb
+      steps:
+        - log:
+            id: log-4a6b
+            description: "# ROUTE-route-cobranca-bb #"
+            message: "# ROUTE-route-cobranca-bb #"
+        - doTry:
+            id: doTry-route-cobranca-bb
+            doCatch:
+              - id: doCatch-route-cobranca-bb
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setHeader:
+                      id: setHeader-http-status
+                      disabled: true
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-http-status
+                          expression: ${header.CamelHttpResponseCode}
+                  - setBody:
+                      id: setBody-erro
+                      expression:
+                        simple:
+                          id: simple-erro
+                          expression: ${exception.getResponseBody()}
+            steps:
+              - setHeaders:
+                  id: setHeaders-9f41
+                  headers:
+                    - id: setHeader-2f73
+                      disabled: false
+                      name: Content-Type
+                      expression:
+                        simple:
+                          id: simple-e000
+                          expression: application/json
+                    - id: setHeader-2f11
+                      name: Authorization
+                      expression:
+                        simple:
+                          id: simple-c988
+                          expression: Bearer ${exchangeProperty.tokenBancario}
+              - setProperty:
+                  id: setProperty-c32f
+                  description: urlRegistroBoleto
+                  name: urlRegistroBoleto
+                  expression:
+                    simple:
+                      id: simple-e96b
+                      expression: ${exchangeProperty.bancoURL}
+              - log:
+                  id: log-1369
+                  description: "# URL DEVE SER COMO HTTPS #"
+                  disabled: false
+                  message: "# URL DEVE SER COMO HTTPS #"
+              - toD:
+                  id: to-241b
+                  uri: https
+                  parameters:
+                    httpUri: >-
+                      ${exchangeProperty.urlRegistroBoleto}?gw-dev-app-key=${exchangeProperty.bancoPayloadDados[appKey]}
+                    bridgeEndpoint: true
+                    httpMethod: POST
+                    logHttpActivity: true

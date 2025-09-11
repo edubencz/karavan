@@ -1,0 +1,146 @@
+- route:
+    id: route-cobranca-unicred
+    nodePrefixId: route-ecf
+    from:
+      id: from-route-cobranca-unicred
+      uri: direct
+      parameters:
+        name: route-cobranca-unicred
+      steps:
+        - log:
+            id: log-920c
+            description: "# ROUTE Unicred COBRANCA #"
+            message: "# ROUTE Unicred COBRANCA #"
+        - doTry:
+            id: doTry-6908
+            doCatch:
+              - id: doCatch-32e3
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setBody:
+                      id: setBody-8630
+                      expression:
+                        simple:
+                          id: simple-af7f
+                          expression: ${exception.getResponseBody()}
+            steps:
+              - setProperty:
+                  id: setProperty-5407
+                  description: urlRegistroBoleto
+                  name: urlRegistroBoleto
+                  expression:
+                    simple:
+                      id: simple-1c7c
+                      expression: >-
+                        ${exchangeProperty.bancoURL}/${exchangeProperty.bancoPayloadDados[idBeneficiario]}/titulos
+              - setHeaders:
+                  id: setHeaders-09b2
+                  headers:
+                    - id: setHeader-376a
+                      name: Authorization
+                      expression:
+                        simple:
+                          id: simple-00eb
+                          expression: Bearer ${exchangeProperty.tokenBancario}
+                    - id: setHeader-a7a6
+                      name: cooperativa
+                      expression:
+                        simple:
+                          id: simple-784c
+                          expression: ${exchangeProperty.bancoPayloadDados[cooperativa]}
+                    - id: setHeader-403b
+                      name: apiKey
+                      expression:
+                        simple:
+                          id: simple-5f83
+                          expression: ${exchangeProperty.bancoPayloadDados[AppKey]}
+                    - id: setHeader-6661
+                      name: Content-Type
+                      expression:
+                        simple:
+                          id: simple-f6d3
+                          expression: application/json
+              - toD:
+                  id: to-b6e3
+                  uri: https
+                  parameters:
+                    bridgeEndpoint: true
+                    httpMethod: POST
+                    logHttpActivity: false
+                    httpUri: ${exchangeProperty.urlRegistroBoleto}
+              - log:
+                  id: log-a63e
+                  description: "# RECEBEU ID BOLETO UNICRED #"
+                  message: "# RECEBEU ID BOLETO UNICRED # ${body}"
+              - stop:
+                  id: stop-e85e
+                  disabled: true
+              - setProperty:
+                  id: setProperty-2578
+                  description: "Unicred: idBoleto"
+                  name: idBoleto
+                  expression:
+                    simple:
+                      id: simple-a3d4
+                      expression: ${body}
+              - doTry:
+                  id: doTry-4e04
+                  doCatch:
+                    - id: doCatch-66ff
+                      exception:
+                        - java.lang.Exception
+                      steps:
+                        - setBody:
+                            id: setBody-5022
+                            expression:
+                              simple:
+                                id: simple-7cd0
+                                expression: ${exception.getResponseBody()}
+                  steps:
+                    - delay:
+                        id: delay-18e6
+                        expression:
+                          simple:
+                            id: simple-39da
+                            expression: "5000"
+                    - setProperty:
+                        id: setProperty-66ff
+                        description: "Unicred: urlBuscaBoleto"
+                        name: urlBuscaBoleto
+                        expression:
+                          simple:
+                            id: simple-ac4b
+                            expression: >-
+                              api.e-unicred.com.br/homolog/cobranca/v2/beneficiarios/${exchangeProperty.bancoPayloadDados[idBeneficiario]}/titulos/${exchangeProperty.idBoleto}/status
+                    - setHeaders:
+                        id: setHeaders-40d0
+                        headers:
+                          - id: setHeader-7e11
+                            name: Authorization
+                            expression:
+                              simple:
+                                id: simple-1be0
+                                expression: Bearer ${exchangeProperty.tokenBancario}
+                          - id: setHeader-73c6
+                            name: cooperativa
+                            expression:
+                              simple:
+                                id: simple-4115
+                                expression: >-
+                                  ${exchangeProperty.bancoPayloadDados[cooperativa]}
+                          - id: setHeader-be64
+                            name: apiKey
+                            expression:
+                              simple:
+                                id: simple-1fdf
+                                expression: ${exchangeProperty.bancoPayloadDados[AppKey]}
+                    - toD:
+                        id: toD-8f94
+                        disabled: false
+                        uri: https
+                        parameters:
+                          httpUri: ${exchangeProperty.urlBuscaBoleto}
+                          httpMethod: GET
+                          bridgeEndpoint: true
+                          logHttpActivity: true

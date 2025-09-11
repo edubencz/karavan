@@ -1,0 +1,103 @@
+- route:
+    id: route-cobranca-safra
+    nodePrefixId: route-ecf
+    from:
+      id: from-route-cobranca-safra
+      uri: direct
+      parameters:
+        name: route-cobranca-safra
+      steps:
+        - log:
+            id: log-2552
+            description: "# ROUTE SAFRA COBRANCA #"
+            message: "# ROUTE SAFRA COBRANCA #"
+        - doTry:
+            id: doTry-12d1
+            doCatch:
+              - id: doCatch-9572
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - log:
+                      id: log-1b5c
+                      message: ${body}
+                  - setBody:
+                      id: setBody-550a
+                      expression:
+                        simple:
+                          id: simple-91fd
+                          expression: ${exception.getResponseBody()}
+                  - choice:
+                      id: choice-cd6f
+                      when:
+                        - id: when-f2b7
+                          expression:
+                            simple:
+                              id: simple-19ce
+                              expression: ${header.CamelHttpResponseCode} != 200
+                          steps:
+                            - log:
+                                id: log-2680
+                                message: "# ERRO $400 ${body}"
+                            - setProperty:
+                                id: setProperty-59ae
+                                name: CamelHttpResponseCode
+                                expression:
+                                  simple:
+                                    id: simple-6244
+                                    expression: ${header.CamelHttpResponseCode}
+                            - setHeader:
+                                id: setHeader-ae4a
+                                disabled: true
+                                name: Exchange.HTTP_RESPONSE_CODE
+                                expression:
+                                  simple:
+                                    id: simple-14f2
+                                    expression: ${header.CamelHttpResponseCode}
+                            - setBody:
+                                id: setBody-9833
+                                disabled: true
+                                expression:
+                                  simple:
+                                    id: simple-5342
+                                    expression: "{ \"error\" : \"${exception.message}\" }"
+                      otherwise:
+                        id: otherwise-4284
+            steps:
+              - removeHeaders:
+                  id: removeHeaders-0ef9
+                  pattern: "*"
+              - setHeaders:
+                  id: setHeaders-b592
+                  headers:
+                    - id: setHeader-da7e
+                      disabled: false
+                      name: Safra-Correlation-ID
+                      expression:
+                        simple:
+                          id: simple-5d33
+                          expression: ${exchangeProperty.bancoPayloadDados[ClientID]}
+                    - id: setHeader-72e0
+                      name: Authorization
+                      expression:
+                        simple:
+                          id: simple-1511
+                          expression: Bearer ${exchangeProperty.tokenBancario}
+                    - id: setHeader-bafe
+                      name: Content-Type
+                      expression:
+                        simple:
+                          id: simple-9eb7
+                          expression: application/json
+              - log:
+                  id: log-7052
+                  disabled: true
+                  message: ${body}
+              - toD:
+                  id: to-8679
+                  uri: https
+                  parameters:
+                    httpUri: ${exchangeProperty.bancoURL}
+                    bridgeEndpoint: true
+                    httpMethod: POST
+                    logHttpActivity: false

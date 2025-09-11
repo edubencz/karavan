@@ -1,0 +1,135 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "rota": {
+      "type": "object",
+      "properties": {
+        "codigoBanco": { "type": "integer" },
+        "codigoUnimed": { "type": "integer" },
+        "numeroFatura": { "type": "integer" },
+        "bancoWorkspace": { "type": "string" },
+        "tipo": { "type": "string" }
+      },
+      "required": ["codigoBanco", "codigoUnimed", "numeroFatura", "tipo", "bancoWorkspace"],
+      "additionalProperties": false
+    },
+    "dadosBoleto": {
+      "type": ["object", "null"],
+      "properties": {
+        "numeroDocumento": { "type": ["string", "null"] },
+        "dataVencimento": { "type": ["string", "null"], "format": "date" },
+        "numeroNossoNumero": { "type": ["string", "null"] },
+        "dataEmissao": { "type": ["string", "null"], "format": "date" },
+        "valorTitulo": { "type": ["number", "null"] },
+        "especieDocumento": { "type": ["string", "null"] },
+        "dataProcessamento": { "type": ["string", "null"], "format": "date" },
+        "protestar": { "type": ["string", "null"] },
+        "quantidadeDiasProtesto": { "type": ["integer", "null"] },
+        "negativar": { "type": ["string", "null"] },
+        "quantidadeDiasNegativacao": { "type": ["integer", "null"] },
+        "orgaoNegativador": { "type": ["string", "null"] },
+        "aceiteTituloVencido": { "type": ["string", "null"] },
+        "numeroDiasLimiteRecebimento": { "type": ["integer", "null"] },
+        "pagamentoParcial": { "type": ["string", "null"] },
+        "pagamentoParcialMin": { "type": ["number", "null"] },
+        "pagamentoParcialMax": { "type": ["number", "null"] },
+        "pagamentoQtd": { "type": ["integer", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "dadosMulta": {
+      "type": ["object", "null"],
+      "properties": {
+        "dataMulta": { "type": ["string", "null"], "format": "date" },
+        "percentualMulta": { "type": ["number", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "dadosJuros": {
+      "type": ["object", "null"],
+      "properties": {
+        "dataJuros": { "type": ["string", "null"], "format": "date" },
+        "valorJuros": { "type": ["number", "null"] },
+        "percentualJuros": { "type": ["number", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "dadosDesconto": {
+      "type": ["object", "null"],
+      "properties": {
+        "valorDesconto": { "type": ["number", "null"] },
+        "percentualDesconto": { "type": ["number", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "dadosBanco": {
+      "type": ["object", "null"],
+      "properties": {
+        "codigoBanco": { "type": ["integer", "null"] },
+        "nomeBanco": { "type": ["string", "null"] },
+        "agencia": { "type": ["string", "null"] },
+        "digitoAgencia": { "type": ["string", "null"] },
+        "conta": { "type": ["string", "null"] },
+        "digitoConta": { "type": ["string", "null"] },
+        "convenio": { "type": ["string", "null"] },
+        "carteira": { "type": ["string", "null"] },
+        "variacao": { "type": ["integer", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "beneficiario": {
+      "type": ["object", "null"],
+      "properties": {
+        "nome": { "type": ["string", "null"] },
+        "documento": { "type": ["string", "null"] },
+        "tipoPessoa": { "type": ["string", "null"] },
+        "endereco": {
+          "type": ["object", "null"],
+          "properties": {
+            "logradouro": { "type": ["string", "null"] },
+            "cidade": { "type": ["string", "null"] },
+            "uf": { "type": ["string", "null"] },
+            "cep": { "type": ["string", "null"] }
+          },
+          "additionalProperties": false
+        },
+        "telefone": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "pagador": {
+      "type": ["object", "null"],
+      "properties": {
+        "nome": { "type": ["string", "null"] },
+        "documento": { "type": ["string", "null"] },
+        "tipoPessoa": { "type": ["string", "null"] },
+        "endereco": {
+          "type": ["object", "null"],
+          "properties": {
+            "logradouro": { "type": ["string", "null"] },
+            "bairro": { "type": ["string", "null"] },
+            "cidade": { "type": ["string", "null"] },
+            "uf": { "type": ["string", "null"] },
+            "cep": { "type": ["string", "null"] },
+            "complemento": { "type": ["string", "null"] }
+          },
+          "additionalProperties": false
+        },
+        "telefone": { "type": ["string", "null"] },
+        "email": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "instrucoes": {
+      "type": ["array", "null"],
+      "items": { "type": ["string", "null"] }
+    },
+    "mensagens": {
+      "type": ["array", "null"],
+      "items": { "type": ["string", "null"] }
+    }
+  },
+  "required": ["rota"],
+  "additionalProperties": false
+}

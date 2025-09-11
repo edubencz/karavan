@@ -1,0 +1,81 @@
+- route:
+    id: route-cobranca-sicoob
+    nodePrefixId: route-ecf
+    from:
+      id: from-route-cobranca-sicoob
+      uri: direct
+      parameters:
+        name: route-cobranca-sicoob
+      steps:
+        - log:
+            id: log-34fd
+            description: "# ROUTE SICOOB COBRANCA #"
+            message: "# ROUTE SICOOB COBRANCA #"
+        - doTry:
+            id: doTry-6f61
+            doCatch:
+              - id: doCatch-8edb
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setBody:
+                      id: setBody-d3d6
+                      expression:
+                        simple:
+                          id: simple-3258
+                          expression: ${exception.getResponseBody()}
+            steps:
+              - setProperty:
+                  id: setProperty-6375
+                  description: urlRegistroBoleto
+                  name: urlRegistroBoleto
+                  expression:
+                    simple:
+                      id: simple-e6e1
+                      expression: ${exchangeProperty.bancoURL}/boletos
+              - removeHeaders:
+                  id: removeHeaders-b322
+                  pattern: "*"
+              - log:
+                  id: log-9746
+                  description: "# OBRIGATORIO A REMOCAO DE HEADERS #"
+                  message: "# OBRIGATORIO A REMOCAO DE HEADERS #"
+              - setHeaders:
+                  id: setHeaders-7430
+                  headers:
+                    - id: setHeader-3a63
+                      name: Authorization
+                      expression:
+                        simple:
+                          id: simple-a07b
+                          expression: Bearer ${exchangeProperty.tokenBancario}
+                    - id: setHeader-11f1
+                      name: client_id
+                      expression:
+                        simple:
+                          id: simple-df40
+                          expression: ${exchangeProperty.bancoPayloadDados[ClientID]}
+                    - id: setHeader-f69a
+                      name: Accept
+                      expression:
+                        simple:
+                          id: simple-ca03
+                          expression: application/json
+                    - id: setHeader-34da
+                      name: Content-Type
+                      expression:
+                        simple:
+                          id: simple-2263
+                          expression: application/json
+              - log:
+                  id: log-f2f8
+                  description: "# NÃO PODE USAR LOG ACTIVE#"
+                  message: ${body}
+              - toD:
+                  id: to-f030
+                  uri: https
+                  parameters:
+                    httpUri: ${exchangeProperty.urlRegistroBoleto}
+                    bridgeEndpoint: true
+                    httpMethod: POST
+                    logHttpActivity: false

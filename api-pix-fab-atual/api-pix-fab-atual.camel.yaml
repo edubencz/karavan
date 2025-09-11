@@ -1,0 +1,1219 @@
+- rest:
+    id: rest-api-pix
+    post:
+      - id: post-api-pix
+        path: /v1
+        to: direct:validar-payload
+        consumes: application/json
+        produces: application/json
+- route:
+    id: route-recebe-requisicao
+    nodePrefixId: route-recebe-requisicao
+    from:
+      id: from-e401
+      uri: direct
+      parameters:
+        name: validar-payload
+      steps:
+        - doTry:
+            id: doTry-valida-payload
+            doCatch:
+              - id: doCatch-valida-payload
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - convertBodyTo:
+                      id: convertBodyTo-exception-string
+                      type: java.lang.String
+                  - setHeader:
+                      id: setHeader-ca85
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-status-400
+                          expression: "400"
+                  - setHeader:
+                      id: setHeader-exception-content
+                      name: Content-Type
+                      expression:
+                        constant:
+                          id: constant-content-json
+                          expression: application/json
+                  - setBody:
+                      id: setBody-exception-message
+                      expression:
+                        simple:
+                          id: simple-exception-message
+                          expression: >-
+                            { "mensagem": "Erro no payload:
+                            ${exception.message.replaceAll('\r?\n', ' ')}" }
+                  - stop:
+                      id: stop-on-exception
+            steps:
+              - to:
+                  id: to-json-validator-schema
+                  uri: json-validator
+                  parameters:
+                    resourceUri: file:nexdom-schema.json
+              - unmarshal:
+                  id: unmarshal-json
+                  json:
+                    id: json-unmarshal
+              - setProperty:
+                  id: setProperty-0709
+                  description: integradorAuthorization
+                  name: integradorAuthorization
+                  expression:
+                    simple:
+                      id: simple-5b21
+                      expression: ${headers[authorization]}
+              - setProperty:
+                  id: setProperty-15ee
+                  description: dadosRecebidos
+                  name: dadosRecebidos
+                  expression:
+                    simple:
+                      id: simple-5831
+                      expression: ${body}
+              - setProperty:
+                  id: setProperty-rota
+                  description: "Variavel: rota"
+                  name: rota
+                  expression:
+                    simple:
+                      id: simple-extract-rota
+                      expression: ${body[rota]}
+              - setProperty:
+                  id: setProperty-redis-banco-key
+                  description: "Variavel: redisKey"
+                  name: redisKey
+                  expression:
+                    simple:
+                      id: simple-176c
+                      expression: >-
+                        apipix:${exchangeProperty.rota[codigoUnimed]}:${exchangeProperty.rota[codigoBanco]}
+              - setProperty:
+                  id: setProperty-ffe9
+                  description: "Variavel: redisToken"
+                  name: redisToken
+                  expression:
+                    simple:
+                      id: simple-d8fd
+                      expression: ${exchangeProperty.redisKey}:token
+              - setProperty:
+                  id: setProperty-ef66
+                  description: "Variavel: redisDadosBanco"
+                  name: redisDadosBanco
+                  expression:
+                    simple:
+                      id: simple-d82c
+                      expression: apipix:banco:${exchangeProperty.rota[codigoBanco]}
+              - marshal:
+                  id: marshal-payload-json
+                  json:
+                    id: json-marshal
+              - to:
+                  id: to-validate-banco
+                  uri: direct
+                  parameters:
+                    name: route-trata-banco-workspace
+- route:
+    id: route-trata-banco-workspace
+    nodePrefixId: route-trata-banco-workspace
+    from:
+      id: route-recebe-requisicao
+      uri: direct
+      parameters:
+        name: route-trata-banco-workspace
+      steps:
+        - log:
+            id: log-8f30
+            description: "# route-trata-banco-workspace #"
+            message: "# route-trata-banco-workspace #"
+        - choice:
+            id: choice-d5f8
+            when:
+              - id: when-61d1
+                description: BB (1)
+                expression:
+                  simple:
+                    id: simple-deec
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 1
+                steps:
+                  - log:
+                      id: log-8d7f
+                      description: "# BANCO BB #"
+                      message: "# BANCO : ${exchangeProperty.rota[codigoBanco]}"
+                  - setProperty:
+                      id: bancoConsumo-bb
+                      description: "Var: bancoConsumo"
+                      name: bancoConsumo
+                      expression:
+                        simple:
+                          id: simple-e370
+                          expression: "{{bb_integrationType}}"
+                  - setProperty:
+                      id: setProperty-1ea1
+                      description: "Var: bancoOAuthUrl"
+                      name: bancoOAuthUrl
+                      expression:
+                        simple:
+                          id: simple-eeb9
+                          expression: "{{bb_oauth}}"
+                  - setProperty:
+                      id: setProperty-f6c5
+                      description: "Var: bancoURL"
+                      name: bancoURL
+                      expression:
+                        simple:
+                          id: simple-7c8b
+                          expression: "{{bb_url}}"
+                  - setProperty:
+                      id: setProperty-4daa
+                      description: "Var: bancoScope"
+                      name: bancoScope
+                      expression:
+                        simple:
+                          id: simple-a7d1
+                          expression: "{{bb_scope}}"
+              - id: when-61d2
+                description: Santander (33)
+                expression:
+                  simple:
+                    id: simple-deec
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 33
+                steps:
+                  - log:
+                      id: log-8d7f1
+                      description: "# BANCO SANTANDER #"
+                      message: "# BANCO : ${exchangeProperty.rota[codigoBanco]}"
+                  - setProperty:
+                      id: bancoConsumo-santander
+                      description: "Var: bancoConsumo"
+                      name: bancoConsumo
+                      expression:
+                        simple:
+                          id: simple-e371
+                          expression: "{{santander_integrationType}}"
+                  - setProperty:
+                      id: setProperty-1ea2
+                      description: "Var: bancoOAuthUrl"
+                      name: bancoOAuthUrl
+                      expression:
+                        simple:
+                          id: simple-eeb3
+                          expression: "{{santander_oauth}}"
+                  - setProperty:
+                      id: setProperty-f6b6
+                      description: "Var: bancoURL"
+                      name: bancoURL
+                      expression:
+                        simple:
+                          id: simple-7c81
+                          expression: "{{santander_url}}"
+                  - setProperty:
+                      id: setProperty-4daf
+                      description: "Var: bancoScope"
+                      name: bancoScope
+                      expression:
+                        simple:
+                          id: simple-a7dg
+                          expression: "{{santander_scope}}"
+              - id: when-61d3
+                description: Sicredi (748)
+                expression:
+                  simple:
+                    id: simple-deec
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 748
+                steps:
+                  - log:
+                      id: log-8d7f2
+                      description: "# BANCO SICREDI #"
+                      message: "# BANCO : ${exchangeProperty.rota[codigoBanco]}"
+                  - setProperty:
+                      id: bancoConsumo-sicredi
+                      description: "Var: bancoConsumo"
+                      name: bancoConsumo
+                      expression:
+                        simple:
+                          id: simple-e372
+                          expression: "{{sicredi_integrationType}}"
+                  - setProperty:
+                      id: setProperty-1ea3
+                      description: "Var: bancoOAuthUrl"
+                      name: bancoOAuthUrl
+                      expression:
+                        simple:
+                          id: simple-eeb4
+                          expression: "{{sicredi_oauth}}"
+                  - setProperty:
+                      id: setProperty-f6c4
+                      description: "Var: bancoURL"
+                      name: bancoURL
+                      expression:
+                        simple:
+                          id: simple-7c82
+                          expression: "{{sicredi_url}}"
+              - id: when-61d4
+                description: Unicred (136)
+                expression:
+                  simple:
+                    id: simple-deec
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 136
+                steps:
+                  - log:
+                      id: log-8d7f3
+                      description: "# BANCO UNICRED #"
+                      message: "# BANCO : ${exchangeProperty.rota[codigoBanco]}"
+                  - setProperty:
+                      id: bancoConsumo-unicred
+                      description: "Var: bancoConsumo"
+                      name: bancoConsumo
+                      expression:
+                        simple:
+                          id: simple-e373
+                          expression: "{{unicred_integrationType}}"
+                  - setProperty:
+                      id: setProperty-1ea5
+                      description: "Var: bancoOAuthUrl"
+                      name: bancoOAuthUrl
+                      expression:
+                        simple:
+                          id: simple-eeb5
+                          expression: "{{unicred_oauth}}"
+                  - setProperty:
+                      id: setProperty-f6d5
+                      description: "Var: bancoURL"
+                      name: bancoURL
+                      expression:
+                        simple:
+                          id: simple-7c85
+                          expression: "{{unicred_url}}"
+              - id: when-61d5
+                description: Safra (422)
+                expression:
+                  simple:
+                    id: simple-deec
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 422
+                steps:
+                  - log:
+                      id: log-8d7f4
+                      description: "# BANCO SAFRA #"
+                      message: "# BANCO : ${exchangeProperty.rota[codigoBanco]}"
+                  - setProperty:
+                      id: bancoConsumo-safra
+                      description: "Var: bancoConsumo"
+                      name: bancoConsumo
+                      expression:
+                        simple:
+                          id: simple-e374
+                          expression: "{{safra_integrationType}}"
+                  - setProperty:
+                      id: setProperty-1ea6
+                      description: "Var: bancoOAuthUrl"
+                      name: bancoOAuthUrl
+                      expression:
+                        simple:
+                          id: simple-eeb6
+                          expression: "{{safra_oauth}}"
+                  - setProperty:
+                      id: setProperty-f6c6
+                      description: "Var: bancoURL"
+                      name: bancoURL
+                      expression:
+                        simple:
+                          id: simple-7c86
+                          expression: "{{safra_url}}"
+              - id: when-61d6
+                description: Sicoob (756)
+                expression:
+                  simple:
+                    id: simple-deec
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 756
+                steps:
+                  - log:
+                      id: log-8d7f5
+                      description: "# BANCO SICOOB #"
+                      message: "# BANCO : ${exchangeProperty.rota[codigoBanco]}"
+                  - setProperty:
+                      id: bancoConsumo-sicoob
+                      description: "Var: bancoConsumo"
+                      name: bancoConsumo
+                      expression:
+                        simple:
+                          id: simple-e375
+                          expression: "{{sicoob_integrationType}}"
+                  - setProperty:
+                      id: setProperty-1ea7
+                      description: "Var: bancoOAuthUrl"
+                      name: bancoOAuthUrl
+                      expression:
+                        simple:
+                          id: simple-eeb7
+                          expression: "{{sicoob_oauth}}"
+                  - setProperty:
+                      id: setProperty-f6c7
+                      description: "Var: bancoURL"
+                      name: bancoURL
+                      expression:
+                        simple:
+                          id: simple-7c87
+                          expression: "{{sicoob_url}}"
+              - id: when-61d7
+                description: Itau (341)
+                expression:
+                  simple:
+                    id: simple-deec
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 341
+                steps:
+                  - log:
+                      id: log-8d7f6
+                      description: "# BANCO ITAU #"
+                      message: "# BANCO : ${exchangeProperty.rota[codigoBanco]}"
+                  - setProperty:
+                      id: bancoConsumo-itau
+                      description: "Var: bancoConsumo"
+                      name: bancoConsumo
+                      expression:
+                        simple:
+                          id: simple-e376
+                          expression: "{{itau_integrationType}}"
+                  - setProperty:
+                      id: setProperty-1ea8
+                      description: "Var: bancoOAuthUrl"
+                      name: bancoOAuthUrl
+                      expression:
+                        simple:
+                          id: simple-eeb8
+                          expression: "{{itau_oauth}}"
+                  - setProperty:
+                      id: setProperty-f6c8
+                      description: "Var: bancoURL"
+                      name: bancoURL
+                      expression:
+                        simple:
+                          id: simple-7c88
+                          expression: "{{itau_url}}"
+              - id: when-61d9
+                description: Bradesco (247)
+                expression:
+                  simple:
+                    id: simple-deac
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 247
+                steps:
+                  - log:
+                      id: log-8d7f9
+                      description: "# BANCO BRADESCO #"
+                      message: "# BANCO : ${exchangeProperty.rota[codigoBanco]}"
+                  - setProperty:
+                      id: bancoConsumo-bradesco
+                      description: "Var: bancoConsumo"
+                      name: bancoConsumo
+                      expression:
+                        simple:
+                          id: simple-e379
+                          expression: "{{bradesco_integrationType}}"
+                  - setProperty:
+                      id: setProperty-1ea9
+                      description: "Var: bancoOAuthUrl"
+                      name: bancoOAuthUrl
+                      expression:
+                        simple:
+                          id: simple-eeb9
+                          expression: "{{bradesco_oauth}}"
+                  - setProperty:
+                      id: setProperty-f6c9
+                      description: "Var: bancoURL"
+                      name: bancoURL
+                      expression:
+                        simple:
+                          id: simple-7c89
+                          expression: "{{bradesco_url}}"
+            otherwise:
+              id: otherwise-0ddb
+              steps:
+                - log:
+                    id: log-e3d4
+                    description: "# ERRO BUSCA BANCO APPLICATION #"
+                    message: "# ERRO BUSCA BANCO APPLICATION #"
+                - setHeader:
+                    id: setHeader-0e39
+                    name: CamelHttpResponseCode
+                    expression:
+                      simple:
+                        id: simple-11b8
+                        expression: "400"
+                - setProperty:
+                    id: setProperty-86d8
+                    description: "Var: errorRoute"
+                    name: errorRoute
+                    expression:
+                      simple:
+                        id: simple-f2c3
+                        expression: >-
+                          informativo: "Banco inexistente nas configurações do
+                          integrador", route: "route-trata-banco-workspace"
+                - to:
+                    id: to-57c6
+                    uri: direct
+                    parameters:
+                      name: route-trata-erros
+                - stop:
+                    id: stop-2276
+        - setHeader:
+            id: setHeader-0da8
+            name: Authorization
+            expression:
+              simple:
+                id: simple-4b69
+                expression: ${exchangeProperty.integradorAuthorization}
+        - log:
+            id: log-192e
+            message: "{{url_nintegrator}}/PIX/${exchangeProperty.bancoConsumo}"
+        - doTry:
+            id: doTry-e0ba
+            doCatch:
+              - id: doCatch-328e
+                exception:
+                  - org.apache.camel.http.base.HttpOperationFailedException
+                steps:
+                  - setProperty:
+                      id: setProperty-531a
+                      description: "Var: errorRoute"
+                      name: errorRoute
+                      expression:
+                        simple:
+                          id: simple-abc6
+                          expression: >-
+                            informativo: "Busca de informações bancárias no
+                            Workspace", route: "route-trata-banco-workspace"
+                  - to:
+                      id: to-4413
+                      uri: direct
+                      parameters:
+                        name: route-trata-erros
+            steps:
+              - toD:
+                  id: to-df6b
+                  uri: https
+                  parameters:
+                    httpUri: "{{url_nintegrator}}/PIX/${exchangeProperty.bancoConsumo}"
+                    bridgeEndpoint: true
+                    httpMethod: GET
+                    logHttpActivity: false
+                    throwExceptionOnFailure: true
+              - unmarshal:
+                  id: unmarshal-dbed
+                  json:
+                    id: json-3eb2
+              - setProperty:
+                  id: setProperty-1d21
+                  description: "Var: bancoSenhaCertificado"
+                  name: bancoSenhaCertificado
+                  expression:
+                    simple:
+                      id: simple-1b0d
+                      expression: >-
+                        ${body[integrationCredential][certificatePrivateKeyPassword]}
+              - setProperty:
+                  id: setProperty-1492
+                  description: "Var: bancoPayloadDados"
+                  name: bancoPayloadDados
+                  expression:
+                    simple:
+                      id: simple-65a1
+                      expression: ${body[integrationCredential]}
+              - log:
+                  id: log-9b2f
+                  disabled: true
+                  message: ${exchangeProperty.bancoPayloadDados}
+              - to:
+                  id: to-5bb3
+                  uri: direct
+                  parameters:
+                    name: route-busta-redis-token
+- route:
+    id: route-busta-redis-token
+    nodePrefixId: route-redis-valida
+    from:
+      id: from-a1ab
+      uri: direct
+      parameters:
+        name: route-busta-redis-token
+      steps:
+        - log:
+            id: log-28c0
+            description: "# ROUTE: route-busta-redis-token #"
+            message: "# ROUTE: route-busta-redis-token #"
+        - setHeader:
+            id: setHeader-redis-token-key
+            name: CamelRedis.Key
+            expression:
+              simple:
+                id: simple-3c0f
+                expression: ${exchangeProperty.redisToken}
+        - to:
+            id: to-480b
+            description: ExisteToken
+            disabled: false
+            uri: kamelet:redis-sink
+            parameters:
+              redisHost: fesc-sql-dev01.fesc.sgusuite.com.br
+              redisPort: 6379
+              command: EXISTS
+        - log:
+            id: log-74ed
+            description: "# EXISTE TOKEN: "
+            message: "# EXISTE TOKEN: ${exchangeProperty.redisToken}"
+        - setProperty:
+            id: setProperty-8c66
+            description: "Var: existeToken"
+            name: existeToken
+            expression:
+              simple:
+                id: simple-8a3b
+                expression: ${body}
+        - choice:
+            id: choice-redis-existe-token
+            description: Choice:ExisteToken
+            when:
+              - id: when-a54b
+                expression:
+                  simple:
+                    id: simple-97dd
+                    expression: ${exchangeProperty.existeToken} == true
+                steps:
+                  - log:
+                      id: log-534a
+                      description: "# EXISTE TOKEN SEGUE PARA PAYLOAD #"
+                      message: "# EXISTE TOKEN SEGUE PARA PAYLOAD #"
+                  - setHeader:
+                      id: setHeader-0bd3
+                      name: CamelRedis.Key
+                      expression:
+                        simple:
+                          id: simple-3627
+                          expression: ${exchangeProperty.redisToken}
+                  - to:
+                      id: to-95c5
+                      description: BuscaToken
+                      uri: kamelet:redis-sink
+                      parameters:
+                        redisHost: fesc-sql-dev01.fesc.sgusuite.com.br
+                        redisPort: 6379
+                        command: GET
+                  - unmarshal:
+                      id: unmarshal-8ce0
+                      disabled: false
+                      json:
+                        id: json-4933
+                  - setProperty:
+                      id: setProperty-token-valido
+                      description: "TOKEN: tokenBancario"
+                      name: tokenBancario
+                      expression:
+                        simple:
+                          id: simple-f024
+                          expression: ${body[token]}
+                  - setProperty:
+                      id: setProperty-6c47
+                      description: "TOKEN: bancoArquivoCertificado"
+                      name: bancoArquivoCertificado
+                      expression:
+                        simple:
+                          id: simple-33d0
+                          expression: ${body[arquivo]}
+                  - setProperty:
+                      id: setProperty-1dec
+                      description: "TOKEN: bancoSenhaCertificado"
+                      name: bancoSenhaCertificado
+                      expression:
+                        simple:
+                          id: simple-104f
+                          expression: ${body[Senha]}
+            otherwise:
+              id: otherwise-78e1
+              steps:
+                - log:
+                    id: log-b652
+                    description: "# NAO EXISTE TOKEN SEGUE OAUTH #"
+                    message: "# NAO EXISTE TOKEN SEGUE OAUTH #"
+                - to:
+                    id: to-bfe7
+                    uri: direct
+                    parameters:
+                      name: route-efetua-oauth-banco
+                - log:
+                    id: log-d6aa
+                    message: "# VOLTOU PARA REDIS VALIDA TOKEN###"
+        - to:
+            id: to-8cfe
+            uri: direct
+            parameters:
+              name: route-prepara-payload-banco
+        - log:
+            id: log-f58b
+            description: "# AQUI RECEBE O RETORNO FINAL DO BANCOS #"
+            message: "# AQUI RECEBE O RETORNO FINAL DO BANCOS #"
+- route:
+    id: route-efetua-oauth-banco
+    from:
+      id: from-route-efetua-oauth-banco
+      uri: direct
+      parameters:
+        name: route-efetua-oauth-banco
+      steps:
+        - log:
+            id: log-ab81
+            description: "# ROUTE-route-efetua-oauth-banco #"
+            message: "# ROUTE-route-efetua-oauth-banco #"
+        - choice:
+            id: choice-71cc
+            description: Geração de Certificado
+            when:
+              - id: when-62c1
+                description: Existe Certificado
+                expression:
+                  simple:
+                    id: simple-d539
+                    expression: >-
+                      ${exchangeProperty.bancoPayloadDados[certificate]} != null
+                      && ${exchangeProperty.bancoPayloadDados[certificate].trim}
+                      != ''
+                steps:
+                  - log:
+                      id: log-f18d
+                      description: "# GERA CERTIFICADO #"
+                      message: "# GERA CERTIFICADO #"
+                  - bean:
+                      id: bean-f5f9
+                      description: "Bean: criarArquivoCertificado"
+                      ref: certificadoArquivo
+                      method: criarArquivoCertificado
+                  - setProperty:
+                      id: setProperty-0f32
+                      description: "Var Certificado: sslBeanId"
+                      name: sslBeanId
+                      expression:
+                        simple:
+                          id: simple-9966
+                          expression: ${body}
+                  - setProperty:
+                      id: setProperty-346d
+                      description: "Var: securityContext"
+                      name: securityContext
+                      expression:
+                        simple:
+                          id: simple-4d2a
+                          expression: ${exchangeProperty.sslBeanId}
+                  - log:
+                      id: log-5bcb
+                      description: "# ARQ. CERT. GERADO PELO JAVA#"
+                      message: "# ARQ. CERT. GERADO PELO JAVA#"
+            otherwise:
+              id: otherwise-1b5b
+              steps:
+                - log:
+                    id: log-9214
+                    description: "# NÃO EXISTE CERTIFICADO #"
+                    message: "# NÃO EXISTE CERTIFICADO #"
+        - setHeader:
+            id: setHeader-8770
+            description: "Header: Content-Type"
+            name: Content-Type
+            expression:
+              simple:
+                id: simple-5ce1
+                expression: application/x-www-form-urlencoded
+        - log:
+            id: log-f2fa
+            description: "# VALIDA BANCO PARA AUTH2 #"
+            message: "# VALIDA BANCO PARA AUTH2 #"
+        - log:
+            id: log-9527
+            description: "# DADOS DO BANCO #"
+            message: "# DADOS DO BANCO # ${exchangeProperty.bancoPayloadDados}"
+        - removeHeaders:
+            id: removeHeaders-179b
+            pattern: "*"
+        - choice:
+            id: choice-auth2-identifica-banco
+            when:
+              - id: when-auth2-bb
+                description: BB (1)
+                expression:
+                  simple:
+                    id: simple-a0b6
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 1
+                steps:
+                  - setHeaders:
+                      id: setHeaders-2cb9
+                      headers:
+                        - id: setHeader-392d
+                          name: Authorization
+                          expression:
+                            simple:
+                              id: simple-7f7d
+                              expression: >-
+                                Basic
+                                ${exchangeProperty.bancoPayloadDados[clientSecret]}
+                        - id: setHeader-67e2
+                          name: Content-Type
+                          expression:
+                            simple:
+                              id: simple-b51f
+                              expression: application/x-www-form-urlencoded
+                  - setBody:
+                      id: setBody-auth2-bb-scopes
+                      expression:
+                        simple:
+                          id: simple-8bb0
+                          expression: >-
+                            grant_type=client_credentials&scopes=${exchangeProperty.bancoPayloadDados[credentialScope]}
+              - id: when-a865
+                description: Santander (33)
+                expression:
+                  simple:
+                    id: simple-c13b
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 33
+                steps:
+                  - setBody:
+                      id: setBody-2d3d
+                      expression:
+                        simple:
+                          id: simple-a586
+                          expression: >-
+                            grant_type=${exchangeProperty.bancoPayloadDados[grantType]}&client_secret=${exchangeProperty.bancoPayloadDados[clientSecret]}&client_id=${exchangeProperty.bancoPayloadDados[clientId]}
+                  - removeHeaders:
+                      id: removeHeaders-2e1a
+                      pattern: "*"
+                  - setHeader:
+                      id: setHeader-santander-ssl-certificate
+                      description: "Host: Santander"
+                      name: Host
+                      expression:
+                        simple:
+                          id: simple-santander-certificate
+                          expression: trust-sandbox.api.santander.com.br
+                  - setHeaders:
+                      id: setHeaders-8609
+                      headers:
+                        - id: setHeader-fc95
+                          name: Host
+                          expression:
+                            simple:
+                              id: simple-7d52
+                              expression: trust-sandbox.api.santander.com.br
+                        - id: setHeader-c54a
+                          name: Content-Type
+                          expression:
+                            simple:
+                              id: simple-81be
+                              expression: application/x-www-form-urlencoded
+                  - setProperty:
+                      id: setProperty-237e
+                      description: bancoOAuthUrl
+                      disabled: true
+                      name: bancoOAuthUrl
+                      expression:
+                        simple:
+                          id: simple-dec0
+                          expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
+              - id: when-334f
+                description: Itau (341)
+                expression:
+                  simple:
+                    id: simple-3f18
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 341
+                steps:
+                  - setBody:
+                      id: setBody-a928
+                      expression:
+                        simple:
+                          id: simple-2942
+                          expression: >-
+                            grant_type=${exchangeProperty.bancoPayloadDados[grantType]}&client_secret=${exchangeProperty.bancoPayloadDados[clientSecret]}&client_id=${exchangeProperty.bancoPayloadDados[clientId]}
+                  - setProperty:
+                      id: setProperty-7fde
+                      description: bancoOAuthUrl
+                      disabled: true
+                      name: bancoOAuthUrl
+                      expression:
+                        simple:
+                          id: simple-d711
+                          expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
+              - id: when-cd7b
+                description: Sicredi (748)
+                expression:
+                  simple:
+                    id: simple-6c66
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 748
+                steps:
+                  - setBody:
+                      id: setBody-c6cc
+                      expression:
+                        simple:
+                          id: simple-28a3
+                          expression: >-
+                            username=${exchangeProperty.bancoPayloadDados[username]}&password=${exchangeProperty.bancoPayloadDados[password]}&grant_type=${exchangeProperty.bancoPayloadDados[grant_type]}&scope=${exchangeProperty.bancoPayloadDados[Scopes]}
+                  - setHeaders:
+                      id: setHeaders-3a3a
+                      headers:
+                        - id: setHeader-1a84
+                          name: x-api-key
+                          expression:
+                            simple:
+                              id: simple-b699
+                              expression: ${exchangeProperty.bancoPayloadDados[ClientID]}
+                        - id: setHeader-f63c
+                          name: context
+                          expression:
+                            simple:
+                              id: simple-24c6
+                              expression: COBRANCA
+                  - setProperty:
+                      id: setProperty-0b29
+                      description: bancoOAuthUrl
+                      disabled: true
+                      name: bancoOAuthUrl
+                      expression:
+                        simple:
+                          id: simple-eb50
+                          expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
+              - id: when-ef06
+                description: Unicred (136)
+                disabled: false
+                expression:
+                  simple:
+                    id: simple-5985
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 136
+                steps:
+                  - setBody:
+                      id: setBody-f021
+                      expression:
+                        simple:
+                          id: simple-af2e
+                          expression: >-
+                            {"nomeUsuario":"${exchangeProperty.bancoPayloadDados[nomeUsuario]}","senha":"${exchangeProperty.bancoPayloadDados[senha]}"}
+                  - setHeaders:
+                      id: setHeaders-05d4
+                      headers:
+                        - id: setHeader-c8c7
+                          name: apiKey
+                          expression:
+                            simple:
+                              id: simple-57c4
+                              expression: ${exchangeProperty.bancoPayloadDados[AppKey]}
+                        - id: setHeader-d200
+                          name: Content-Type
+                          expression:
+                            simple:
+                              id: simple-dcda
+                              expression: application/json
+                  - setProperty:
+                      id: setProperty-badb
+                      description: bancoOAuthUrl
+                      disabled: true
+                      name: bancoOAuthUrl
+                      expression:
+                        simple:
+                          id: simple-7a04
+                          expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
+              - id: when-6c47
+                description: Sicoob (756)
+                expression:
+                  simple:
+                    id: simple-030a
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 756
+                steps:
+                  - setBody:
+                      id: setBody-c673
+                      expression:
+                        simple:
+                          id: simple-59ef
+                          expression: >-
+                            grant_type=client_credentials&scope=boletos_inclusao
+                            boletos_consulta
+                            boletos_alteracao&client_id=${exchangeProperty.bancoPayloadDados[ClinetID]}
+                  - log:
+                      id: log-deb4
+                      description: "# NÃO FUNCIONA O AUTH SEM DOC #"
+                      message: "# NÃO FUNCIONA O AUTH SEM DOC #"
+              - id: when-8aed
+                description: Safra (422)
+                expression:
+                  simple:
+                    id: simple-327f
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 422
+                steps:
+                  - removeHeaders:
+                      id: removeHeaders-96cb
+                      pattern: "*"
+                  - setHeader:
+                      id: setHeader-8be4
+                      disabled: false
+                      name: Content-Type
+                      expression:
+                        simple:
+                          id: simple-0dfd
+                          expression: application/x-www-form-urlencoded
+                  - setBody:
+                      id: setBody-c9ec
+                      expression:
+                        simple:
+                          id: simple-f22b
+                          expression: >-
+                            username=${exchangeProperty.bancoPayloadDados[nomeUsuario]}&password=${exchangeProperty.bancoPayloadDados[senha]}&grant_type=password&client_id=${exchangeProperty.bancoPayloadDados[ClientID]}
+                  - setProperty:
+                      id: setProperty-18f2
+                      description: bancoOAuthUrl
+                      disabled: true
+                      name: bancoOAuthUrl
+                      expression:
+                        simple:
+                          id: simple-beaf
+                          expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
+            otherwise:
+              id: otherwise-auth2-identifica-banco
+              steps:
+                - setHeader:
+                    id: setHeader-1851
+                    name: CamelHttpResponseCode
+                    expression:
+                      simple:
+                        id: simple-26ed
+                        expression: "400"
+                - setBody:
+                    id: setBody-5135
+                    expression:
+                      simple:
+                        id: simple-ed61
+                        expression: >-
+                          { erro: "Banco não idetificado para busca do token
+                          oAuth2",
+
+                          "codigoBanco": ${exchangeProperty.rota[codigoBanco]}
+
+                          }
+                - stop:
+                    id: stop-d54d
+        - log:
+            id: log-a28f
+            description: "# AUTH HEADERS #"
+            disabled: false
+            message: "# AUTH HEADERS # ${headers}"
+        - log:
+            id: log-2fe9
+            description: "# AUTH BODY #"
+            message: "# AUTH BODY # ${body}"
+        - stop:
+            id: stop-8f85
+            disabled: true
+        - setProperty:
+            id: setProperty-eaef
+            description: bancoOAuthUrl
+            disabled: true
+            name: bancoOAuthUrl
+            expression:
+              simple:
+                id: simple-4609
+                expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
+        - doTry:
+            id: doTry-e0c4
+            doCatch:
+              - id: doCatch-d0a0
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - log:
+                      id: log-bba8
+                      description: "# ERRO BUSCR TOKEN #"
+                      message: "# ERRO BUSCR TOKEN #"
+                  - setProperty:
+                      id: setProperty-d440
+                      description: "Var: errorRoute"
+                      name: errorRoute
+                      expression:
+                        simple:
+                          id: simple-8d28
+                          expression: >-
+                            informativo: "Erro ao autenticar com o banco",
+                            route: "route-route-efetua-oauth-banco"
+                  - to:
+                      id: to-9fc9
+                      uri: direct
+                      parameters:
+                        name: route-trata-erros
+                  - stop:
+                      id: stop-cebc
+            steps:
+              - choice:
+                  id: choice-5587
+                  when:
+                    - id: when-6491
+                      description: securityContext != ""
+                      expression:
+                        simple:
+                          id: simple-cd38
+                          expression: >-
+                            ${exchangeProperty.securityContext} != null &&
+                            ${exchangeProperty.securityContext.trim} != ''
+                      steps:
+                        - log:
+                            id: log-4fa5
+                            description: "# AUTH COM CERT #"
+                            message: "# AUTH COM CERT #"
+                        - toD:
+                            id: to-efb5
+                            uri: >-
+                              https://trust-sandbox.api.santander.com.br/auth/oauth/v2/token
+                            parameters:
+                              httpMethod: POST
+                              bridgeEndpoint: true
+                              logHttpActivity: false
+                              sslContextParameters: "#${exchangeProperty.sslBeanId}"
+                              httpUri: ${exchangeProperty.bancoOAuthUrl}
+                  otherwise:
+                    id: otherwise-e094
+                    steps:
+                      - log:
+                          id: log-badf
+                          description: "# AUTH SEM CERT #"
+                          message: "# AUTH SEM CERT #"
+                      - toD:
+                          id: to-2051
+                          uri: https
+                          parameters:
+                            httpUri: ${exchangeProperty.bancoOAuthUrl}
+                            bridgeEndpoint: true
+                            httpMethod: POST
+                            logHttpActivity: false
+              - log:
+                  id: log-6720
+                  description: "# TOKEN RECEBIDO #"
+                  message: "# TOKEN RECEBIDO #"
+        - unmarshal:
+            id: unmarshal-bb71
+            json:
+              id: json-5bc3
+        - log:
+            id: log-0097
+            description: "# COMU. OAUTH2 FINALIZADA #"
+            message: "# COMU. OAUTH2 FINALIZADA #"
+        - choice:
+            id: choice-f7f2
+            when:
+              - id: when-2f6f
+                description: Existe access_token
+                expression:
+                  simple:
+                    id: simple-071a
+                    expression: >-
+                      ${body[access_token]} != null &&
+                      ${body[access_token].trim} != ''
+                steps:
+                  - setProperty:
+                      id: setProperty-bd24
+                      description: "Variavel: tokenExpiresIn"
+                      name: tokenExpiresIn
+                      expression:
+                        simple:
+                          id: simple-4596
+                          expression: ${body[expires_in]}
+                  - setProperty:
+                      id: setProperty-aed8
+                      description: "Variavel: tokenBancario"
+                      name: tokenBancario
+                      expression:
+                        simple:
+                          id: simple-c618
+                          expression: ${body[access_token]}
+            otherwise:
+              id: otherwise-52dd
+              steps:
+                - setProperty:
+                    id: setProperty-116d
+                    description: "Unicred: tokenBancario"
+                    name: tokenBancario
+                    expression:
+                      simple:
+                        id: simple-9b58
+                        expression: ${body[accessToken]}
+                - setProperty:
+                    id: setProperty-dc60
+                    description: "Unicred: tokenExpiresIn"
+                    name: tokenExpiresIn
+                    expression:
+                      simple:
+                        id: simple-75c0
+                        expression: ${body[tokenExpirationTime]}
+        - log:
+            id: log-064f
+            description: "# ALIM. TOKENBANCARIO #"
+            message: "# ALIM. TOKENBANCARIO #"
+        - choice:
+            id: choice-valida-recebeu-token
+            disabled: false
+            when:
+              - id: when-e5fc
+                description: RecebeuToken
+                expression:
+                  simple:
+                    id: simple-9e45
+                    expression: ${exchangeProperty.tokenBancario} != ""
+                steps:
+                  - log:
+                      id: log-afe0
+                      description: "# TOKEN RECEBIDO #"
+                      message: "# TOKEN RECEBIDO #"
+                  - setHeader:
+                      id: setHeader-e778
+                      name: CamelRedis.Key
+                      expression:
+                        simple:
+                          id: simple-63a6
+                          expression: ${exchangeProperty.redisToken}
+                  - setHeader:
+                      id: setHeader-6e15
+                      name: CamelRedis.Timeout
+                      expression:
+                        simple:
+                          id: simple-934c
+                          expression: ${exchangeProperty.tokenExpiresIn}
+                  - setBody:
+                      id: setBody-1cd4
+                      disabled: false
+                      expression:
+                        simple:
+                          id: simple-ecb2
+                          expression: >-
+                            {"Senha":"${exchangeProperty.bancoPayloadDados[Senha]}",
+
+                            "token":"${exchangeProperty.tokenBancario}",
+
+                            "arquivo":"${exchangeProperty.bancoArquivoCertificado}"
+
+                            }
+                  - to:
+                      id: to-redis-set-token
+                      description: CriaToken
+                      uri: kamelet:redis-sink
+                      parameters:
+                        redisHost: fesc-sql-dev01.fesc.sgusuite.com.br
+                        redisPort: 6379
+                        command: SETEX
+                  - log:
+                      id: log-4a23
+                      description: "# TOKEN SALVO NO REDIS #"
+                      message: "# TOKEN SALVO NO REDIS #"
+            otherwise:
+              id: otherwise-5ab6
+              steps:
+                - setBody:
+                    id: setBody-retorno-erro-banco-token
+                    expression:
+                      simple:
+                        id: simple-c0be
+                        expression: ${body}
+                - stop:
+                    id: stop-678a
