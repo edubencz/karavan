@@ -573,12 +573,6 @@
               simple:
                 id: simple-8a3b
                 expression: ${body}
-        - to:
-            id: to-busca-token-redis
-            disabled: true
-            uri: direct
-            parameters:
-              name: busca-dados-bancarios
         - choice:
             id: choice-redis-existe-token
             description: Choice:ExisteToken
@@ -670,165 +664,6 @@
             description: "# AQUI RECEBE O RETORNO FINAL DO BANCOS #"
             message: "# AQUI RECEBE O RETORNO FINAL DO BANCOS #"
 - route:
-    id: busca-dados-banco-para-token
-    description: busca-dados-bancarios
-    from:
-      id: from-redis-valida-token2
-      uri: direct
-      parameters:
-        name: busca-dados-bancarios
-      steps:
-        - log:
-            id: log-89a1
-            description: "# ROUTE-DADOS-BANCARIOS #"
-            message: "# ROUTE-DADOS-BANCARIOS #"
-        - setHeader:
-            id: setHeader-9267
-            name: CamelRedis.Key
-            expression:
-              simple:
-                id: simple-260a
-                expression: ${exchangeProperty.redisKey}
-        - to:
-            id: redis-busca-dados-banco
-            description: BuscaDadosBanco
-            uri: kamelet:redis-sink
-            parameters:
-              redisHost: fesc-sql-dev01.fesc.sgusuite.com.br
-              redisPort: 6379
-              command: EXISTS
-        - choice:
-            id: choice-dadd
-            disabled: false
-            when:
-              - id: when-e23d
-                disabled: false
-                expression:
-                  simple:
-                    id: simple-3775
-                    expression: ${body} == true
-                steps:
-                  - to:
-                      id: to-redis-busca-chaves
-                      description: RedisGetDadosBanco
-                      uri: kamelet:redis-sink
-                      parameters:
-                        redisHost: fesc-sql-dev01.fesc.sgusuite.com.br
-                        redisPort: 6379
-                        command: GET
-                  - log:
-                      id: log-62ea
-                      description: "# RRECEBEU DADOS DO BANCO #"
-                      message: "# RRECEBEU DADOS DO BANCO #"
-                  - unmarshal:
-                      id: unmarshal-busca-chaves
-                      json:
-                        id: json-e49b
-                        library: Jackson
-                  - setProperty:
-                      id: setProperty-appKey
-                      description: "Banco: bancoAppKey"
-                      disabled: true
-                      name: bancoAppKey
-                      expression:
-                        simple:
-                          id: simple-3f62
-                          expression: ${body[AppKey]}
-                  - setProperty:
-                      id: setProperty-ClientId
-                      description: "Banco: bancoClientId"
-                      disabled: true
-                      name: bancoClientId
-                      expression:
-                        simple:
-                          id: simple-d07d
-                          expression: ${body[ClientID]}
-                  - setProperty:
-                      id: setProperty-ClientSecret
-                      description: "Banco: bancoClientSecret"
-                      disabled: true
-                      name: bancoClientSecret
-                      expression:
-                        simple:
-                          id: simple-e743
-                          expression: ${body[ClientSecret]}
-                  - setProperty:
-                      id: setProperty-banco-certificado
-                      description: "Banco: bancoCertificado"
-                      disabled: true
-                      name: bancoCertificado
-                      expression:
-                        simple:
-                          id: simple-6994
-                          expression: ${body[Certificado]}
-                  - setProperty:
-                      id: setProperty-banco-senhaCert
-                      description: "Banco: bancoSenhaCertificado"
-                      disabled: false
-                      name: bancoSenhaCertificado
-                      expression:
-                        simple:
-                          id: simple-a3c9
-                          expression: ${body[Senha]}
-                  - setProperty:
-                      id: setProperty-banco-scopes
-                      description: "Banco: bancoScopes"
-                      disabled: true
-                      name: bancoScopes
-                      expression:
-                        simple:
-                          id: simple-0320
-                          expression: ${body[Scopes]}
-                  - setProperty:
-                      id: setProperty-ae79
-                      description: "Banco: bancoDadosEspecificos"
-                      disabled: true
-                      name: bancoDadosEspecificos
-                      expression:
-                        simple:
-                          id: simple-ecfa
-                          expression: ${body}
-                  - setProperty:
-                      id: setProperty-29d1
-                      description: "Banco: bancoPayloadDados"
-                      name: bancoPayloadDados
-                      expression:
-                        simple:
-                          id: simple-881f
-                          expression: ${body}
-                  - log:
-                      id: log-48c2
-                      description: "# FINALIZOU VARIAVEIS DADOS BANCO #"
-                      message: "# FINALIZOU VARIAVEIS DADOS BANCO #"
-            otherwise:
-              id: otherwise-efaf
-              steps:
-                - log:
-                    id: log-6c3f
-                    description: "# DADOS BANCO NÃO ENCONTRADO #"
-                    message: "# DADOS BANCO NÃO ENCONTRADO #"
-                - setHeader:
-                    id: setHeader-nao-existe-banco
-                    name: CamelHttpResponseCode
-                    expression:
-                      simple:
-                        id: simple-b4d9
-                        expression: "400"
-                - setBody:
-                    id: setBody-296e
-                    expression:
-                      simple:
-                        id: simple-1504
-                        expression: >-
-                          { "erro": "Chaves do banco/Unimed não encontradas no
-                          Vault",
-
-                          "codigoBanco": ${exchangeProperty.rota[codigoBanco]}
-
-                          }
-                - stop:
-                    id: stop-dados-bancarios
-- route:
     id: busca-token-banco
     from:
       id: from-busca-token-banco
@@ -850,8 +685,8 @@
                   simple:
                     id: simple-d539
                     expression: >-
-                      ${exchangeProperty.bancoPayloadDados[Certificado]} != null
-                      && ${exchangeProperty.bancoPayloadDados[Certificado].trim}
+                      ${exchangeProperty.bancoPayloadDados[certificate]} != null
+                      && ${exchangeProperty.bancoPayloadDados[certificate].trim}
                       != ''
                 steps:
                   - log:
@@ -865,7 +700,7 @@
                       method: criarArquivoCertificado
                   - setProperty:
                       id: setProperty-0f32
-                      description: "Certificado: sslBeanId"
+                      description: "Var Certificado: sslBeanId"
                       name: sslBeanId
                       expression:
                         simple:
@@ -873,7 +708,7 @@
                           expression: ${body}
                   - setProperty:
                       id: setProperty-346d
-                      description: securityContext
+                      description: "Var: securityContext"
                       name: securityContext
                       expression:
                         simple:
@@ -885,6 +720,11 @@
                       message: "# ARQ. CERT. GERADO PELO JAVA#"
             otherwise:
               id: otherwise-1b5b
+              steps:
+                - log:
+                    id: log-9214
+                    description: "# NÃO EXISTE CERTIFICADO #"
+                    message: "# NÃO EXISTE CERTIFICADO #"
         - setHeader:
             id: setHeader-8770
             description: "Header: Content-Type"
@@ -944,7 +784,10 @@
                         simple:
                           id: simple-a586
                           expression: >-
-                            grant_type=client_credentials&client_secret=${exchangeProperty.bancoPayloadDados[ClientSecret]}&client_id=${exchangeProperty.bancoPayloadDados[ClientID]}
+                            grant_type=${exchangeProperty.bancoPayloadDados[grantType]}&client_secret=${exchangeProperty.bancoPayloadDados[clientSecret]}&client_id=${exchangeProperty.bancoPayloadDados[clientId]}
+                  - removeHeaders:
+                      id: removeHeaders-2e1a
+                      pattern: "*"
                   - setHeader:
                       id: setHeader-santander-ssl-certificate
                       description: "Host: Santander"
@@ -953,6 +796,21 @@
                         simple:
                           id: simple-santander-certificate
                           expression: trust-sandbox.api.santander.com.br
+                  - setHeaders:
+                      id: setHeaders-8609
+                      headers:
+                        - id: setHeader-fc95
+                          name: Host
+                          expression:
+                            simple:
+                              id: simple-7d52
+                              expression: trust-sandbox.api.santander.com.br
+                        - id: setHeader-c54a
+                          name: Content-Type
+                          expression:
+                            simple:
+                              id: simple-81be
+                              expression: application/x-www-form-urlencoded
                   - setProperty:
                       id: setProperty-237e
                       description: bancoOAuthUrl
@@ -975,7 +833,7 @@
                         simple:
                           id: simple-2942
                           expression: >-
-                            grant_type=client_credentials&client_secret=${exchangeProperty.bancoPayloadDados[ClientSecret]}&client_id=${exchangeProperty.bancoPayloadDados[ClientID]}
+                            grant_type=${exchangeProperty.bancoPayloadDados[grantType]}&client_secret=${exchangeProperty.bancoPayloadDados[clientSecret]}&client_id=${exchangeProperty.bancoPayloadDados[clientId]}
                   - setProperty:
                       id: setProperty-7fde
                       description: bancoOAuthUrl
@@ -1143,11 +1001,18 @@
         - log:
             id: log-a28f
             description: "# AUTH HEADERS #"
+            disabled: false
             message: "# AUTH HEADERS # ${headers}"
         - log:
             id: log-2fe9
             description: "# AUTH BODY #"
             message: "# AUTH BODY # ${body}"
+        - log:
+            id: log-8b84
+            message: ${exchangeProperty.sslBeanId}
+        - stop:
+            id: stop-8f85
+            disabled: true
         - setProperty:
             id: setProperty-eaef
             description: bancoOAuthUrl
@@ -1164,12 +1029,25 @@
                 exception:
                   - java.lang.Exception
                 steps:
-                  - setBody:
-                      id: setBody-36aa
+                  - log:
+                      id: log-bba8
+                      description: "# ERRO BUSCR TOKEN #"
+                      message: "# ERRO BUSCR TOKEN #"
+                  - setProperty:
+                      id: setProperty-d440
+                      description: "Var: errorRoute"
+                      name: errorRoute
                       expression:
                         simple:
-                          id: simple-498b
-                          expression: ${exception.getResponseBody()}
+                          id: simple-8d28
+                          expression: >-
+                            informativo: "Erro ao autenticar com o banco",
+                            route: "route-busca-token-banco"
+                  - to:
+                      id: to-9fc9
+                      uri: direct
+                      parameters:
+                        name: rota-erros
                   - stop:
                       id: stop-cebc
             steps:
@@ -2270,8 +2148,36 @@
         name: rota-erros
       steps:
         - choice:
-            id: choice-d7b7
+            id: choice-e5df
             when:
+              - id: when-resolve-endpoint
+                expression:
+                  simple:
+                    id: simple-2619
+                    expression: >-
+                      ${exception.class} ==
+                      'org.apache.camel.ResolveEndpointFailedException'
+                steps:
+                  - setBody:
+                      id: setBody-4322
+                      expression:
+                        simple:
+                          id: simple-1aae
+                          expression: >-
+                            { "status": 500, "error": "Falha ao resolver
+                            endpoint ou certificado inválido",
+                            ${exchangeProperty.errorRoute}, "exception":
+                            "${exception.message}" }
+                  - setHeader:
+                      id: setHeader-fa65
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-c1ab
+                          expression: "500"
+                  - log:
+                      id: log-a207
+                      message: "Erro SSL/endpoint tratado: ${exception.message}"
               - id: when-0aee
                 expression:
                   simple:

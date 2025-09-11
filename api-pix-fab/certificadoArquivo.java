@@ -28,8 +28,8 @@ public class certificadoArquivo {
      */
     public String criarArquivoCertificado(Exchange exchange) throws Exception {
         // Obtém a string Base64 do certificado e a senha da propriedade do exchange
-        String base64 = (String) exchange.getProperty("bancoPayloadDados", java.util.Map.class).get("Certificado");
-        String senha = (String) exchange.getProperty("bancoPayloadDados", java.util.Map.class).get("Senha");
+        String base64 = (String) exchange.getProperty("bancoPayloadDados", java.util.Map.class).get("certificate");
+        String senha = (String) exchange.getProperty("bancoPayloadDados", java.util.Map.class).get("certificatePrivateKeyPassword");
 
         System.out.println("[DEBUG] Iniciando processamento de certificado");
         System.out.println("[DEBUG] Tamanho do certificado Base64: " + (base64 != null ? base64.length() : "null"));
@@ -78,12 +78,34 @@ public class certificadoArquivo {
             .collect(Collectors.joining(" "));
         System.out.println("[DEBUG] Primeiros bytes do arquivo: " + hexBytes);
 
+        // Obtém o tipo de certificado da propriedade do exchange
+        String certificateType = (String) exchange.getProperty("bancoPayloadDados", java.util.Map.class).get("certificateType");
+        System.out.println("[DEBUG] Tipo de certificado recebido: " + certificateType);
+
+        // Mapeia o tipo de certificado para o tipo de KeyStore
+        String keyStoreType;
+        switch (certificateType) {
+            case "X509_PEM":
+            case "PRIVATE_KEY_PEM":
+                keyStoreType = "PEM"; // Exemplo: PEM pode ser usado para certificados X.509 em formato PEM
+                break;
+            case "PKCS12_PFX":
+            case "PKCS12_P12":
+                keyStoreType = "PKCS12";
+                break;
+            case "X509_DER":
+                keyStoreType = "JKS"; // Exemplo: JKS pode ser usado para certificados DER
+                break;
+            default:
+                throw new RuntimeException("Tipo de certificado não suportado: " + certificateType);
+        }
+
         // Configura os parâmetros do KeyStore
         KeyStoreParameters kp = new KeyStoreParameters();
         kp.setResource("file:" + path);
-        kp.setType("PKCS12");
+        kp.setType(keyStoreType);
         kp.setPassword(senha);
-        System.out.println("[DEBUG] KeyStoreParameters configurado: resource=file:" + path + ", type=PKCS12, password=***");
+        System.out.println("[DEBUG] KeyStoreParameters configurado: resource=file:" + path + ", type=" + keyStoreType + ", password=***");
 
         // Configura os parâmetros do KeyManager
         KeyManagersParameters km = new KeyManagersParameters();
