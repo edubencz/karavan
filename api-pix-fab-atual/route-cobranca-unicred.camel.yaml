@@ -18,8 +18,36 @@
                 exception:
                   - java.lang.Exception
                 steps:
+                  - log:
+                      id: log-24ed
+                      description: "# ERRO ENVIO PAYLOAD #"
+                      message: "# ERRO ENVIO PAYLOAD # ${body}"
+                  - setHeader:
+                      id: setHeader-9e0c
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-e5d0
+                          expression: "400"
+                  - setProperty:
+                      id: setProperty-806e
+                      description: "Var: errorRoute"
+                      name: errorRoute
+                      expression:
+                        simple:
+                          id: simple-e10c
+                          expression: >-
+                            informativo: "Erro no envio de payload", route:
+                            "route-cobranca-unicred", retorno:
+                            ${exception.getResponseBody()}
+                  - to:
+                      id: to-5a3c
+                      uri: direct
+                      parameters:
+                        name: route-trata-erros
                   - setBody:
                       id: setBody-8630
+                      disabled: true
                       expression:
                         simple:
                           id: simple-af7f
@@ -33,7 +61,7 @@
                     simple:
                       id: simple-1c7c
                       expression: >-
-                        ${exchangeProperty.bancoURL}/${exchangeProperty.bancoPayloadDados[idBeneficiario]}/titulos
+                        ${exchangeProperty.bancoURL}/${exchangeProperty.bancoPayloadDados[customAttributes][idBeneficiario]}/titulos
               - setHeaders:
                   id: setHeaders-09b2
                   headers:
@@ -48,26 +76,30 @@
                       expression:
                         simple:
                           id: simple-784c
-                          expression: ${exchangeProperty.bancoPayloadDados[cooperativa]}
+                          expression: >-
+                            ${exchangeProperty.bancoPayloadDados[customAttributes][cooperativa]}
                     - id: setHeader-403b
                       name: apiKey
                       expression:
                         simple:
                           id: simple-5f83
-                          expression: ${exchangeProperty.bancoPayloadDados[AppKey]}
+                          expression: ${exchangeProperty.bancoPayloadDados[appKey]}
                     - id: setHeader-6661
                       name: Content-Type
                       expression:
                         simple:
                           id: simple-f6d3
                           expression: application/json
+              - log:
+                  id: log-d59d
+                  message: ${headers}
               - toD:
                   id: to-b6e3
                   uri: https
                   parameters:
                     bridgeEndpoint: true
                     httpMethod: POST
-                    logHttpActivity: false
+                    logHttpActivity: true
                     httpUri: ${exchangeProperty.urlRegistroBoleto}
               - log:
                   id: log-a63e
@@ -75,7 +107,7 @@
                   message: "# RECEBEU ID BOLETO UNICRED # ${body}"
               - stop:
                   id: stop-e85e
-                  disabled: true
+                  disabled: false
               - setProperty:
                   id: setProperty-2578
                   description: "Unicred: idBoleto"
@@ -112,7 +144,7 @@
                           simple:
                             id: simple-ac4b
                             expression: >-
-                              api.e-unicred.com.br/homolog/cobranca/v2/beneficiarios/${exchangeProperty.bancoPayloadDados[idBeneficiario]}/titulos/${exchangeProperty.idBoleto}/status
+                              api.e-unicred.com.br/homolog/cobranca/v2/beneficiarios/${exchangeProperty.bancoPayloadDados[customAttributes][idBeneficiario]}/titulos/${exchangeProperty.idBoleto}/status
                     - setHeaders:
                         id: setHeaders-40d0
                         headers:

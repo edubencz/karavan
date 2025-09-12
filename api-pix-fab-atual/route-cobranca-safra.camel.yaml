@@ -21,6 +21,24 @@
                   - log:
                       id: log-1b5c
                       message: ${body}
+                  - setProperty:
+                      id: setProperty-9955
+                      description: "Var: errorRoute"
+                      name: errorRoute
+                      expression:
+                        simple:
+                          id: simple-aa0f
+                          expression: >-
+                            informativo: "Erro no envio de payload", route:
+                            "route-cobranca-safra", retorno:
+                            ${exception.getResponseBody()}
+                  - to:
+                      id: to-082a
+                      uri: direct
+                      parameters:
+                        name: route-trata-erros
+                  - stop:
+                      id: stop-b68f
                   - setBody:
                       id: setBody-550a
                       expression:
@@ -76,7 +94,8 @@
                       expression:
                         simple:
                           id: simple-5d33
-                          expression: ${exchangeProperty.bancoPayloadDados[ClientID]}
+                          expression: >-
+                            ${exchangeProperty.bancoPayloadDados[customAttributes][correlationId]}
                     - id: setHeader-72e0
                       name: Authorization
                       expression:
@@ -91,8 +110,13 @@
                           expression: application/json
               - log:
                   id: log-7052
-                  disabled: true
-                  message: ${body}
+                  description: "# SAFRA HEADERS"
+                  disabled: false
+                  message: ${headers}
+              - log:
+                  id: log-b3e8
+                  description: "# ENVIO AO SAFRA #"
+                  message: "# ENVIO AO SAFRA # ${body}"
               - toD:
                   id: to-8679
                   uri: https

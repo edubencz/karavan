@@ -966,7 +966,7 @@
                         simple:
                           id: simple-f22b
                           expression: >-
-                            username=${exchangeProperty.bancoPayloadDados[nomeUsuario]}&password=${exchangeProperty.bancoPayloadDados[senha]}&grant_type=password&client_id=${exchangeProperty.bancoPayloadDados[ClientID]}
+                            username=${exchangeProperty.bancoPayloadDados[username]}&password=${exchangeProperty.bancoPayloadDados[password]}&grant_type=password&client_id=${exchangeProperty.bancoPayloadDados[clientId]}
                   - setProperty:
                       id: setProperty-18f2
                       description: bancoOAuthUrl
@@ -1090,7 +1090,7 @@
                             httpUri: ${exchangeProperty.bancoOAuthUrl}
                             bridgeEndpoint: true
                             httpMethod: POST
-                            logHttpActivity: false
+                            logHttpActivity: true
               - log:
                   id: log-6720
                   description: "# TOKEN RECEBIDO #"

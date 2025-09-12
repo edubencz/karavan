@@ -18,12 +18,22 @@
                 exception:
                   - java.lang.Exception
                 steps:
-                  - setBody:
-                      id: setBody-d3d6
+                  - setProperty:
+                      id: setProperty-4c60
+                      description: "Var: errorRoute"
+                      name: errorRoute
                       expression:
                         simple:
-                          id: simple-3258
-                          expression: ${exception.getResponseBody()}
+                          id: simple-d45f
+                          expression: >-
+                            informativo: "Erro no envio de payload", route:
+                            "route-cobranca-sicoob", retorno:
+                            ${exception.getResponseBody()}
+                  - to:
+                      id: to-0d69
+                      uri: direct
+                      parameters:
+                        name: route-trata-erros
             steps:
               - setProperty:
                   id: setProperty-6375
@@ -32,7 +42,7 @@
                   expression:
                     simple:
                       id: simple-e6e1
-                      expression: ${exchangeProperty.bancoURL}/boletos
+                      expression: ${exchangeProperty.bancoURL}
               - removeHeaders:
                   id: removeHeaders-b322
                   pattern: "*"
@@ -54,7 +64,7 @@
                       expression:
                         simple:
                           id: simple-df40
-                          expression: ${exchangeProperty.bancoPayloadDados[ClientID]}
+                          expression: ${exchangeProperty.bancoPayloadDados[clientId]}
                     - id: setHeader-f69a
                       name: Accept
                       expression:

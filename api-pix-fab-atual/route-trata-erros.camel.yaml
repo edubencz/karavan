@@ -73,7 +73,9 @@
                       expression:
                         simple:
                           id: simple-8b32
-                          expression: ${exception.getResponseBody()}
+                          expression: |-
+                            { status: 400, error: "Informação não identificada",
+                              ${exception.getResponseBody()} }
                   - setHeader:
                       id: setHeader-c91d
                       name: CamelHttpResponseCode
@@ -173,6 +175,136 @@
                   - log:
                       id: log-f15e
                       message: "Erro 204 tratado: ${body}"
+              - id: when-503-exception
+                expression:
+                  simple:
+                    id: simple-503-exception
+                    expression: ${exception.statusCode} == 503
+                steps:
+                  - setBody:
+                      id: setBody-503-exception
+                      expression:
+                        simple:
+                          id: simple-503-exception-body
+                          expression: >-
+                            { status: 503, error: "Serviço bancário
+                            indisponível",
+                              ${exchangeProperty.errorRoute}, exception:
+                              "${exception.message}" }
+                  - setHeader:
+                      id: setHeader-503-exception
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-503-exception-header
+                          expression: "503"
+                  - log:
+                      id: log-503-exception
+                      message: "Erro 503 tratado (exception): ${exception.message}"
+              - id: when-503-header
+                expression:
+                  simple:
+                    id: simple-503-header
+                    expression: ${header.CamelHttpResponseCode} == 503
+                steps:
+                  - setBody:
+                      id: setBody-503-header
+                      expression:
+                        simple:
+                          id: simple-503-header-body
+                          expression: >-
+                            { status: 503, error: "Serviço bancário
+                            indisponível",
+                              ${exchangeProperty.errorRoute}, exception:
+                              "${exception.message}" }
+                  - setHeader:
+                      id: setHeader-503-header
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-503-header-header
+                          expression: "503"
+                  - log:
+                      id: log-503-header
+                      message: "Erro 503 tratado (header): ${exception.message}"
+              - id: when-503-exception-alt
+                expression:
+                  simple:
+                    id: simple-503-exception-alt
+                    expression: ${exception.statusCode} == 503
+                steps:
+                  - setBody:
+                      id: setBody-503-exception-alt
+                      expression:
+                        simple:
+                          id: simple-503-exception-alt-body
+                          expression: >-
+                            { status: 503, error: "Erro alternativo: Serviço
+                            bancário indisponível",
+                              ${exchangeProperty.errorRoute}, exception:
+                              "${exception.message}" }
+                  - setHeader:
+                      id: setHeader-503-exception-alt
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-503-exception-alt-header
+                          expression: "503"
+                  - log:
+                      id: log-503-exception-alt
+                      message: >-
+                        Erro 503 alternativo tratado (exception):
+                        ${exception.message}
+              - id: when-503-header-alt
+                expression:
+                  simple:
+                    id: simple-503-header-alt
+                    expression: ${header.CamelHttpResponseCode} == 503
+                steps:
+                  - setBody:
+                      id: setBody-503-header-alt
+                      expression:
+                        simple:
+                          id: simple-503-header-alt-body
+                          expression: >-
+                            { status: 503, error: "Erro alternativo: Serviço
+                            bancário indisponível",
+                              ${exchangeProperty.errorRoute}, exception:
+                              "${exception.message}" }
+                  - setHeader:
+                      id: setHeader-503-header-alt
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-503-header-alt-header
+                          expression: "503"
+                  - log:
+                      id: log-503-header-alt
+                      message: >-
+                        Erro 503 alternativo tratado (header):
+                        ${exception.message}
+              - id: when-422
+                expression:
+                  simple:
+                    id: simple-422
+                    expression: ${exception.statusCode} == 422
+                steps:
+                  - setBody:
+                      id: setBody-422
+                      expression:
+                        simple:
+                          id: simple-422-body
+                          expression: ${exception.getResponseBody()}
+                  - setHeader:
+                      id: setHeader-422
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-422-header
+                          expression: "400"
+                  - log:
+                      id: log-422
+                      message: "Erro 422 tratado: ${body}"
             otherwise:
               id: otherwise-6391
               steps:
