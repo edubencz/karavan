@@ -880,7 +880,7 @@
                         simple:
                           id: simple-af2e
                           expression: >-
-                            {"nomeUsuario":"${exchangeProperty.bancoPayloadDados[nomeUsuario]}","senha":"${exchangeProperty.bancoPayloadDados[senha]}"}
+                            {"nomeUsuario":"${exchangeProperty.bancoPayloadDados[username]}","senha":"${exchangeProperty.bancoPayloadDados[password]}"}
                   - setHeaders:
                       id: setHeaders-05d4
                       headers:
@@ -889,7 +889,7 @@
                           expression:
                             simple:
                               id: simple-57c4
-                              expression: ${exchangeProperty.bancoPayloadDados[AppKey]}
+                              expression: ${exchangeProperty.bancoPayloadDados[appKey]}
                         - id: setHeader-d200
                           name: Content-Type
                           expression:

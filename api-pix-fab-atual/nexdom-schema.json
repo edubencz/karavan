@@ -8,10 +8,9 @@
         "codigoBanco": { "type": "integer" },
         "codigoUnimed": { "type": "integer" },
         "numeroFatura": { "type": "integer" },
-        "bancoWorkspace": { "type": "string" },
         "tipo": { "type": "string" }
       },
-      "required": ["codigoBanco", "codigoUnimed", "numeroFatura", "tipo", "bancoWorkspace"],
+      "required": ["codigoBanco", "codigoUnimed", "numeroFatura", "tipo"],
       "additionalProperties": false
     },
     "dadosBoleto": {
