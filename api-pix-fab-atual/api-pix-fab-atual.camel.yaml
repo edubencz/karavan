@@ -950,9 +950,25 @@
                     expression:
                       simple:
                         id: simple-26ed
-                        expression: "400"
+                        expression: "403"
+                - setProperty:
+                    id: setProperty-c0ca
+                    description: "Var: errorRoute"
+                    name: errorRoute
+                    expression:
+                      simple:
+                        id: simple-bf74
+                        expression: >-
+                          informativo: "Banco não identificado para busca do
+                          token oAuth2", route: "route-efetua_oauth-banco"
+                - to:
+                    id: to-0a5f
+                    uri: direct
+                    parameters:
+                      name: route-trata-erros
                 - setBody:
                     id: setBody-5135
+                    disabled: true
                     expression:
                       simple:
                         id: simple-ed61
@@ -965,6 +981,7 @@
                           }
                 - stop:
                     id: stop-d54d
+                    disabled: true
         - log:
             id: log-a28f
             description: "# AUTH HEADERS #"
