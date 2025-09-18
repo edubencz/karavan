@@ -121,7 +121,7 @@
     id: route-trata-banco-workspace
     nodePrefixId: route-trata-banco-workspace
     from:
-      id: route-recebe-requisicao
+      id: route-trata-banco-workspace1
       uri: direct
       parameters:
         name: route-trata-banco-workspace
@@ -634,6 +634,10 @@
                         simple:
                           id: simple-104f
                           expression: ${body[Senha]}
+                  - log:
+                      id: log-d6e6
+                      description: "# SENHA CERTIFICADO #"
+                      message: "# SENHA CERTIFICADO: bancoSenhaCertificado"
             otherwise:
               id: otherwise-78e1
               steps:
@@ -813,15 +817,6 @@
                             simple:
                               id: simple-81be
                               expression: application/x-www-form-urlencoded
-                  - setProperty:
-                      id: setProperty-237e
-                      description: bancoOAuthUrl
-                      disabled: true
-                      name: bancoOAuthUrl
-                      expression:
-                        simple:
-                          id: simple-dec0
-                          expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
               - id: when-334f
                 description: Itau (341)
                 expression:
@@ -836,15 +831,6 @@
                           id: simple-2942
                           expression: >-
                             grant_type=${exchangeProperty.bancoPayloadDados[grantType]}&client_secret=${exchangeProperty.bancoPayloadDados[clientSecret]}&client_id=${exchangeProperty.bancoPayloadDados[clientId]}
-                  - setProperty:
-                      id: setProperty-7fde
-                      description: bancoOAuthUrl
-                      disabled: true
-                      name: bancoOAuthUrl
-                      expression:
-                        simple:
-                          id: simple-d711
-                          expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
               - id: when-cd7b
                 description: Sicredi (748)
                 expression:
@@ -880,15 +866,6 @@
                             simple:
                               id: simple-6a9e
                               expression: application/x-www-form-urlencoded
-                  - setProperty:
-                      id: setProperty-0b29
-                      description: bancoOAuthUrl
-                      disabled: true
-                      name: bancoOAuthUrl
-                      expression:
-                        simple:
-                          id: simple-eb50
-                          expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
               - id: when-ef06
                 description: Unicred (136)
                 disabled: false
@@ -919,15 +896,6 @@
                             simple:
                               id: simple-dcda
                               expression: application/json
-                  - setProperty:
-                      id: setProperty-badb
-                      description: bancoOAuthUrl
-                      disabled: true
-                      name: bancoOAuthUrl
-                      expression:
-                        simple:
-                          id: simple-7a04
-                          expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
               - id: when-6c47
                 description: Sicoob (756)
                 expression:
@@ -973,15 +941,6 @@
                           id: simple-f22b
                           expression: >-
                             username=${exchangeProperty.bancoPayloadDados[username]}&password=${exchangeProperty.bancoPayloadDados[password]}&grant_type=password&client_id=${exchangeProperty.bancoPayloadDados[clientId]}
-                  - setProperty:
-                      id: setProperty-18f2
-                      description: bancoOAuthUrl
-                      disabled: true
-                      name: bancoOAuthUrl
-                      expression:
-                        simple:
-                          id: simple-beaf
-                          expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
             otherwise:
               id: otherwise-auth2-identifica-banco
               steps:
@@ -1015,18 +974,10 @@
             id: log-2fe9
             description: "# AUTH BODY #"
             message: "# AUTH BODY # ${body}"
-        - stop:
-            id: stop-8f85
-            disabled: true
-        - setProperty:
-            id: setProperty-eaef
-            description: bancoOAuthUrl
-            disabled: true
-            name: bancoOAuthUrl
-            expression:
-              simple:
-                id: simple-4609
-                expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
+        - log:
+            id: log-d6d4
+            description: "# BANCO OAUTH URL#"
+            message: "# BANCO OAUTH URL ${exchangeProperty.bancoOAuthUrl}"
         - doTry:
             id: doTry-e0c4
             doCatch:
@@ -1190,6 +1141,13 @@
                         simple:
                           id: simple-934c
                           expression: ${exchangeProperty.tokenExpiresIn}
+                  - log:
+                      id: log-da86
+                      description: "# SENHA CERTF #"
+                      disabled: true
+                      message: >-
+                        # SENHA CERTIF
+                        ${exchangeProperty.bancoPayloadDados[certificatePrivateKeyPassword]}
                   - setBody:
                       id: setBody-1cd4
                       disabled: false
@@ -1197,7 +1155,7 @@
                         simple:
                           id: simple-ecb2
                           expression: >-
-                            {"Senha":"${exchangeProperty.bancoPayloadDados[Senha]}",
+                            {"Senha":"${exchangeProperty.bancoPayloadDados[certificatePrivateKeyPassword]}",
 
                             "token":"${exchangeProperty.tokenBancario}",
 

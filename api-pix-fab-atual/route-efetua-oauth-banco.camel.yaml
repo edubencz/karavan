@@ -101,10 +101,6 @@
                             simple:
                               id: simple-b51f
                               expression: application/x-www-form-urlencoded
-                        - id: setHeader-26f6
-                          expression:
-                            groovy:
-                              id: groovy-925a
                   - setBody:
                       id: setBody-auth2-bb-scopes
                       expression:
@@ -136,15 +132,6 @@
                         simple:
                           id: simple-santander-certificate
                           expression: trust-sandbox.api.santander.com.br
-                  - setProperty:
-                      id: setProperty-237e
-                      description: bancoOAuthUrl
-                      disabled: true
-                      name: bancoOAuthUrl
-                      expression:
-                        simple:
-                          id: simple-dec0
-                          expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
               - id: when-334f
                 description: Itau (341)
                 expression:
@@ -159,15 +146,6 @@
                           id: simple-2942
                           expression: >-
                             grant_type=${exchangeProperty.bancoPayloadDados[grantType]}&client_secret=${exchangeProperty.bancoPayloadDados[clientSecret]}&client_id=${exchangeProperty.bancoPayloadDados[clientId]}
-                  - setProperty:
-                      id: setProperty-7fde
-                      description: bancoOAuthUrl
-                      disabled: true
-                      name: bancoOAuthUrl
-                      expression:
-                        simple:
-                          id: simple-d711
-                          expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
               - id: when-cd7b
                 description: Sicredi (748)
                 expression:
@@ -197,15 +175,6 @@
                             simple:
                               id: simple-24c6
                               expression: COBRANCA
-                  - setProperty:
-                      id: setProperty-0b29
-                      description: bancoOAuthUrl
-                      disabled: true
-                      name: bancoOAuthUrl
-                      expression:
-                        simple:
-                          id: simple-eb50
-                          expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
               - id: when-ef06
                 description: Unicred (136)
                 disabled: false
@@ -236,15 +205,6 @@
                             simple:
                               id: simple-dcda
                               expression: application/json
-                  - setProperty:
-                      id: setProperty-badb
-                      description: bancoOAuthUrl
-                      disabled: true
-                      name: bancoOAuthUrl
-                      expression:
-                        simple:
-                          id: simple-7a04
-                          expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
               - id: when-6c47
                 description: Sicoob (756)
                 expression:
@@ -290,15 +250,6 @@
                           id: simple-f22b
                           expression: >-
                             username=${exchangeProperty.bancoPayloadDados[nomeUsuario]}&password=${exchangeProperty.bancoPayloadDados[senha]}&grant_type=password&client_id=${exchangeProperty.bancoPayloadDados[ClientID]}
-                  - setProperty:
-                      id: setProperty-18f2
-                      description: bancoOAuthUrl
-                      disabled: true
-                      name: bancoOAuthUrl
-                      expression:
-                        simple:
-                          id: simple-beaf
-                          expression: ${exchangeProperty.bancoPayloadDados[url_oauth]}
             otherwise:
               id: otherwise-auth2-identifica-banco
               steps:
@@ -522,13 +473,15 @@
                         simple:
                           id: simple-ecb2
                           expression: >-
-                            {"Senha":"${exchangeProperty.bancoPayloadDados[certificatePrivateKeyPassword]}",
+                            {"Senha":"${exchangeProperty.bancoSenhaCertificado}",
 
                             "token":"${exchangeProperty.tokenBancario}",
 
                             "arquivo":"${exchangeProperty.bancoArquivoCertificado}"
 
                             }
+                  - stop:
+                      id: stop-d10b
                   - to:
                       id: to-redis-set-token
                       description: CriaToken

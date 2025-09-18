@@ -67,4 +67,4 @@
                     httpUri: ${exchangeProperty.bancoURL}
                     bridgeEndpoint: true
                     httpMethod: POST
-                    logHttpActivity: true
+                    logHttpActivity: false

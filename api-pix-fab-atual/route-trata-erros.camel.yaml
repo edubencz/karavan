@@ -21,11 +21,12 @@
                         simple:
                           id: simple-npe-body
                           expression: >-
-                            { status: 400, error: "Erro interno de aplicação
+                            { status: 500, error: "Erro interno de aplicação
                             (NullPointerException)",
                               ${exchangeProperty.errorRoute}, exception: "${exception.message}" }
                   - setHeader:
                       id: setHeader-npe
+                      disabled: true
                       name: CamelHttpResponseCode
                       expression:
                         simple:
@@ -54,6 +55,7 @@
                             "${exception.message}" }
                   - setHeader:
                       id: setHeader-9514
+                      disabled: true
                       name: CamelHttpResponseCode
                       expression:
                         simple:
@@ -78,6 +80,7 @@
                               ${exception.getResponseBody()} }
                   - setHeader:
                       id: setHeader-c91d
+                      disabled: true
                       name: CamelHttpResponseCode
                       expression:
                         simple:
@@ -120,6 +123,7 @@
                             exception: "${exception.getResponseBody()}" }
                   - setHeader:
                       id: setHeader-cf28
+                      disabled: true
                       name: CamelHttpResponseCode
                       expression:
                         simple:
@@ -145,6 +149,7 @@
                               ${exception.getResponseBody()} }
                   - setHeader:
                       id: setHeader-d76a
+                      disabled: true
                       name: CamelHttpResponseCode
                       expression:
                         simple:
@@ -164,9 +169,13 @@
                       expression:
                         simple:
                           id: simple-2766
-                          expression: ${exception.getResponseBody()}
+                          expression: |-
+                            { status: 204, error: "NOT_FOUND",
+                              ${exchangeProperty.errorRoute}, exception:
+                              ${exception.getResponseBody()} }
                   - setHeader:
                       id: setHeader-1f30
+                      disabled: true
                       name: CamelHttpResponseCode
                       expression:
                         simple:
@@ -193,6 +202,7 @@
                               "${exception.message}" }
                   - setHeader:
                       id: setHeader-503-exception
+                      disabled: true
                       name: CamelHttpResponseCode
                       expression:
                         simple:
@@ -219,6 +229,7 @@
                               "${exception.message}" }
                   - setHeader:
                       id: setHeader-503-header
+                      disabled: true
                       name: CamelHttpResponseCode
                       expression:
                         simple:
@@ -245,6 +256,7 @@
                               "${exception.message}" }
                   - setHeader:
                       id: setHeader-503-exception-alt
+                      disabled: true
                       name: CamelHttpResponseCode
                       expression:
                         simple:
@@ -256,6 +268,7 @@
                         Erro 503 alternativo tratado (exception):
                         ${exception.message}
               - id: when-503-header-alt
+                disabled: true
                 expression:
                   simple:
                     id: simple-503-header-alt
@@ -294,9 +307,13 @@
                       expression:
                         simple:
                           id: simple-422-body
-                          expression: ${exception.getResponseBody()}
+                          expression: |
+                            { status: 422, error: "NOT_FOUND",
+                              ${exchangeProperty.errorRoute}, exception:
+                              ${exception.getResponseBody()} }
                   - setHeader:
                       id: setHeader-422
+                      disabled: true
                       name: CamelHttpResponseCode
                       expression:
                         simple:
@@ -313,9 +330,12 @@
                     expression:
                       constant:
                         id: constant-4331
-                        expression: "{ \"erro\": \"Falha interna ou não mapeada\" }"
+                        expression: >-
+                          { status: 500, "error": "Falha interna ou não mapeada"
+                          }
                 - setHeader:
                     id: setHeader-cb7d
+                    disabled: true
                     name: CamelHttpResponseCode
                     expression:
                       simple:
@@ -324,5 +344,16 @@
                 - log:
                     id: log-6e31
                     message: "Erro não mapeado: ${exception.message}"
+        - log:
+            id: log-5d62
+            description: "# STATUS 200 NAGENT COLOCA LIXO #"
+            message: "# STATUS 200 NAGENT COLOCA LIXO #"
+        - setHeader:
+            id: setHeader-1a01
+            name: CamelHttpResponseCode
+            expression:
+              simple:
+                id: simple-abc6
+                expression: "200"
         - stop:
             id: stop-09e3
