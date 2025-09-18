@@ -10,6 +10,7 @@
             id: choice-e5df
             when:
               - id: when-nullpointer
+                description: NullException
                 expression:
                   simple:
                     id: simple-npe
@@ -36,6 +37,7 @@
                       id: log-npe
                       message: "Erro NullPointerException tratado: ${exception.message}"
               - id: when-resolve-endpoint
+                description: ResolveEndpointFailedException
                 expression:
                   simple:
                     id: simple-15ab
@@ -65,6 +67,7 @@
                       id: log-813e
                       message: "Erro SSL/endpoint tratado: ${exception.message}"
               - id: when-0aee
+                description: statusCode (400)
                 expression:
                   simple:
                     id: simple-378c
@@ -90,6 +93,7 @@
                       id: log-24b9
                       message: "Erro 400 tratado (API externa): ${body}"
               - id: when-400-interno
+                description: CamelHttpResponseCode (400)
                 expression:
                   simple:
                     id: simple-8941
@@ -107,6 +111,7 @@
                       id: log-e1d0
                       message: "Erro 400 tratado (choice interno): ${body}"
               - id: when-f2ea
+                description: statusCode (403)
                 expression:
                   simple:
                     id: simple-ee9e
@@ -133,6 +138,7 @@
                       id: log-c91e
                       message: "Erro 403 tratado: ${body}"
               - id: when-cc34
+                description: statusCode (404)
                 expression:
                   simple:
                     id: simple-81f2
@@ -159,6 +165,7 @@
                       id: log-ed5d
                       message: "Erro 404 tratado: ${body}"
               - id: when-c3ab
+                description: statusCode (204)
                 expression:
                   simple:
                     id: simple-6ee8
@@ -185,6 +192,7 @@
                       id: log-f15e
                       message: "Erro 204 tratado: ${body}"
               - id: when-503-exception
+                description: statusCode (503)
                 expression:
                   simple:
                     id: simple-503-exception
@@ -212,6 +220,7 @@
                       id: log-503-exception
                       message: "Erro 503 tratado (exception): ${exception.message}"
               - id: when-503-header
+                description: CamelHttpResponseCode (503)
                 expression:
                   simple:
                     id: simple-503-header
@@ -239,10 +248,12 @@
                       id: log-503-header
                       message: "Erro 503 tratado (header): ${exception.message}"
               - id: when-503-exception-alt
+                description: statusCode (401)
+                disabled: false
                 expression:
                   simple:
                     id: simple-503-exception-alt
-                    expression: ${exception.statusCode} == 503
+                    expression: ${exception.statusCode} == 401
                 steps:
                   - setBody:
                       id: setBody-503-exception-alt
@@ -250,8 +261,9 @@
                         simple:
                           id: simple-503-exception-alt-body
                           expression: >-
-                            { status: 503, error: "Erro alternativo: Serviço
-                            bancário indisponível",
+                            { status: 401, error: "Erro alternativo: Serviço
+                            bancário indisponível ou conexão com o banco
+                            inválida, reveja dados banco no Workspace",
                               ${exchangeProperty.errorRoute}, exception:
                               "${exception.message}" }
                   - setHeader:
@@ -297,6 +309,7 @@
                         Erro 503 alternativo tratado (header):
                         ${exception.message}
               - id: when-422
+                description: statusCode (422)
                 expression:
                   simple:
                     id: simple-422
@@ -324,6 +337,7 @@
                       message: "Erro 422 tratado: ${body}"
             otherwise:
               id: otherwise-6391
+              description: Nao identificado
               steps:
                 - setBody:
                     id: setBody-0283

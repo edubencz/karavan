@@ -183,13 +183,17 @@
                     id: simple-5985
                     expression: ${exchangeProperty.rota[codigoBanco]} == 136
                 steps:
+                  - log:
+                      id: log-5f95
+                      description: "# BANCO UNICRED PARA OATUH #"
+                      message: "# BANCO UNICRED PARA OATUH #"
                   - setBody:
                       id: setBody-f021
                       expression:
                         simple:
                           id: simple-af2e
                           expression: >-
-                            {"nomeUsuario":"${exchangeProperty.bancoPayloadDados[nomeUsuario]}","senha":"${exchangeProperty.bancoPayloadDados[senha]}"}
+                            {"nomeUsuario":"${exchangeProperty.bancoPayloadDados[username]}","senha":"${exchangeProperty.bbancoPayloadDados[password]}"}
                   - setHeaders:
                       id: setHeaders-05d4
                       headers:
@@ -198,7 +202,7 @@
                           expression:
                             simple:
                               id: simple-57c4
-                              expression: ${exchangeProperty.bancoPayloadDados[AppKey]}
+                              expression: ${exchangeProperty.bancoPayloadDados[appKey]}
                         - id: setHeader-d200
                           name: Content-Type
                           expression:
