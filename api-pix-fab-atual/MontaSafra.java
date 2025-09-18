@@ -93,7 +93,7 @@ public class MontaSafra {
         payload.put("agencia", agencia);
 
         Map<String, Object> documento = new LinkedHashMap<>();
-        documento.put("numero", dadosBoleto.get("numeroDocumento"));
+        documento.put("numero", dadosBoleto.get("numeroNossoNumero"));
         documento.put("numeroCliente", dadosBoleto.get("numeroDocumento"));
 
         /*

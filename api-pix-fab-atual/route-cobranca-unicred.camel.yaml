@@ -62,6 +62,9 @@
                       id: simple-1c7c
                       expression: >-
                         ${exchangeProperty.bancoURL}/${exchangeProperty.bancoPayloadDados[customAttributes][idBeneficiario]}/titulos
+              - removeHeaders:
+                  id: removeHeaders-c018
+                  pattern: "*"
               - setHeaders:
                   id: setHeaders-09b2
                   headers:

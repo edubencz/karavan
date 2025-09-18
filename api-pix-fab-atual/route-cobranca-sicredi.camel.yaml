@@ -19,19 +19,21 @@
                 expression:
                   simple:
                     id: simple-fdf4
-                    expression: ${exchangeProperty.bancoPayloadDados[ClientID]}
+                    expression: ${exchangeProperty.bancoPayloadDados[clientId]}
               - id: setHeader-cooperativa
                 name: cooperativa
                 expression:
                   simple:
                     id: simple-38cb
-                    expression: ${exchangeProperty.bancoPayloadDados[cooperativa]}
+                    expression: >-
+                      ${exchangeProperty.bancoPayloadDados[customAttributes][cooperativa]}
               - id: setHeader-posto
                 name: posto
                 expression:
                   simple:
                     id: simple-3188
-                    expression: ${exchangeProperty.bancoPayloadDados[posto]}
+                    expression: >-
+                      ${exchangeProperty.bancoPayloadDados[customAttributes][posto]}
               - id: setHeader-authorization
                 name: Authorization
                 expression:

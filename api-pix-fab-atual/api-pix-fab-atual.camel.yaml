@@ -858,7 +858,7 @@
                         simple:
                           id: simple-28a3
                           expression: >-
-                            username=${exchangeProperty.bancoPayloadDados[username]}&password=${exchangeProperty.bancoPayloadDados[password]}&grant_type=${exchangeProperty.bancoPayloadDados[grant_type]}&scope=${exchangeProperty.bancoPayloadDados[Scopes]}
+                            username=${exchangeProperty.bancoPayloadDados[username]}&password=${exchangeProperty.bancoPayloadDados[password]}&grant_type=${exchangeProperty.bancoPayloadDados[grantType]}&scope=${exchangeProperty.bancoPayloadDados[credentialScope]}
                   - setHeaders:
                       id: setHeaders-3a3a
                       headers:
@@ -867,13 +867,19 @@
                           expression:
                             simple:
                               id: simple-b699
-                              expression: ${exchangeProperty.bancoPayloadDados[ClientID]}
+                              expression: ${exchangeProperty.bancoPayloadDados[clientId]}
                         - id: setHeader-f63c
                           name: context
                           expression:
                             simple:
                               id: simple-24c6
                               expression: COBRANCA
+                        - id: setHeader-e314
+                          name: Content-Type
+                          expression:
+                            simple:
+                              id: simple-6a9e
+                              expression: application/x-www-form-urlencoded
                   - setProperty:
                       id: setProperty-0b29
                       description: bancoOAuthUrl
@@ -1090,13 +1096,14 @@
                             httpUri: ${exchangeProperty.bancoOAuthUrl}
                             bridgeEndpoint: true
                             httpMethod: POST
-                            logHttpActivity: true
+                            logHttpActivity: false
               - log:
                   id: log-6720
                   description: "# TOKEN RECEBIDO #"
                   message: "# TOKEN RECEBIDO #"
         - unmarshal:
             id: unmarshal-bb71
+            disabled: false
             json:
               id: json-5bc3
         - log:
