@@ -22,9 +22,9 @@
                         simple:
                           id: simple-npe-body
                           expression: >-
-                            { status: 500, error: "Erro interno de aplicação
+                            { "status": 500, "error": "Erro interno de aplicação
                             (NullPointerException)",
-                              ${exchangeProperty.errorRoute}, exception: "${exception.message}" }
+                              ${exchangeProperty.errorRoute}, "exception": "${exception.message}" }
                   - setHeader:
                       id: setHeader-npe
                       disabled: true
@@ -51,9 +51,9 @@
                         simple:
                           id: simple-da57
                           expression: >-
-                            { status: 500, error: "Falha ao resolver endpoint ou
-                            certificado inválido",
-                            ${exchangeProperty.errorRoute}, exception:
+                            { "status": 500, "error": "Falha ao resolver
+                            endpoint ou certificado inválido",
+                            ${exchangeProperty.errorRoute}, "exception":
                             "${exception.message}" }
                   - setHeader:
                       id: setHeader-9514
@@ -78,8 +78,9 @@
                       expression:
                         simple:
                           id: simple-8b32
-                          expression: |-
-                            { status: 400, error: "Informação não identificada",
+                          expression: >-
+                            { "status": 400, "error": "Informação não
+                            identificada", "ret_bancario" :
                               ${exception.getResponseBody()} }
                   - setHeader:
                       id: setHeader-c91d
@@ -104,9 +105,10 @@
                       expression:
                         simple:
                           id: simple-f6f7
-                          expression: |-
-                            { status: 400, error: "Informação não identificada",
-                              ${exchangeProperty.errorRoute} }
+                          expression: >-
+                            { "status": 400, "error": "Informação não
+                            identificada", "ret_bancario" :
+                              ${exception.getResponseBody()} }
                   - log:
                       id: log-e1d0
                       message: "Erro 400 tratado (choice interno): ${body}"
@@ -123,9 +125,9 @@
                         simple:
                           id: simple-174d
                           expression: >-
-                            { status: 403, error: "Token inválido ou mal
+                            { "status": 403, "error": "Token inválido ou mal
                             formatado", ${exchangeProperty.errorRoute},
-                            exception: "${exception.getResponseBody()}" }
+                            "exception": "${exception.getResponseBody()}" }
                   - setHeader:
                       id: setHeader-cf28
                       disabled: true
@@ -150,8 +152,8 @@
                         simple:
                           id: simple-4039
                           expression: |-
-                            { status: 404, error: "NOT_FOUND",
-                              ${exchangeProperty.errorRoute}, exception:
+                            { "status": 404, "error": "NOT_FOUND",
+                              ${exchangeProperty.errorRoute}, "exception":
                               ${exception.getResponseBody()} }
                   - setHeader:
                       id: setHeader-d76a
@@ -177,8 +179,8 @@
                         simple:
                           id: simple-2766
                           expression: |-
-                            { status: 204, error: "NOT_FOUND",
-                              ${exchangeProperty.errorRoute}, exception:
+                            { "status": 204, "error": "NOT_FOUND",
+                              ${exchangeProperty.errorRoute}, "exception":
                               ${exception.getResponseBody()} }
                   - setHeader:
                       id: setHeader-1f30
@@ -204,9 +206,9 @@
                         simple:
                           id: simple-503-exception-body
                           expression: >-
-                            { status: 503, error: "Serviço bancário
+                            { "status": 503, "error": "Serviço bancário
                             indisponível",
-                              ${exchangeProperty.errorRoute}, exception:
+                              ${exchangeProperty.errorRoute}, "exception":
                               "${exception.message}" }
                   - setHeader:
                       id: setHeader-503-exception
@@ -232,9 +234,9 @@
                         simple:
                           id: simple-503-header-body
                           expression: >-
-                            { status: 503, error: "Serviço bancário
+                            { "status": 503, "error": "Serviço bancário
                             indisponível",
-                              ${exchangeProperty.errorRoute}, exception:
+                              ${exchangeProperty.errorRoute}, "exception":
                               "${exception.message}" }
                   - setHeader:
                       id: setHeader-503-header
@@ -261,7 +263,7 @@
                         simple:
                           id: simple-503-exception-alt-body
                           expression: >-
-                            { status: 401, error: "Erro alternativo: Serviço
+                            { "status": 401, "error": "Erro alternativo: Serviço
                             bancário indisponível ou conexão com o banco
                             inválida, reveja dados banco no Workspace",
                               ${exchangeProperty.errorRoute}, exception:
@@ -280,11 +282,11 @@
                         Erro 503 alternativo tratado (exception):
                         ${exception.message}
               - id: when-503-header-alt
-                disabled: true
+                disabled: false
                 expression:
                   simple:
                     id: simple-503-header-alt
-                    expression: ${header.CamelHttpResponseCode} == 503
+                    expression: ${header.CamelHttpResponseCode} == 422
                 steps:
                   - setBody:
                       id: setBody-503-header-alt
@@ -292,7 +294,7 @@
                         simple:
                           id: simple-503-header-alt-body
                           expression: >-
-                            { status: 503, error: "Erro alternativo: Serviço
+                            { "status": 422, "error": "Erro alternativo: Serviço
                             bancário indisponível",
                               ${exchangeProperty.errorRoute}, exception:
                               "${exception.message}" }
@@ -321,7 +323,7 @@
                         simple:
                           id: simple-422-body
                           expression: |
-                            { status: 422, error: "NOT_FOUND",
+                            { "status": 422, "error": "NOT_FOUND",
                               ${exchangeProperty.errorRoute}, exception:
                               ${exception.getResponseBody()} }
                   - setHeader:
@@ -364,6 +366,7 @@
             message: "# STATUS 200 NAGENT COLOCA LIXO #"
         - setHeader:
             id: setHeader-1a01
+            disabled: false
             name: CamelHttpResponseCode
             expression:
               simple:

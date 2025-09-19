@@ -110,8 +110,8 @@
                       simple:
                         id: simple-4483
                         expression: >-
-                          informativo: "Workspace não cadastrada no Workspace",
-                          route: "route-cobranca-santander"
+                          "informativo": "Workspace não cadastrada no
+                          Workspace", route: "route-cobranca-santander"
                 - to:
                     id: to-76b5
                     uri: direct

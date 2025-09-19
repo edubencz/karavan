@@ -451,8 +451,8 @@
                       simple:
                         id: simple-f2c3
                         expression: >-
-                          informativo: "Banco inexistente nas configurações do
-                          integrador", route: "route-trata-banco-workspace"
+                          "informativo": "Banco inexistente nas configurações do
+                          integrador", "route": "route-trata-banco-workspace"
                 - to:
                     id: to-57c6
                     uri: direct
@@ -488,8 +488,8 @@
                         simple:
                           id: simple-abc6
                           expression: >-
-                            informativo: "Busca de informações bancárias no
-                            Workspace", route: "route-trata-banco-workspace"
+                            "informativo": "Busca de informações bancárias no
+                            Workspace", "route": "route-trata-banco-workspace"
                   - to:
                       id: to-4413
                       uri: direct
@@ -959,8 +959,8 @@
                       simple:
                         id: simple-bf74
                         expression: >-
-                          informativo: "Banco não identificado para busca do
-                          token oAuth2", route: "route-efetua_oauth-banco"
+                          "informativo": "Banco não identificado para busca do
+                          token oAuth2", "route": "route-efetua_oauth-banco"
                 - to:
                     id: to-0a5f
                     uri: direct
@@ -1014,8 +1014,8 @@
                         simple:
                           id: simple-8d28
                           expression: >-
-                            informativo: "Erro ao autenticar com o banco",
-                            route: "route-route-efetua-oauth-banco"
+                            "informativo": "Erro ao autenticar com o banco",
+                            "route": "route-route-efetua-oauth-banco"
                   - to:
                       id: to-9fc9
                       uri: direct

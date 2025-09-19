@@ -22,7 +22,12 @@
             doCatch:
               - id: doCatch-61ed
                 exception:
-                  - java.lang.Exception
+                  - "java.lang.Throwable "
+                onWhen:
+                  id: onWhen-5116
+                  expression:
+                    groovy:
+                      id: groovy-37db
                 steps:
                   - log:
                       id: log-2033
@@ -43,8 +48,8 @@
                         simple:
                           id: simple-bd96
                           expression: >-
-                            informativo: "Erro ao montar payload para envio ao
-                            banco", route: "route-prepara-payload-banco"
+                            "informativo":"Erro ao montar payload para envio ao
+                            banco","route":"route-prepara-payload-banco"
                   - log:
                       id: log-22c5
                       description: "# DRIRECT ROTA DE TRATA ERRO #"
