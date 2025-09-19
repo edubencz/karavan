@@ -218,12 +218,12 @@ public class MontaSicoob {
             payload.put("codigoCadastrarPIX", 1); //Com pix
 
             return objectMapper.writeValueAsString(payload);
-        } catch (RuntimeException e) {
-            throw e; // repropaga para o Camel capturar
-        } catch (Exception e) {
-            throw new RuntimeException("Erro genérico ao montar payload", e);
+         } catch (Throwable t) {
+            // LOGA e repropaga para o Camel capturar no doCatch
+            System.err.println("Falha crítica ao montar payload: " + t.getMessage());
+            t.printStackTrace();
+            throw t instanceof RuntimeException ? (RuntimeException) t : new RuntimeException(t);
         }
-
     }
 
     public String montarAlteracao(Map<String, Object> dadosBanco,

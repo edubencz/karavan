@@ -46,10 +46,11 @@
                       name: errorRoute
                       expression:
                         simple:
-                          id: simple-bd96
+                          id: simple-4952
                           expression: >-
                             "informativo":"Erro ao montar payload para envio ao
-                            banco","route":"route-prepara-payload-banco"
+                            banco","route":"route-prepara-payload-banco","erro":"${exception.message
+                            ?: "Erro desconhecido"}"
                   - log:
                       id: log-22c5
                       description: "# DRIRECT ROTA DE TRATA ERRO #"
