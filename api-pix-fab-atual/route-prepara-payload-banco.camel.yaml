@@ -22,12 +22,7 @@
             doCatch:
               - id: doCatch-61ed
                 exception:
-                  - "java.lang.Throwable "
-                onWhen:
-                  id: onWhen-5116
-                  expression:
-                    groovy:
-                      id: groovy-37db
+                  - java.lang.Exception
                 steps:
                   - log:
                       id: log-2033
@@ -68,6 +63,58 @@
                   description: "Bean: MontaJsonPayload"
                   ref: montaPayload
                   method: montarPayload
+              - log:
+                  id: log-6452
+                  description: "# VERIFICA ERRO EM GER. PAYLOAD #"
+                  message: "# VERIFICA ERRO EM GER. PAYLOAD #"
+              - choice:
+                  id: choice-4afe
+                  when:
+                    - id: when-4ac5
+                      expression:
+                        simple:
+                          id: simple-833c
+                          expression: ${body} contains '"payload":true'
+                      steps:
+                        - log:
+                            id: log-0e02
+                            description: "# ERRO MONTAGEM PAYLOAD JAVA #"
+                            message: "# ERRO MONTAGEM PAYLOAD JAVA #"
+                        - log:
+                            id: log-dba0
+                            description: " # FORCA ERRO NO BODY #"
+                            message: " # FORCA ERRO NO BODY: ${body}"
+                        - setProperty:
+                            id: setProperty-124b
+                            description: "Var: errorRoute"
+                            name: errorRoute
+                            expression:
+                              simple:
+                                id: simple-a7a1
+                                expression: >-
+                                  "route":"route-prepara-payload-banco",
+                                  "informativo": ${body}
+                        - setHeader:
+                            id: setHeader-fb65
+                            name: CamelHttpResponseCode
+                            expression:
+                              simple:
+                                id: simple-a704
+                                expression: "400"
+                        - to:
+                            id: to-58a9
+                            uri: direct
+                            parameters:
+                              name: route-trata-erros
+                        - stop:
+                            id: stop-e322
+                  otherwise:
+                    id: otherwise-1a96
+                    steps:
+                      - log:
+                          id: log-024d
+                          description: " # PAYLOAD SEM ERROS #"
+                          message: " # PAYLOAD SEM ERROS #"
               - log:
                   id: log-a1c3
                   description: "# PAYLOAD MONTADO SEM ERROS #"

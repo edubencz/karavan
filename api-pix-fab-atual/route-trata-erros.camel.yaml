@@ -73,6 +73,10 @@
                     id: simple-378c
                     expression: ${exception.statusCode} == 400
                 steps:
+                  - log:
+                      id: log-0711
+                      description: "# ERRO 400 #"
+                      message: "# ERRO 400 #"
                   - setBody:
                       id: setBody-48fa
                       expression:
@@ -100,15 +104,51 @@
                     id: simple-8941
                     expression: ${header.CamelHttpResponseCode} == 400
                 steps:
-                  - setBody:
-                      id: setBody-f12a
-                      expression:
-                        simple:
-                          id: simple-f6f7
-                          expression: >-
-                            { "status": 400, "error": "Informação não
-                            identificada", "ret_bancario" :
-                              ${exception.getResponseBody()} }
+                  - log:
+                      id: log-ec8f
+                      description: "# ERRO 400 CAMEL #"
+                      message: "# ERRO 400 CAMEL: ${exchangeProperty.errorRoute}"
+                  - stop:
+                      id: stop-e94c
+                      disabled: true
+                  - choice:
+                      id: choice-7fc2
+                      when:
+                        - id: when-d88c
+                          expression:
+                            simple:
+                              id: simple-9d53
+                              expression: ${exception.getResponseBody()} != null
+                          steps:
+                            - log:
+                                id: log-353a
+                                description: "# ERRO AQUI #"
+                                message: "# ERRO AQUI #"
+                            - setBody:
+                                id: setBody-f12a
+                                expression:
+                                  simple:
+                                    id: simple-f6f7
+                                    expression: >-
+                                      { "status": 400, "error": "Informação não
+                                      identificada", "ret_bancario" :
+                                        ${exception.getResponseBody()} }
+                      otherwise:
+                        id: otherwise-be59
+                        steps:
+                          - log:
+                              id: log-7b79
+                              description: "# ERRO AQUI F #"
+                              message: "# ERRO AQUI F#"
+                          - setBody:
+                              id: setBody-8711
+                              expression:
+                                simple:
+                                  id: simple-3a74
+                                  expression: >-
+                                    { "status": 400, "error": "Informação não
+                                    identificada",
+                                    ${exchangeProperty.errorRoute} }
                   - log:
                       id: log-e1d0
                       message: "Erro 400 tratado (choice interno): ${body}"

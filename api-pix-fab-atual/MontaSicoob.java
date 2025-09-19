@@ -86,7 +86,7 @@ public class MontaSicoob {
                                 List<String> instrucoes,
                                 List<String> mensagens,
                                 Map<String, Object> dadosDescontos) throws Exception {
-        try { 
+        try {
             Map<String, Object> payload = new LinkedHashMap<>();
             
             // Campos obrigatórios conforme documentação BB
@@ -218,11 +218,19 @@ public class MontaSicoob {
             payload.put("codigoCadastrarPIX", 1); //Com pix
 
             return objectMapper.writeValueAsString(payload);
-         } catch (Throwable t) {
-            // LOGA e repropaga para o Camel capturar no doCatch
-            System.err.println("Falha crítica ao montar payload: " + t.getMessage());
-            t.printStackTrace();
-            throw t instanceof RuntimeException ? (RuntimeException) t : new RuntimeException(t);
+        }
+        catch (Exception e) {
+            Map<String, Object> erro = new LinkedHashMap<>();
+            erro.put("payload", true);
+            erro.put("mensagem", e.getMessage());
+            //erro.put("classeErro", e.getClass().getName());
+            try {
+                return objectMapper.writeValueAsString(erro);
+            } catch (Exception ex) {
+                erro.put("payload", true);
+                erro.put("mensagem", "Erro desconhecido ao serializar exceção");
+                return objectMapper.writeValueAsString(erro);
+            }
         }
     }
 
