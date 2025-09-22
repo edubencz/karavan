@@ -6,6 +6,10 @@
       parameters:
         name: route-trata-erros
       steps:
+        - log:
+            id: log-30dc
+            description: errorRoute
+            message: ${exchangeProperty.errorRoute}
         - choice:
             id: choice-e5df
             when:
@@ -240,6 +244,10 @@
                     id: simple-503-exception
                     expression: ${exception.statusCode} == 503
                 steps:
+                  - log:
+                      id: log-5429
+                      description: Erro 503 StatusCode
+                      message: "# Erro 503 StatusCode ${body}"
                   - setBody:
                       id: setBody-503-exception
                       expression:
@@ -268,6 +276,10 @@
                     id: simple-503-header
                     expression: ${header.CamelHttpResponseCode} == 503
                 steps:
+                  - log:
+                      id: log-c579
+                      description: Erro 503
+                      message: "# Erro 503 ${body}"
                   - setBody:
                       id: setBody-503-header
                       expression:
@@ -297,6 +309,10 @@
                     id: simple-503-exception-alt
                     expression: ${exception.statusCode} == 401
                 steps:
+                  - log:
+                      id: log-9feb
+                      description: Erro 401 StatusCode
+                      message: "# Erro 401 StatusCode ${body}"
                   - setBody:
                       id: setBody-503-exception-alt
                       expression:
@@ -306,7 +322,7 @@
                             { "status": 401, "error": "Erro alternativo: Serviço
                             bancário indisponível ou conexão com o banco
                             inválida, reveja dados banco no Workspace",
-                              ${exchangeProperty.errorRoute}, exception:
+                              ${exchangeProperty.errorRoute}, "exception":
                               "${exception.message}" }
                   - setHeader:
                       id: setHeader-503-exception-alt
@@ -322,12 +338,17 @@
                         Erro 503 alternativo tratado (exception):
                         ${exception.message}
               - id: when-503-header-alt
+                description: Camel = 422
                 disabled: false
                 expression:
                   simple:
                     id: simple-503-header-alt
                     expression: ${header.CamelHttpResponseCode} == 422
                 steps:
+                  - log:
+                      id: log-5c3a
+                      description: Erro Camel 422
+                      message: "#Erro Camel 422 ${body}"
                   - setBody:
                       id: setBody-503-header-alt
                       expression:
@@ -357,6 +378,10 @@
                     id: simple-422
                     expression: ${exception.statusCode} == 422
                 steps:
+                  - log:
+                      id: log-adf8
+                      description: Erro 422 StatusCode
+                      message: "# Erro 422 StatusCode  ${body}"
                   - setBody:
                       id: setBody-422
                       expression:
@@ -381,6 +406,10 @@
               id: otherwise-6391
               description: Nao identificado
               steps:
+                - log:
+                    id: log-189f
+                    description: Erro Nao identificado
+                    message: "# Erro Nao identificado  ${body}"
                 - setBody:
                     id: setBody-0283
                     expression:

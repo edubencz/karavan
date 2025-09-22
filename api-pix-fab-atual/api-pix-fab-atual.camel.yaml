@@ -1064,7 +1064,7 @@
                             httpUri: ${exchangeProperty.bancoOAuthUrl}
                             bridgeEndpoint: true
                             httpMethod: POST
-                            logHttpActivity: false
+                            logHttpActivity: true
               - log:
                   id: log-6720
                   description: "# TOKEN RECEBIDO #"

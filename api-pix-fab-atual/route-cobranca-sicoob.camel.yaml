@@ -26,8 +26,8 @@
                         simple:
                           id: simple-d45f
                           expression: >-
-                            informativo: "Erro no envio de payload", route:
-                            "route-cobranca-sicoob", retorno:
+                            "informativo": "Erro no envio de payload", "route":
+                            "route-cobranca-sicoob", "retorno":
                             ${exception.getResponseBody()}
                   - to:
                       id: to-0d69
@@ -35,6 +35,10 @@
                       parameters:
                         name: route-trata-erros
             steps:
+              - log:
+                  id: log-00ea
+                  description: "# URL SICOOB #"
+                  message: "# URL SICOOB ${exchangeProperty.bancoURL}"
               - setProperty:
                   id: setProperty-6375
                   description: urlRegistroBoleto
@@ -58,25 +62,23 @@
                       expression:
                         simple:
                           id: simple-a07b
-                          expression: Bearer ${exchangeProperty.tokenBancario}
+                          expression: Bearer 1301865f-c6bc-38f3-9f49-666dbcfc59c3
                     - id: setHeader-11f1
                       name: client_id
                       expression:
                         simple:
                           id: simple-df40
                           expression: ${exchangeProperty.bancoPayloadDados[clientId]}
-                    - id: setHeader-f69a
-                      name: Accept
-                      expression:
-                        simple:
-                          id: simple-ca03
-                          expression: application/json
                     - id: setHeader-34da
                       name: Content-Type
                       expression:
                         simple:
                           id: simple-2263
                           expression: application/json
+              - log:
+                  id: log-dcc6
+                  description: "# HEADERS SICOOB"
+                  message: "# HEADERS SICOOB ${headers}"
               - log:
                   id: log-f2f8
                   description: "# NÃO PODE USAR LOG ACTIVE#"
@@ -85,7 +87,8 @@
                   id: to-f030
                   uri: https
                   parameters:
-                    httpUri: ${exchangeProperty.urlRegistroBoleto}
+                    httpUri: >-
+                      sandbox.sicoob.com.br/sicoob/sandbox/cobranca-bancaria/v3/boletos
                     bridgeEndpoint: true
                     httpMethod: POST
                     logHttpActivity: false
