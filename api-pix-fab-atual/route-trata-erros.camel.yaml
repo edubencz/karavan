@@ -58,7 +58,7 @@
                             { "status": 500, "error": "Falha ao resolver
                             endpoint ou certificado inválido",
                             ${exchangeProperty.errorRoute}, "exception":
-                            "${exception.message}" }
+                            ${exception.message} }
                   - setHeader:
                       id: setHeader-9514
                       disabled: true
@@ -88,7 +88,7 @@
                           id: simple-8b32
                           expression: >-
                             { "status": 400, "error": "Informação não
-                            identificada", "ret_bancario" :
+                            identificada", "retorno" :
                               ${exception.getResponseBody()} }
                   - setHeader:
                       id: setHeader-c91d
@@ -135,7 +135,7 @@
                                     id: simple-f6f7
                                     expression: >-
                                       { "status": 400, "error": "Informação não
-                                      identificada", "ret_bancario" :
+                                      identificada", "retorno" :
                                         ${exception.getResponseBody()} }
                       otherwise:
                         id: otherwise-be59
@@ -171,7 +171,8 @@
                           expression: >-
                             { "status": 403, "error": "Token inválido ou mal
                             formatado", ${exchangeProperty.errorRoute},
-                            "exception": "${exception.getResponseBody()}" }
+                            "exception": "${exception.getResponseBody() != null
+                            ? exception.getResponseBody() : ''}" }
                   - setHeader:
                       id: setHeader-cf28
                       disabled: true
@@ -357,7 +358,7 @@
                           expression: >-
                             { "status": 422, "error": "Erro alternativo: Serviço
                             bancário indisponível",
-                              ${exchangeProperty.errorRoute}, exception:
+                              ${exchangeProperty.errorRoute}, "exception":
                               "${exception.message}" }
                   - setHeader:
                       id: setHeader-503-header-alt
@@ -389,7 +390,7 @@
                           id: simple-422-body
                           expression: |
                             { "status": 422, "error": "NOT_FOUND",
-                              ${exchangeProperty.errorRoute}, exception:
+                              ${exchangeProperty.errorRoute}, "exception":
                               ${exception.getResponseBody()} }
                   - setHeader:
                       id: setHeader-422
@@ -416,8 +417,8 @@
                       constant:
                         id: constant-4331
                         expression: >-
-                          { status: 500, "error": "Falha interna ou não mapeada"
-                          }
+                          { "status": 500, "error": "Falha interna ou não
+                          mapeada" }
                 - setHeader:
                     id: setHeader-cb7d
                     disabled: true

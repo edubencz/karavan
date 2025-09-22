@@ -29,8 +29,8 @@
                         simple:
                           id: simple-aa0f
                           expression: >-
-                            informativo: "Erro no envio de payload", route:
-                            "route-cobranca-safra", retorno:
+                            "informativo": "Erro no envio de payload", "route":
+                            "route-cobranca-safra", "retorno":
                             ${exception.getResponseBody()}
                   - to:
                       id: to-082a
@@ -125,3 +125,21 @@
                     bridgeEndpoint: true
                     httpMethod: POST
                     logHttpActivity: false
+              - log:
+                  id: log-ae4a
+                  description: "# GERACAO DE QRCODPIX #"
+                  message: ${body}
+              - setProperty:
+                  id: setProperty-aca2
+                  description: "Var: linhaDigitavel"
+                  name: linhaDigitavel
+                  expression:
+                    simple:
+                      id: simple-2207
+                      expression: ${body}
+              - log:
+                  id: log-27ca
+                  description: "# LINHA DIGITAVEL #"
+                  message: "# LINHA DIGITAVEL # ${exchangeProperty.linhaDigitavel}"
+              - stop:
+                  id: stop-253f

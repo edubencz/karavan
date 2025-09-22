@@ -503,7 +503,7 @@
                     httpUri: "{{url_nintegrator}}/PIX/${exchangeProperty.bancoConsumo}"
                     bridgeEndpoint: true
                     httpMethod: GET
-                    logHttpActivity: false
+                    logHttpActivity: true
                     throwExceptionOnFailure: true
               - unmarshal:
                   id: unmarshal-dbed
@@ -1057,6 +1057,10 @@
                           id: log-badf
                           description: "# AUTH SEM CERT #"
                           message: "# AUTH SEM CERT #"
+                      - log:
+                          id: log-7ddc
+                          description: "# NAO PODE LOG HTTPS #"
+                          message: "# NAO PODE LOG HTTPS :UNICRED CRASHA O SERVICO #"
                       - toD:
                           id: to-2051
                           uri: https
@@ -1064,7 +1068,7 @@
                             httpUri: ${exchangeProperty.bancoOAuthUrl}
                             bridgeEndpoint: true
                             httpMethod: POST
-                            logHttpActivity: true
+                            logHttpActivity: false
               - log:
                   id: log-6720
                   description: "# TOKEN RECEBIDO #"

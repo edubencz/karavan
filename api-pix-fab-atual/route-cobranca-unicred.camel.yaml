@@ -24,6 +24,7 @@
                       message: "# ERRO ENVIO PAYLOAD # ${body}"
                   - setHeader:
                       id: setHeader-9e0c
+                      disabled: true
                       name: CamelHttpResponseCode
                       expression:
                         simple:
@@ -37,9 +38,8 @@
                         simple:
                           id: simple-e10c
                           expression: >-
-                            informativo: "Erro no envio de payload", route:
-                            "route-cobranca-unicred", retorno:
-                            ${exception.getResponseBody()}
+                            "informativo": "Erro no envio de payload", "route":
+                            "route-cobranca-unicred"
                   - to:
                       id: to-5a3c
                       uri: direct
@@ -102,12 +102,25 @@
                   parameters:
                     bridgeEndpoint: true
                     httpMethod: POST
-                    logHttpActivity: true
+                    logHttpActivity: false
                     httpUri: ${exchangeProperty.urlRegistroBoleto}
               - log:
                   id: log-a63e
                   description: "# RECEBEU ID BOLETO UNICRED #"
                   message: "# RECEBEU ID BOLETO UNICRED # ${body}"
+              - setHeader:
+                  id: setHeader-2af7
+                  name: Content-Type
+                  expression:
+                    simple:
+                      id: simple-34a0
+                      expression: application/json
+              - setBody:
+                  id: setBody-f81c
+                  expression:
+                    simple:
+                      id: simple-f000
+                      expression: "{ \"txId\": \"${body}\" }"
               - stop:
                   id: stop-e85e
                   disabled: false
