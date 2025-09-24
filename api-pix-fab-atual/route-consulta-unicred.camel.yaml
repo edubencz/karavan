@@ -1,0 +1,89 @@
+- route:
+    id: route-consulta-unicred
+    nodePrefixId: route-cunicred
+    from:
+      id: from-route-consulta-unicred
+      uri: direct
+      parameters:
+        name: route-consulta-unicred
+      steps:
+        - setProperty:
+            id: setProperty-2578
+            description: "Unicred: idBoleto"
+            name: idBoleto
+            expression:
+              simple:
+                id: simple-a3d4
+                expression: ${exchangeProperty.dadosRecebidos[txid]}
+        - doTry:
+            id: doTry-4e04
+            doCatch:
+              - id: doCatch-66ff
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - setProperty:
+                      id: setProperty-28b0
+                      description: "Var: errorRoute"
+                      name: errorRoute
+                      expression:
+                        simple:
+                          id: simple-749b
+                          expression: "\"route\": \"route-consulta-unicred\""
+                  - to:
+                      id: to-9a0a
+                      uri: direct
+                      parameters:
+                        name: route-trata-erros
+                  - setBody:
+                      id: setBody-5022
+                      disabled: true
+                      expression:
+                        simple:
+                          id: simple-7cd0
+                          expression: ${exception.getResponseBody()}
+            steps:
+              - setProperty:
+                  id: setProperty-66ff
+                  description: "Unicred: urlBuscaBoleto"
+                  name: urlBuscaBoleto
+                  expression:
+                    simple:
+                      id: simple-ac4b
+                      expression: >-
+                        api.e-unicred.com.br/homolog/cobranca/v2/beneficiarios/${exchangeProperty.bancoPayloadDados[customAttributes][idBeneficiario]}/titulos/${exchangeProperty.idBoleto}/status
+              - log:
+                  id: log-40ed
+                  description: "# DADOS #"
+                  message: "# DADOS ${exchangeProperty.urlBuscaBoleto}"
+              - setHeaders:
+                  id: setHeaders-40d0
+                  headers:
+                    - id: setHeader-7e11
+                      name: Authorization
+                      expression:
+                        simple:
+                          id: simple-1be0
+                          expression: Bearer ${exchangeProperty.tokenBancario}
+                    - id: setHeader-73c6
+                      name: cooperativa
+                      expression:
+                        simple:
+                          id: simple-4115
+                          expression: >-
+                            ${exchangeProperty.bancoPayloadDados[customAttributes][cooperativa]}
+                    - id: setHeader-be64
+                      name: apiKey
+                      expression:
+                        simple:
+                          id: simple-1fdf
+                          expression: ${exchangeProperty.bancoPayloadDados[appKey]}
+              - toD:
+                  id: toD-8f94
+                  disabled: false
+                  uri: https
+                  parameters:
+                    httpUri: ${exchangeProperty.urlBuscaBoleto}
+                    httpMethod: GET
+                    bridgeEndpoint: true
+                    logHttpActivity: true

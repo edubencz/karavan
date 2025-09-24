@@ -13,6 +13,7 @@
       "required": ["codigoBanco", "codigoUnimed", "numeroFatura", "tipo"],
       "additionalProperties": false
     },
+    "txid": { "type": "string" },
     "dadosBoleto": {
       "type": ["object", "null"],
       "properties": {

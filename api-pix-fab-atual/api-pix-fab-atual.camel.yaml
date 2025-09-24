@@ -50,6 +50,10 @@
                   - stop:
                       id: stop-on-exception
             steps:
+              - log:
+                  id: log-f8e1
+                  description: "# CHEGOU NO INTEGRADOR #"
+                  message: "# CHEGOU NO INTEGRADOR #"
               - to:
                   id: to-json-validator-schema
                   uri: json-validator
@@ -442,7 +446,7 @@
                     expression:
                       simple:
                         id: simple-11b8
-                        expression: "400"
+                        expression: "600"
                 - setProperty:
                     id: setProperty-86d8
                     description: "Var: errorRoute"
@@ -451,7 +455,7 @@
                       simple:
                         id: simple-f2c3
                         expression: >-
-                          "informativo": "Banco inexistente nas configurações do
+                          "message": "Banco inexistente nas configurações do
                           integrador", "route": "route-trata-banco-workspace"
                 - to:
                     id: to-57c6
@@ -480,6 +484,13 @@
                 exception:
                   - org.apache.camel.http.base.HttpOperationFailedException
                 steps:
+                  - setHeader:
+                      id: setHeader-6d74
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-14fb
+                          expression: "600"
                   - setProperty:
                       id: setProperty-531a
                       description: "Var: errorRoute"
@@ -488,8 +499,9 @@
                         simple:
                           id: simple-abc6
                           expression: >-
-                            "informativo": "Busca de informações bancárias no
-                            Workspace", "route": "route-trata-banco-workspace"
+                            "message": "Erro ao buscar informações bancárias do
+                            cliente na Workspace ou dados inesistentes",
+                            "route": "route-trata-banco-workspace"
                   - to:
                       id: to-4413
                       uri: direct
@@ -950,7 +962,7 @@
                     expression:
                       simple:
                         id: simple-26ed
-                        expression: "403"
+                        expression: "600"
                 - setProperty:
                     id: setProperty-c0ca
                     description: "Var: errorRoute"
@@ -959,8 +971,9 @@
                       simple:
                         id: simple-bf74
                         expression: >-
-                          "informativo": "Banco não identificado para busca do
-                          token oAuth2", "route": "route-efetua_oauth-banco"
+                          "message": "Configurações bancárias não encontradas
+                          para iniciar autenticação com o banco", "route":
+                          "route-efetua_oauth-banco"
                 - to:
                     id: to-0a5f
                     uri: direct

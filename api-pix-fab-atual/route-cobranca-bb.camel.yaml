@@ -28,10 +28,33 @@
                           expression: ${header.CamelHttpResponseCode}
                   - setBody:
                       id: setBody-erro
+                      disabled: true
                       expression:
                         simple:
                           id: simple-erro
                           expression: ${exception.getResponseBody()}
+                  - setHeader:
+                      id: setHeader-9309
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-ec48
+                          expression: "400"
+                  - setProperty:
+                      id: setProperty-7908
+                      description: "Var: errorRoute"
+                      name: errorRoute
+                      expression:
+                        simple:
+                          id: simple-b920
+                          expression: >-
+                            "informativo": "Erro no envio de payload", "route":
+                            "route-cobranca-bb"
+                  - to:
+                      id: to-ea8c
+                      uri: direct
+                      parameters:
+                        name: route-trata-erros
             steps:
               - setHeaders:
                   id: setHeaders-9f41

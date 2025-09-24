@@ -403,6 +403,35 @@
                   - log:
                       id: log-422
                       message: "Erro 422 tratado: ${body}"
+              - id: when-423
+                description: statusCode (600)
+                expression:
+                  simple:
+                    id: simple-423
+                    expression: ${header.CamelHttpResponseCode} == 600
+                steps:
+                  - log:
+                      id: log-adf82
+                      description: Erro 600 StatusCode
+                      message: "# Erro 600 StatusCode  ${body}"
+                  - setBody:
+                      id: setBody-423
+                      expression:
+                        simple:
+                          id: simple-423-body
+                          expression: |
+                            { "status": 600, ${exchangeProperty.errorRoute} }
+                  - setHeader:
+                      id: setHeader-423
+                      disabled: true
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-423-header
+                          expression: "400"
+                  - log:
+                      id: log-4222
+                      message: "Erro 422 tratado: ${body}"
             otherwise:
               id: otherwise-6391
               description: Nao identificado
@@ -414,11 +443,12 @@
                 - setBody:
                     id: setBody-0283
                     expression:
-                      constant:
-                        id: constant-4331
+                      simple:
+                        id: simple-7e3e
                         expression: >-
                           { "status": 500, "error": "Falha interna ou não
-                          mapeada" }
+                          mapeada",
+                            ${exchangeProperty.errorRoute}, "exception": ${exception.getResponseBody()}  }
                 - setHeader:
                     id: setHeader-cb7d
                     disabled: true

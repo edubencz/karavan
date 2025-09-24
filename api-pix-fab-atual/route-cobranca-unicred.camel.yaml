@@ -109,14 +109,16 @@
                   description: "# RECEBEU ID BOLETO UNICRED #"
                   message: "# RECEBEU ID BOLETO UNICRED # ${body}"
               - setHeader:
-                  id: setHeader-2af7
+                  id: setHeader-bc0e
+                  disabled: false
                   name: Content-Type
                   expression:
                     simple:
-                      id: simple-34a0
+                      id: simple-d936
                       expression: application/json
               - setBody:
                   id: setBody-f81c
+                  disabled: false
                   expression:
                     simple:
                       id: simple-f000
@@ -152,6 +154,9 @@
                           simple:
                             id: simple-39da
                             expression: "5000"
+                    - removeHeaders:
+                        id: removeHeaders-12c4
+                        pattern: "*"
                     - setProperty:
                         id: setProperty-66ff
                         description: "Unicred: urlBuscaBoleto"
@@ -176,13 +181,13 @@
                               simple:
                                 id: simple-4115
                                 expression: >-
-                                  ${exchangeProperty.bancoPayloadDados[cooperativa]}
+                                  ${exchangeProperty.bancoPayloadDados[customAttributes][cooperativa]}
                           - id: setHeader-be64
                             name: apiKey
                             expression:
                               simple:
                                 id: simple-1fdf
-                                expression: ${exchangeProperty.bancoPayloadDados[AppKey]}
+                                expression: ${exchangeProperty.bancoPayloadDados[appKey]}
                     - toD:
                         id: toD-8f94
                         disabled: false
@@ -191,4 +196,4 @@
                           httpUri: ${exchangeProperty.urlBuscaBoleto}
                           httpMethod: GET
                           bridgeEndpoint: true
-                          logHttpActivity: true
+                          logHttpActivity: false
