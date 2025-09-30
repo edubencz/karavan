@@ -149,6 +149,10 @@
                   id: log-a1c3
                   description: "# PAYLOAD MONTADO SEM ERROS #"
                   message: "# PAYLOAD MONTADO SEM ERROS #"
+        - log:
+            id: log-8139
+            description: "# PAYLOAD #"
+            message: "# PAYLOAD # ${body}"
         - setProperty:
             id: setProperty-c7d8
             description: "Body: payloadEnvio"

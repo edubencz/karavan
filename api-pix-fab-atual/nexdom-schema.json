@@ -22,6 +22,7 @@
         "numeroNossoNumero": { "type": ["string", "null"] },
         "dataEmissao": { "type": ["string", "null"], "format": "date" },
         "valorTitulo": { "type": ["number", "null"] },
+        "valorDesconto": { "type": ["number", "null"] },
         "especieDocumento": { "type": ["string", "null"] },
         "dataProcessamento": { "type": ["string", "null"], "format": "date" },
         "protestar": { "type": ["string", "null"] },

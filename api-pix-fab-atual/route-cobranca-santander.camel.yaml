@@ -61,6 +61,10 @@
                           id: simple-1919
                           expression: ${exchangeProperty.payloadEnvio}
                   - log:
+                      id: log-d431
+                      description: "# ENVIO AO SANTANDER #"
+                      message: "# ENVIO AO SANTANDER # ${body}"
+                  - log:
                       id: log-abf6
                       description: "# ssBeanId"
                       message: "# ssBeanId: ${exchangeProperty.sslBeanId}"
@@ -82,16 +86,48 @@
                                     id: simple-6c63
                                     expression: ${exception.getResponseBody()}
                       steps:
-                        - toD:
-                            id: to-69a2
-                            uri: https
-                            parameters:
-                              bridgeEndpoint: true
-                              httpMethod: POST
-                              logHttpActivity: true
-                              httpUri: >-
-                                {{santander_url}}/${exchangeProperty.bancoPayloadDados[customAttributes][workspace]}/bank_slips
-                              sslContextParameters: "#${exchangeProperty.sslBeanId}"
+                        - choice:
+                            id: choice-926d
+                            when:
+                              - id: when-66d7
+                                expression:
+                                  simple:
+                                    id: simple-17de
+                                    expression: >-
+                                      ${exchangeProperty.rota[tipo]} ==
+                                      'registrar'
+                                steps:
+                                  - log:
+                                      id: log-151e
+                                      description: "# SANT REGISTRAR POST #"
+                                      message: "# REGISTRAR POST #"
+                                  - toD:
+                                      id: to-69a2
+                                      uri: https
+                                      parameters:
+                                        bridgeEndpoint: true
+                                        httpMethod: POST
+                                        logHttpActivity: false
+                                        httpUri: >-
+                                          {{santander_url}}/${exchangeProperty.bancoPayloadDados[customAttributes][workspace]}/bank_slips
+                                        sslContextParameters: "#${exchangeProperty.sslBeanId}"
+                            otherwise:
+                              id: otherwise-c98c
+                              steps:
+                                - log:
+                                    id: log-4a6d
+                                    description: "# SANT PATCH # "
+                                    message: "# SANT PATCH # "
+                                - toD:
+                                    id: to-1645
+                                    uri: https
+                                    parameters:
+                                      httpUri: >-
+                                        {{santander_url}}/${exchangeProperty.bancoPayloadDados[customAttributes][workspace]}/bank_slips
+                                      bridgeEndpoint: true
+                                      httpMethod: PATCH
+                                      logHttpActivity: false
+                                      sslContextParameters: "#${exchangeProperty.sslBeanId}"
             otherwise:
               id: otherwise-8149
               steps:

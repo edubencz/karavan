@@ -182,23 +182,63 @@ public class MontaSantander {
 
     public String montarAlteracao(Map<String, Object> dadosBanco,
                                  Map<String, Object> dadosBoleto) throws Exception {
-        Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("numeroConvenio", dadosBanco.get("convenio"));
-        payload.put("numeroDocumento", dadosBoleto.get("numeroDocumento"));
-        return objectMapper.writeValueAsString(payload);
+        
+        try {
+            Map<String, Object> payload = new LinkedHashMap<>();
+
+            payload.put("covenantCode", dadosBanco.get("convenio"));
+            payload.put("bankNumber", dadosBoleto.get("numeroNossoNumero"));
+
+            if (dadosBoleto.get("valorDesconto") != null) {
+                payload.put("type", "VALOR_DATA_FIXA");
+                
+                Map<String, Object> discountOne = new LinkedHashMap<>();
+                Number valorDesconto = (Number) dadosBoleto.get("valorDesconto");
+                discountOne.put("value", valorDesconto);
+                discountOne.put("limitDate", dadosBoleto.get("dataVencimento"));
+                payload.put("discount", discountOne);
+            } else if (dadosBoleto.get("dataVencimento") != null) {
+                payload.put("dueDate", dadosBoleto.get("dataVencimento"));
+            }
+
+            return objectMapper.writeValueAsString(payload);
+        } 
+        catch (Exception e) {
+            Map<String, Object> erro = new LinkedHashMap<>();
+            erro.put("payload", true);
+            erro.put("mensagem", e.getMessage());
+            try {
+                return objectMapper.writeValueAsString(erro);
+            } catch (Exception ex) {
+                erro.put("payload", true);
+                erro.put("mensagem", "Erro montar alteração para o Santander");
+                return objectMapper.writeValueAsString(erro);
+            }
+        }
     }
 
     public String montarCancelamento(Map<String, Object> dadosBanco,
                                    Map<String, Object> dadosBoleto) throws Exception {
-        Map<String, Object> payload = new LinkedHashMap<>();
-        /*
-        "covenantCode": "3567206",
-        "bankNumber": "123",
-        "operation": "BAIXAR"
-        */
-        payload.put("covenantCode", dadosBanco.get("convenio"));
-        payload.put("bankNumber", dadosBanco.get("codigoBanco"));
-        payload.put("operation", "BAIXAR");
-        return objectMapper.writeValueAsString(payload);
+        try {
+            Map<String, Object> payload = new LinkedHashMap<>();
+
+            payload.put("covenantCode", dadosBanco.get("convenio"));
+            payload.put("bankNumber", dadosBoleto.get("numeroNossoNumero"));
+            payload.put("operation", "BAIXAR");
+
+            return objectMapper.writeValueAsString(payload);
+        } 
+        catch (Exception e) {
+            Map<String, Object> erro = new LinkedHashMap<>();
+            erro.put("payload", true);
+            erro.put("mensagem", e.getMessage());
+            try {
+                return objectMapper.writeValueAsString(erro);
+            } catch (Exception ex) {
+                erro.put("payload", true);
+                erro.put("mensagem", "Erro montar cancelamento para o Santander");
+                return objectMapper.writeValueAsString(erro);
+            }
+        }
     }
 }
