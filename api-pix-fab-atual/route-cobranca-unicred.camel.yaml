@@ -116,6 +116,14 @@
                     simple:
                       id: simple-d936
                       expression: application/json
+              - setProperty:
+                  id: setProperty-2578
+                  description: "Unicred: idBoleto"
+                  name: idBoleto
+                  expression:
+                    simple:
+                      id: simple-a3d4
+                      expression: ${body}
               - setBody:
                   id: setBody-f81c
                   disabled: false
@@ -126,14 +134,6 @@
               - stop:
                   id: stop-e85e
                   disabled: false
-              - setProperty:
-                  id: setProperty-2578
-                  description: "Unicred: idBoleto"
-                  name: idBoleto
-                  expression:
-                    simple:
-                      id: simple-a3d4
-                      expression: ${body}
               - doTry:
                   id: doTry-4e04
                   doCatch:

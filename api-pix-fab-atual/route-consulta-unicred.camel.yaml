@@ -86,4 +86,4 @@
                     httpUri: ${exchangeProperty.urlBuscaBoleto}
                     httpMethod: GET
                     bridgeEndpoint: true
-                    logHttpActivity: true
+                    logHttpActivity: false

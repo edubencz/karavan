@@ -68,7 +68,7 @@
                       expression:
                         simple:
                           id: simple-cad6
-                          expression: ${exchangeProperty.rota[tipo]} !=  "unicred"
+                          expression: ${exchangeProperty.rota[tipo]} !=  "consulta"
                       steps:
                         - log:
                             id: log-9017
