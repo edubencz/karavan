@@ -112,6 +112,15 @@
                     simple:
                       id: simple-d82c
                       expression: apipix:banco:${exchangeProperty.rota[codigoBanco]}
+              - setProperty:
+                  id: setProperty-a225
+                  description: "Variavel: boletoNossoNumero"
+                  name: boletoNossoNumero
+                  expression:
+                    simple:
+                      id: simple-9f78
+                      expression: >-
+                        ${exchangeProperty.dadosRecebidos[dadosBoleto][numeroNossoNumero]}
               - marshal:
                   id: marshal-payload-json
                   json:

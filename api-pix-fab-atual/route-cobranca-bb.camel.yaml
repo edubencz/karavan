@@ -72,25 +72,105 @@
                         simple:
                           id: simple-c988
                           expression: Bearer ${exchangeProperty.tokenBancario}
-              - setProperty:
-                  id: setProperty-c32f
-                  description: urlRegistroBoleto
-                  name: urlRegistroBoleto
-                  expression:
-                    simple:
-                      id: simple-e96b
-                      expression: ${exchangeProperty.bancoURL}
-              - log:
-                  id: log-1369
-                  description: "# URL DEVE SER COMO HTTPS #"
-                  disabled: false
-                  message: "# URL DEVE SER COMO HTTPS #"
-              - toD:
-                  id: to-241b
-                  uri: https
-                  parameters:
-                    httpUri: >-
-                      ${exchangeProperty.urlRegistroBoleto}?gw-dev-app-key=${exchangeProperty.bancoPayloadDados[appKey]}
-                    bridgeEndpoint: true
-                    httpMethod: POST
-                    logHttpActivity: true
+              - choice:
+                  id: choice-6158
+                  when:
+                    - id: when-3e9d
+                      description: Registrar
+                      expression:
+                        simple:
+                          id: simple-aed1
+                          expression: ${exchangeProperty.rota[tipo]} == 'registrar'
+                      steps:
+                        - setProperty:
+                            id: setProperty-c32f
+                            description: urlRegistroBoleto
+                            name: urlRegistroBoleto
+                            expression:
+                              simple:
+                                id: simple-e96b
+                                expression: ${exchangeProperty.bancoURL}
+                        - toD:
+                            id: to-241b
+                            uri: https
+                            parameters:
+                              httpUri: >-
+                                ${exchangeProperty.urlRegistroBoleto}?gw-dev-app-key=${exchangeProperty.bancoPayloadDados[appKey]}
+                              bridgeEndpoint: true
+                              httpMethod: POST
+                              logHttpActivity: true
+                    - id: when-d15a
+                      description: Alterar
+                      expression:
+                        simple:
+                          id: simple-2641
+                          expression: ${exchangeProperty.rota[tipo]} == 'alterar'
+                      steps:
+                        - setProperty:
+                            id: setProperty-8e34
+                            description: urlRegistroBoleto
+                            name: urlRegistroBoleto
+                            expression:
+                              simple:
+                                id: simple-e116
+                                expression: >-
+                                  ${exchangeProperty.bancoURL}/${exchangeProperty.boletoNossoNumero}
+                        - toD:
+                            id: to-45dd
+                            uri: https
+                            parameters:
+                              httpUri: >-
+                                ${exchangeProperty.urlRegistroBoleto}?gw-dev-app-key=${exchangeProperty.bancoPayloadDados[appKey]}
+                              bridgeEndpoint: true
+                              httpMethod: PATCH
+                              logHttpActivity: true
+                    - id: when-10bc
+                      description: Cancelar
+                      expression:
+                        simple:
+                          id: simple-e31d
+                          expression: ${exchangeProperty.rota[tipo]} == 'cancelar'
+                      steps:
+                        - setProperty:
+                            id: setProperty-5244
+                            description: urlRegistroBoleto
+                            name: urlRegistroBoleto
+                            expression:
+                              simple:
+                                id: simple-c113
+                                expression: >-
+                                  ${exchangeProperty.bancoURL}/${exchangeProperty.boletoNossoNumero}/baixar
+                        - toD:
+                            id: to-acc8
+                            uri: https
+                            parameters:
+                              httpUri: >-
+                                ${exchangeProperty.urlRegistroBoleto}?gw-dev-app-key=${exchangeProperty.bancoPayloadDados[appKey]}
+                              bridgeEndpoint: true
+                              httpMethod: POST
+                  otherwise:
+                    id: otherwise-0b3b
+                    steps:
+                      - setHeader:
+                          id: setHeader-f0c3
+                          name: CamelHttpResponseCode
+                          expression:
+                            simple:
+                              id: simple-63ca
+                              expression: "400"
+                      - setProperty:
+                          id: setProperty-8095
+                          description: "Var: errorRoute"
+                          name: errorRoute
+                          expression:
+                            simple:
+                              id: simple-65c9
+                              expression: >-
+                                "informativo": "Erro no envio de payload",
+                                "route": "route-cobranca-bb", "message": "Tipo
+                                só pode ser Registrar/Alterar/Cancelar"
+                      - to:
+                          id: to-ca37
+                          uri: direct
+                          parameters:
+                            name: route-trata-erros

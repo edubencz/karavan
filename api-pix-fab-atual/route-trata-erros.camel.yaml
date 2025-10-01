@@ -432,6 +432,23 @@
                   - log:
                       id: log-4222
                       message: "Erro 422 tratado: ${body}"
+              - id: when-23c2
+                description: statusCode (601) Regra
+                expression:
+                  simple:
+                    id: simple-7a9d
+                    expression: ${header.CamelHttpResponseCode} == 601
+                steps:
+                  - log:
+                      id: log-3f8d
+                      description: Erro 601 StatusCode
+                      message: "# Erro 601 StatusCode  ${body}"
+                  - setBody:
+                      id: setBody-bbcd
+                      expression:
+                        simple:
+                          id: simple-3063
+                          expression: "{ \"status\": 601, ${exchangeProperty.errorRoute} }"
             otherwise:
               id: otherwise-6391
               description: Nao identificado

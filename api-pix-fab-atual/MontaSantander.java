@@ -189,15 +189,25 @@ public class MontaSantander {
             payload.put("covenantCode", dadosBanco.get("convenio"));
             payload.put("bankNumber", dadosBoleto.get("numeroNossoNumero"));
 
-            if (dadosBoleto.get("valorDesconto") != null) {
-                payload.put("type", "VALOR_DATA_FIXA");
-                
-                Map<String, Object> discountOne = new LinkedHashMap<>();
-                Number valorDesconto = (Number) dadosBoleto.get("valorDesconto");
-                discountOne.put("value", valorDesconto);
-                discountOne.put("limitDate", dadosBoleto.get("dataVencimento"));
-                payload.put("discount", discountOne);
-            } else if (dadosBoleto.get("dataVencimento") != null) {
+
+            if (dadosBoleto.get("alteraSaldo") == "S") {
+                if (dadosBoleto.get("tipoMovimento") == "credito") {
+                    Map<String, Object> erro = new LinkedHashMap<>();
+                    erro.put("regra", true);
+                    erro.put("mensagem", "Operação de crédito não é suportada para o Santander.");
+                    return objectMapper.writeValueAsString(erro);
+                }
+                else {
+                    payload.put("type", "VALOR_DATA_FIXA");
+                    
+                    Map<String, Object> discountOne = new LinkedHashMap<>();
+                    Number valorMovimento = (Number) dadosBoleto.get("valorMovimento");
+                    discountOne.put("value", valorMovimento);
+                    discountOne.put("limitDate", dadosBoleto.get("dataVencimento"));
+                    payload.put("discount", discountOne);
+                }
+
+            } else if (dadosBoleto.get("alteraVencimento") == "S") {
                 payload.put("dueDate", dadosBoleto.get("dataVencimento"));
             }
 

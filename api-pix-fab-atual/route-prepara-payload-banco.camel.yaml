@@ -124,6 +124,40 @@
                                         name: route-trata-erros
                                   - stop:
                                       id: stop-e322
+                              - id: when-ad42
+                                expression:
+                                  simple:
+                                    id: simple-8715
+                                    expression: ${body} contains '"regra":true'
+                                steps:
+                                  - log:
+                                      id: log-47b7
+                                      description: "# ERRO MONT. PAYLOAD REGRA #"
+                                      message: "# ERRO MONT. PAYLOAD REGRA #"
+                                  - setProperty:
+                                      id: setProperty-0a35
+                                      description: "Var: errorRoute"
+                                      name: errorRoute
+                                      expression:
+                                        simple:
+                                          id: simple-0617
+                                          expression: >-
+                                            "route":"route-prepara-payload-banco",
+                                            "informativo": ${body}
+                                  - setHeader:
+                                      id: setHeader-7273
+                                      name: CamelHttpResponseCode
+                                      expression:
+                                        simple:
+                                          id: simple-e995
+                                          expression: "601"
+                                  - to:
+                                      id: to-0460
+                                      uri: direct
+                                      parameters:
+                                        name: route-trata-erros
+                                  - stop:
+                                      id: stop-9171
                             otherwise:
                               id: otherwise-1a96
                               steps:
