@@ -167,6 +167,7 @@
                     id: otherwise-1066
               - choice:
                   id: choice-6cf5
+                  disabled: false
                   when:
                     - id: when-54a4
                       description: Teste Status (204)
@@ -175,12 +176,12 @@
                           id: simple-9c8c
                           expression: ${header.CamelHttpResponseCode} == 204
                       steps:
-                        - log:
-                            id: log-c885
-                            description: "# FIM SICOOB #"
-                            message: "# FIM SICOOB #"
+                        - removeHeaders:
+                            id: removeHeaders-8cfa
+                            pattern: "*"
                         - setHeader:
                             id: setHeader-5b41
+                            disabled: false
                             name: CamelHttpResponseCode
                             expression:
                               simple:
@@ -192,7 +193,15 @@
                               simple:
                                 id: simple-9c8f
                                 expression: >-
-                                  { "mensagem": "Alteração realizada com
-                                  sucesso" }
+                                  { "status": 602, "mensagem": "Alteração
+                                  realizada com sucesso" }
+                        - log:
+                            id: log-c885
+                            description: "# FIM SICOOB #"
+                            message: "# FIM SICOOB # ${body}"
                   otherwise:
                     id: otherwise-d014
+                    steps:
+                      - log:
+                          id: log-6795
+                          message: ${body}
