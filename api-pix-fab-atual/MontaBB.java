@@ -266,14 +266,21 @@ public class MontaBB {
 
             payload.put("numeroConvenio", convenio);
 
-            if (dadosBoleto.get("alteraSaldo") == "S") {
+
+            if ("S".equals(dadosBoleto.get("alteraSaldo").toString().trim())) {
                 payload.put("indicadorNovoValorNominal", "S");
-                payload.put("saldoAtual", dadosBoleto.get("saldoAtual"));
-            }
+                Map<String, Object> alteracaoValor = new LinkedHashMap<>();
+                alteracaoValor.put("valorNominal", dadosBoleto.get("saldoAtual"));
+                payload.put("alteracaoValor", alteracaoValor);
+            } 
             
-            if (dadosBoleto.get("alteraVencimento") == "S") {
+
+            //tratarData((String) dadosBoleto.get("dataEmissao"), "dd.MM.yyyy")
+            if ("S".equals(dadosBoleto.get("alteraVencimento").toString().trim())) {
                 payload.put("indicadorNovaDataVencimento", "S");
-                payload.put("novaDataVencimento", dadosBoleto.get("dataVencimento"));
+                Map<String, Object> alteracaoData = new LinkedHashMap<>();
+                alteracaoData.put("dataVencimento", tratarData((String) dadosBoleto.get("dataVencimento"), "dd.MM.yyyy"));
+                payload.put("alteracaoData", alteracaoData);
             }
 
             return objectMapper.writeValueAsString(payload);

@@ -63,6 +63,7 @@
                   - log:
                       id: log-d431
                       description: "# ENVIO AO SANTANDER #"
+                      disabled: true
                       message: "# ENVIO AO SANTANDER # ${body}"
                   - log:
                       id: log-abf6

@@ -82,6 +82,10 @@
                           id: simple-aed1
                           expression: ${exchangeProperty.rota[tipo]} == 'registrar'
                       steps:
+                        - log:
+                            id: log-ea73
+                            description: "# REGISTRO BOLETO BB #"
+                            message: "# REGISTRO BOLETO BB #"
                         - setProperty:
                             id: setProperty-c32f
                             description: urlRegistroBoleto
@@ -115,6 +119,10 @@
                                 id: simple-e116
                                 expression: >-
                                   ${exchangeProperty.bancoURL}/${exchangeProperty.boletoNossoNumero}
+                        - log:
+                            id: log-5560
+                            description: "# ALTERAR BOLETO BB #"
+                            message: "# ALTERAR BOLETO BB: ${body}"
                         - toD:
                             id: to-45dd
                             uri: https
@@ -131,6 +139,10 @@
                           id: simple-e31d
                           expression: ${exchangeProperty.rota[tipo]} == 'cancelar'
                       steps:
+                        - log:
+                            id: log-b4b1
+                            description: "# CANCELAR BOLETO BB #"
+                            message: "# CANCELAR BOLETO BB #"
                         - setProperty:
                             id: setProperty-5244
                             description: urlRegistroBoleto

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import java.text.SimpleDateFormat;
 import java.util.*;
 */
+import org.apache.camel.Exchange;
 
 import org.apache.camel.BindToRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,6 +20,7 @@ import java.util.*;
 
 @BindToRegistry("MontaSantander")
 public class MontaSantander {
+    
     private ObjectMapper objectMapper = new ObjectMapper();
     
     @SuppressWarnings("unchecked")
@@ -83,7 +85,12 @@ public class MontaSantander {
         
         try {
             Map<String, Object> payload = new LinkedHashMap<>();
-            payload.put("environment", "SANDBOX");
+            if ("HML".equals(dadosBanco.get("ambiente").toString().trim())) {
+                payload.put("environment", "SANDBOX");
+            }
+            else {
+                payload.put("environment", "PRODUCAO");
+            }
 
             payload.put("nsuCode", dadosBoleto.get("numeroDocumento"));
             payload.put("nsuDate", new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
@@ -198,9 +205,8 @@ public class MontaSantander {
             payload.put("covenantCode", dadosBanco.get("convenio"));
             payload.put("bankNumber", dadosBoleto.get("numeroNossoNumero"));
 
-
-            if (dadosBoleto.get("alteraSaldo") == "S") {
-                if (dadosBoleto.get("tipoMovimento") == "A") {
+            if ("S".equals(dadosBoleto.get("alteraSaldo").toString().trim())) {
+                if ("A".equals(dadosBoleto.get("tipoMovimento").toString().trim())) {
                     Map<String, Object> erro = new LinkedHashMap<>();
                     erro.put("regra", true);
                     erro.put("mensagem", "Operação de acréscimo não é suportada para o Santander.");
@@ -216,7 +222,8 @@ public class MontaSantander {
                     payload.put("discount", discountOne);
                 }
 
-            } else if (dadosBoleto.get("alteraVencimento") == "S") {
+            } 
+            if ("S".equals(dadosBoleto.get("alteraVencimento").toString().trim())) {
                 payload.put("dueDate", dadosBoleto.get("dataVencimento"));
             }
 

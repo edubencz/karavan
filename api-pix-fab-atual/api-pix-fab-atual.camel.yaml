@@ -64,6 +64,34 @@
                   json:
                     id: json-unmarshal
               - setProperty:
+                  id: setProperty-5631
+                  description: "var: ambiente"
+                  name: ambiente
+                  expression:
+                    simple:
+                      id: simple-7885
+                      expression: "{{ambiente}}"
+              - setProperty:
+                  id: setProperty-abcc
+                  description: injetaAmbienteBody
+                  name: injetaAmbienteBody
+                  expression:
+                    groovy:
+                      id: groovy-c973
+                      expression: >-
+                        def body = request.body
+
+                        if (body.dadosBanco == null) {
+
+                        body.dadosBanco = [:]
+
+                        }
+
+                        body.dadosBanco.ambiente =
+                        exchange.getProperty("ambiente") ?: "HML"
+
+                        return body
+              - setProperty:
                   id: setProperty-0709
                   description: integradorAuthorization
                   name: integradorAuthorization
@@ -119,8 +147,7 @@
                   expression:
                     simple:
                       id: simple-9f78
-                      expression: >-
-                        ${exchangeProperty.dadosRecebidos[dadosBoleto][numeroNossoNumero]}
+                      expression: ${body[dadosBoleto][numeroDocumento]}
               - marshal:
                   id: marshal-payload-json
                   json:
@@ -524,7 +551,7 @@
                     httpUri: "{{url_nintegrator}}/PIX/${exchangeProperty.bancoConsumo}"
                     bridgeEndpoint: true
                     httpMethod: GET
-                    logHttpActivity: true
+                    logHttpActivity: false
                     throwExceptionOnFailure: true
               - unmarshal:
                   id: unmarshal-dbed

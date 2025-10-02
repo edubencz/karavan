@@ -60,6 +60,7 @@
             steps:
               - log:
                   id: log-65f5
+                  disabled: true
                   message: ${body}
               - choice:
                   id: choice-5fbf
@@ -82,7 +83,7 @@
                         - log:
                             id: log-6452
                             description: "# VERIFICA ERRO EM GER. PAYLOAD #"
-                            message: "# VERIFICA ERRO EM GER. PAYLOAD #"
+                            message: "# VERIFICA ERRO EM GER. PAYLOAD # ${body}"
                         - choice:
                             id: choice-4afe
                             when:
@@ -186,6 +187,7 @@
         - log:
             id: log-8139
             description: "# PAYLOAD #"
+            disabled: true
             message: "# PAYLOAD # ${body}"
         - setProperty:
             id: setProperty-c7d8
