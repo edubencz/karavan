@@ -536,8 +536,8 @@
                           id: simple-abc6
                           expression: >-
                             "message": "Erro ao buscar informações bancárias do
-                            cliente na Workspace ou dados inesistentes",
-                            "route": "route-trata-banco-workspace"
+                            cliente na Workspace, dados inexistentes e/ou Token
+                            vencido", "route": "route-trata-banco-workspace"
                   - to:
                       id: to-4413
                       uri: direct

@@ -7,14 +7,19 @@
         name: route-trata-erros
       steps:
         - log:
+            id: log-66df
+            description: errorRoute Status
+            message: "errorRoute Status: ${header.CamelHttpResponseCode}"
+        - log:
             id: log-30dc
             description: errorRoute
-            message: ${exchangeProperty.errorRoute}
+            message: "errorRoute: ${exchangeProperty.errorRoute}"
         - choice:
             id: choice-e5df
             when:
               - id: when-nullpointer
                 description: NullException
+                disabled: true
                 expression:
                   simple:
                     id: simple-npe
@@ -158,6 +163,7 @@
                       message: "Erro 400 tratado (choice interno): ${body}"
               - id: when-f2ea
                 description: statusCode (403)
+                disabled: true
                 expression:
                   simple:
                     id: simple-ee9e

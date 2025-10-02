@@ -270,16 +270,12 @@ public class MontaBB {
             if ("S".equals(dadosBoleto.get("alteraSaldo").toString().trim())) {
                 payload.put("indicadorNovoValorNominal", "S");
                 Map<String, Object> alteracaoValor = new LinkedHashMap<>();
-                alteracaoValor.put("valorNominal", dadosBoleto.get("saldoAtual"));
+                alteracaoValor.put("novoValorNominal", dadosBoleto.get("saldoAtual"));
                 payload.put("alteracaoValor", alteracaoValor);
-            } 
-            
-
-            //tratarData((String) dadosBoleto.get("dataEmissao"), "dd.MM.yyyy")
-            if ("S".equals(dadosBoleto.get("alteraVencimento").toString().trim())) {
+            } else if ("S".equals(dadosBoleto.get("alteraVencimento").toString().trim())) {
                 payload.put("indicadorNovaDataVencimento", "S");
                 Map<String, Object> alteracaoData = new LinkedHashMap<>();
-                alteracaoData.put("dataVencimento", tratarData((String) dadosBoleto.get("dataVencimento"), "dd.MM.yyyy"));
+                alteracaoData.put("novaDataVencimento", tratarData((String) dadosBoleto.get("dataVencimento"), "dd.MM.yyyy"));
                 payload.put("alteracaoData", alteracaoData);
             }
 
