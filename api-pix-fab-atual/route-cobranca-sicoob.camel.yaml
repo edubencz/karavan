@@ -39,14 +39,6 @@
                   id: log-00ea
                   description: "# URL SICOOB #"
                   message: "# URL SICOOB ${exchangeProperty.bancoURL}"
-              - setProperty:
-                  id: setProperty-6375
-                  description: urlRegistroBoleto
-                  name: urlRegistroBoleto
-                  expression:
-                    simple:
-                      id: simple-e6e1
-                      expression: ${exchangeProperty.bancoURL}
               - removeHeaders:
                   id: removeHeaders-b322
                   pattern: "*"
@@ -76,19 +68,131 @@
                           id: simple-2263
                           expression: application/json
               - log:
-                  id: log-dcc6
-                  description: "# HEADERS SICOOB"
-                  message: "# HEADERS SICOOB ${headers}"
-              - log:
                   id: log-f2f8
                   description: "# NÃO PODE USAR LOG ACTIVE#"
                   message: ${body}
-              - toD:
-                  id: to-f030
-                  uri: https
-                  parameters:
-                    httpUri: >-
-                      sandbox.sicoob.com.br/sicoob/sandbox/cobranca-bancaria/v3/boletos
-                    bridgeEndpoint: true
-                    httpMethod: POST
-                    logHttpActivity: false
+              - choice:
+                  id: choice-2afe
+                  when:
+                    - id: when-4e44
+                      description: Registrar
+                      expression:
+                        simple:
+                          id: simple-84e5
+                          expression: ${exchangeProperty.rota[tipo]} == 'registrar'
+                      steps:
+                        - log:
+                            id: log-7564
+                            description: "# SICOOB ENVIA REGISTRO #"
+                            message: "# SICOOB ENVIA REGISTRO #"
+                        - setProperty:
+                            id: setProperty-6375
+                            description: urlRegistroBoleto
+                            name: urlRegistroBoleto
+                            expression:
+                              simple:
+                                id: simple-e6e1
+                                expression: ${exchangeProperty.bancoURL}
+                        - toD:
+                            id: to-f030
+                            uri: https
+                            parameters:
+                              httpUri: ${exchangeProperty.urlRegistroBoleto}
+                              bridgeEndpoint: true
+                              httpMethod: POST
+                              logHttpActivity: false
+                        - stop:
+                            id: stop-e85f
+                    - id: when-e594
+                      description: Alterar
+                      expression:
+                        simple:
+                          id: simple-b46a
+                          expression: ${exchangeProperty.rota[tipo]} == 'alterar'
+                      steps:
+                        - setProperty:
+                            id: setProperty-6b66
+                            description: urlRegistroBoleto
+                            name: urlRegistroBoleto
+                            expression:
+                              simple:
+                                id: simple-5220
+                                expression: >-
+                                  ${exchangeProperty.bancoURL}/${exchangeProperty.boletoNossoNumero}
+                        - log:
+                            id: log-b617
+                            description: "# SICOOB ENVIA ALTERACAO #"
+                            message: >-
+                              # SICOOB ENVIA ALTERACAO #
+                              ${exchangeProperty.urlRegistroBoleto}
+                            logName: "# SICOOB ENVIA ALTERACAO #"
+                        - toD:
+                            id: to-b52b
+                            disabled: false
+                            uri: https
+                            parameters:
+                              bridgeEndpoint: true
+                              httpMethod: PATCH
+                              httpUri: ${exchangeProperty.urlRegistroBoleto}
+                    - id: when-49ab
+                      description: Cancelar
+                      expression:
+                        simple:
+                          id: simple-3b3c
+                          expression: ${exchangeProperty.rota[tipo]} == 'cancelar'
+                      steps:
+                        - setProperty:
+                            id: setProperty-0d4d
+                            description: urlRegistroBoleto
+                            name: urlRegistroBoleto
+                            expression:
+                              simple:
+                                id: simple-7bc3
+                                expression: >-
+                                  ${exchangeProperty.bancoURL}/${exchangeProperty.boletoNossoNumero}/baixar
+                        - log:
+                            id: log-f03a
+                            description: "# SICOOB ENVIA CANCELAR #"
+                            message: >-
+                              # SICOOB ENVIA CANCELAR #
+                              ${exchangeProperty.urlRegistroBoleto}
+                        - toD:
+                            id: to-6514
+                            uri: https
+                            parameters:
+                              httpUri: ${exchangeProperty.urlRegistroBoleto}
+                              httpMethod: POST
+                              bridgeEndpoint: true
+                  otherwise:
+                    id: otherwise-1066
+              - choice:
+                  id: choice-6cf5
+                  when:
+                    - id: when-54a4
+                      description: Teste Status (204)
+                      expression:
+                        simple:
+                          id: simple-9c8c
+                          expression: ${header.CamelHttpResponseCode} == 204
+                      steps:
+                        - log:
+                            id: log-c885
+                            description: "# FIM SICOOB #"
+                            message: "# FIM SICOOB #"
+                        - setHeader:
+                            id: setHeader-5b41
+                            name: CamelHttpResponseCode
+                            expression:
+                              simple:
+                                id: simple-25f6
+                                expression: "200"
+                        - setBody:
+                            id: setBody-b2ba
+                            expression:
+                              simple:
+                                id: simple-9c8f
+                                expression: >-
+                                  { "mensagem": "Alteração realizada com
+                                  sucesso" }
+                  otherwise:
+                    id: otherwise-d014

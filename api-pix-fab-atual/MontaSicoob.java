@@ -243,15 +243,15 @@ public class MontaSicoob {
             payload.put("numeroCliente", carteira);
             payload.put("codigoModalidade", 1);
 
-            if (dadosBoleto.get("alteraSaldo") == "S") {
+            if ("S".equals(dadosBoleto.get("alteraSaldo").toString().trim())) {
                 Map<String, Object> valorNominal = new LinkedHashMap<>();
-                valorNominal.put("valor", dadosBoleto.get("valorMovimento"));
+                valorNominal.put("valor", dadosBoleto.get("saldoAtual"));
                 payload.put("valorNominal", valorNominal);
-            } else if (dadosBoleto.get("alteraVencimento") == "S") {
+            } else if ("S".equals(dadosBoleto.get("alteraVencimento").toString().trim())) {
                 Map<String, Object> prorrogacaoVencimento = new LinkedHashMap<>();
                 prorrogacaoVencimento.put("dataVencimento", dadosBoleto.get("dataVencimento"));
                 payload.put("prorrogacaoVencimento", prorrogacaoVencimento);
-            }
+            }            
 
             return objectMapper.writeValueAsString(payload);
         } 

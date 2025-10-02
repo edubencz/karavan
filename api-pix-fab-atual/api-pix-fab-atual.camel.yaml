@@ -147,7 +147,7 @@
                   expression:
                     simple:
                       id: simple-9f78
-                      expression: ${body[dadosBoleto][numeroDocumento]}
+                      expression: ${body[dadosBoleto][numeroNossoNumero]}
               - marshal:
                   id: marshal-payload-json
                   json:
