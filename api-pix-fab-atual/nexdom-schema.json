@@ -7,10 +7,10 @@
       "properties": {
         "codigoBanco": { "type": "integer" },
         "codigoUnimed": { "type": "integer" },
-        "numeroFatura": { "type": "integer" },
+        "numeroTituloCliente": { "type": "integer" },
         "tipo": { "type": "string" }
       },
-      "required": ["codigoBanco", "codigoUnimed", "numeroFatura", "tipo"],
+      "required": ["codigoBanco", "codigoUnimed", "numeroTituloCliente", "tipo"],
       "additionalProperties": false
     },
     "txid": { "type": "string" },
@@ -35,7 +35,15 @@
         "pagamentoParcial": { "type": ["string", "null"] },
         "pagamentoParcialMin": { "type": ["number", "null"] },
         "pagamentoParcialMax": { "type": ["number", "null"] },
-        "pagamentoQtd": { "type": ["integer", "null"] }
+        "pagamentoQtd": { "type": ["integer", "null"] },
+
+        "alteraVencimento": { "type": ["string", "null"] },
+        "alteraSaldo": { "type": ["string", "null"] },
+        "tipoMovimento": { "type": ["string", "null"] },
+        "valorMovimento": { "type": ["number", "null"] },
+        "saldoAtual": { "type": ["number", "null"] },
+        "convenio": { "type": ["string", "null"] },
+        "txid": { "type": ["string", "null"] }
       },
       "additionalProperties": false
     },

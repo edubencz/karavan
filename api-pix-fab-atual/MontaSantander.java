@@ -2,6 +2,8 @@ package org.camel.karavan.demo.apipixfab;
 
 import org.apache.camel.BindToRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -9,6 +11,9 @@ import java.util.*;
 public class MontaSantander {
 
     private ObjectMapper objectMapper = new ObjectMapper();
+    
+    @Value("${ambiente}")
+    private String ambiente; // HML = SANDBOX / PRD = PRODUCAO
 
     @SuppressWarnings("unchecked")
     private Map<String, Object> getNestedMap(Map<String, Object> source, String key) {
@@ -74,8 +79,12 @@ public class MontaSantander {
             Map<String, Object> payload = new LinkedHashMap<>();
             
             // Campos obrigatórios conforme documentação Santander
-            payload.put("environment", "SANDBOX");
-            //payload.put("nsuCode", UUID.randomUUID().toString());
+            if (ambiente.equals("HML")) {
+                payload.put("environment", "SANDBOX");
+            } else {
+                payload.put("environment", "PRODUCAO");
+            }
+
             payload.put("nsuCode", dadosBoleto.get("numeroDocumento"));
             payload.put("nsuDate", new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
             payload.put("covenantCode", dadosBanco.get("convenio"));
@@ -191,10 +200,10 @@ public class MontaSantander {
 
 
             if (dadosBoleto.get("alteraSaldo") == "S") {
-                if (dadosBoleto.get("tipoMovimento") == "credito") {
+                if (dadosBoleto.get("tipoMovimento") == "A") {
                     Map<String, Object> erro = new LinkedHashMap<>();
                     erro.put("regra", true);
-                    erro.put("mensagem", "Operação de crédito não é suportada para o Santander.");
+                    erro.put("mensagem", "Operação de acréscimo não é suportada para o Santander.");
                     return objectMapper.writeValueAsString(erro);
                 }
                 else {
