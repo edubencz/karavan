@@ -1,20 +1,26 @@
 package org.camel.karavan.demo.apipixfab;
 
+/*
 import org.apache.camel.BindToRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
+//import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
 import java.text.SimpleDateFormat;
 import java.util.*;
+*/
+
+import org.apache.camel.BindToRegistry;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.text.SimpleDateFormat;
+import java.io.InputStream;
+import java.util.*;
+
 
 @BindToRegistry("MontaSantander")
 public class MontaSantander {
-
     private ObjectMapper objectMapper = new ObjectMapper();
     
-    @Value("${ambiente}")
-    private String ambiente; // HML = SANDBOX / PRD = PRODUCAO
-
     @SuppressWarnings("unchecked")
     private Map<String, Object> getNestedMap(Map<String, Object> source, String key) {
         Object value = source.get(key);
@@ -77,13 +83,7 @@ public class MontaSantander {
         
         try {
             Map<String, Object> payload = new LinkedHashMap<>();
-            
-            // Campos obrigatórios conforme documentação Santander
-            if (ambiente.equals("HML")) {
-                payload.put("environment", "SANDBOX");
-            } else {
-                payload.put("environment", "PRODUCAO");
-            }
+            payload.put("environment", "SANDBOX");
 
             payload.put("nsuCode", dadosBoleto.get("numeroDocumento"));
             payload.put("nsuDate", new SimpleDateFormat("yyyy-MM-dd").format(new Date()));

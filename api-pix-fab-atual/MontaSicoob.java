@@ -235,9 +235,7 @@ public class MontaSicoob {
     }
 
     public String montarAlteracao(Map<String, Object> dadosBanco,
-                                 Map<String, Object> dadosBoleto,
-                                 Map<String, Object> dadosPagador,
-                                 Map<String, Object> dadosDescontos) throws Exception {
+                                 Map<String, Object> dadosBoleto) throws Exception {
         try {
             Map<String, Object> payload = new LinkedHashMap<>();
             Integer carteira = parseInteger(dadosBanco.get("carteira"), "carteira");
