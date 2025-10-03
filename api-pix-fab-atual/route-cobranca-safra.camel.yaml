@@ -11,124 +11,142 @@
             id: log-2552
             description: "# ROUTE SAFRA COBRANCA #"
             message: "# ROUTE SAFRA COBRANCA #"
-        - doTry:
-            id: doTry-12d1
-            doCatch:
-              - id: doCatch-9572
-                exception:
-                  - java.lang.Exception
+        - choice:
+            id: choice-215e
+            when:
+              - id: when-a10f
+                description: Registrar
+                expression:
+                  simple:
+                    id: simple-e972
+                    expression: ${exchangeProperty.rota[tipo]} == 'registrar'
                 steps:
-                  - setHeader:
-                      id: setHeader-c0f5
-                      name: CamelHttpResponseCode
-                      expression:
-                        simple:
-                          id: simple-27bf
-                          expression: "400"
-                  - setProperty:
-                      id: setProperty-9955
-                      description: "Var: errorRoute"
-                      name: errorRoute
-                      expression:
-                        simple:
-                          id: simple-aa0f
-                          expression: >-
-                            "informativo": "Erro no envio de payload", "route":
-                            "route-cobranca-safra", "retorno":
-                            ${exception.getResponseBody()}
-                  - to:
-                      id: to-082a
-                      uri: direct
-                      parameters:
-                        name: route-trata-erros
-            steps:
-              - removeHeaders:
-                  id: removeHeaders-0ef9
-                  pattern: "*"
-              - setHeaders:
-                  id: setHeaders-b592
-                  headers:
-                    - id: setHeader-da7e
-                      disabled: false
-                      name: Safra-Correlation-ID
-                      expression:
-                        simple:
-                          id: simple-5d33
-                          expression: >-
-                            ${exchangeProperty.bancoPayloadDados[customAttributes][correlationId]}
-                    - id: setHeader-72e0
-                      name: Authorization
-                      expression:
-                        simple:
-                          id: simple-1511
-                          expression: Bearer ${exchangeProperty.tokenBancario}
-                    - id: setHeader-bafe
-                      name: Content-Type
-                      expression:
-                        simple:
-                          id: simple-9eb7
-                          expression: application/json
-              - log:
-                  id: log-bc68
-                  description: "# SAFRA BODY ENVIO #"
-                  message: "# SAFRA BODY ENVIO # ${body}"
-              - toD:
-                  id: to-8679
-                  uri: https
-                  parameters:
-                    httpUri: ${exchangeProperty.bancoURL}
-                    bridgeEndpoint: true
-                    httpMethod: POST
-                    logHttpActivity: false
-              - unmarshal:
-                  id: unmarshal-25b2
-                  json:
-                    id: json-f5b3
-              - log:
-                  id: log-405d
-                  message: "SAFRA: ${body}"
-              - stop:
-                  id: stop-4e22
-              - setProperty:
-                  id: setProperty-617e
-                  description: "Var: codigoBarras"
-                  name: codigoBarras
-                  expression:
-                    simple:
-                      id: simple-604f
-                      expression: ${body[data][codigoBarras]}
-              - setBody:
-                  id: setBody-constructJson
-                  description: "SetBody: para montagem dados Safra"
-                  expression:
-                    simple:
-                      id: simple-constructJson
-                      expression: |-
-                        {
-                          "codigoBarras": "${exchangeProperty.codigoBarras}",
-                          "agencia": "${exchangeProperty.dadosRecebidos[dadosBanco][agencia]}",
-                          "conta": "${exchangeProperty.dadosRecebidos[dadosBanco][conta]}",
-                          "dataVencimento": "${exchangeProperty.dadosRecebidos[dadosBoleto][dataVencimento]}",
-                          "valorTitulo": "${exchangeProperty.dadosRecebidos[dadosBoleto][valorTitulo]}",
-                          "numeroNossoNumero": "${exchangeProperty.dadosRecebidos[dadosBoleto][numeroNossoNumero]}",
-                          "nome": "${exchangeProperty.dadosRecebidos[beneficiario][nome]}",
-                          "cidade": "${exchangeProperty.dadosRecebidos[beneficiario][endereco][cidade]}",
-                         "type": "{{safra_type_qrcode}}"
-                        }
-              - log:
-                  id: log-84f4
-                  description: "# Bean"
-                  disabled: true
-                  message: "# Bean ${body}"
-              - bean:
-                  id: bean-safraQrCode
-                  disabled: false
-                  ref: safraQrCode
-                  method: processarBody
-              - log:
-                  id: log-ae4a
-                  description: "# GERACAO DE QRCODPIX #"
-                  disabled: true
-                  message: ${body}
-              - stop:
-                  id: stop-253f
+                  - doTry:
+                      id: doTry-12d1
+                      doCatch:
+                        - id: doCatch-9572
+                          exception:
+                            - java.lang.Exception
+                          steps:
+                            - setHeader:
+                                id: setHeader-c0f5
+                                name: CamelHttpResponseCode
+                                expression:
+                                  simple:
+                                    id: simple-27bf
+                                    expression: "400"
+                            - setProperty:
+                                id: setProperty-9955
+                                description: "Var: errorRoute"
+                                name: errorRoute
+                                expression:
+                                  simple:
+                                    id: simple-aa0f
+                                    expression: >-
+                                      "informativo": "Erro no envio de payload",
+                                      "route": "route-cobranca-safra",
+                                      "retorno": ${exception.getResponseBody()}
+                            - to:
+                                id: to-082a
+                                uri: direct
+                                parameters:
+                                  name: route-trata-erros
+                      steps:
+                        - removeHeaders:
+                            id: removeHeaders-0ef9
+                            pattern: "*"
+                        - setHeaders:
+                            id: setHeaders-b592
+                            headers:
+                              - id: setHeader-da7e
+                                disabled: false
+                                name: Safra-Correlation-ID
+                                expression:
+                                  simple:
+                                    id: simple-5d33
+                                    expression: >-
+                                      ${exchangeProperty.bancoPayloadDados[customAttributes][correlationId]}
+                              - id: setHeader-72e0
+                                name: Authorization
+                                expression:
+                                  simple:
+                                    id: simple-1511
+                                    expression: Bearer ${exchangeProperty.tokenBancario}
+                              - id: setHeader-bafe
+                                name: Content-Type
+                                expression:
+                                  simple:
+                                    id: simple-9eb7
+                                    expression: application/json
+                        - log:
+                            id: log-bc68
+                            description: "# SAFRA BODY ENVIO #"
+                            message: "# SAFRA BODY ENVIO # ${body}"
+                        - toD:
+                            id: to-8679
+                            uri: https
+                            parameters:
+                              httpUri: ${exchangeProperty.bancoURL}
+                              bridgeEndpoint: true
+                              httpMethod: POST
+                              logHttpActivity: false
+                        - unmarshal:
+                            id: unmarshal-25b2
+                            json:
+                              id: json-f5b3
+                        - setProperty:
+                            id: setProperty-617e
+                            description: "Var: codigoBarras"
+                            name: codigoBarras
+                            expression:
+                              simple:
+                                id: simple-604f
+                                expression: ${body[data][codigoBarras]}
+                        - setBody:
+                            id: setBody-constructJson
+                            description: "SetBody: para montagem dados Safra"
+                            expression:
+                              simple:
+                                id: simple-constructJson
+                                expression: |-
+                                  {
+                                    "codigoBarras": "${exchangeProperty.codigoBarras}",
+                                    "agencia": "${exchangeProperty.dadosRecebidos[dadosBanco][agencia]}",
+                                    "conta": "${exchangeProperty.dadosRecebidos[dadosBanco][conta]}",
+                                    "dataVencimento": "${exchangeProperty.dadosRecebidos[dadosBoleto][dataVencimento]}",
+                                    "valorTitulo": "${exchangeProperty.dadosRecebidos[dadosBoleto][valorTitulo]}",
+                                    "numeroNossoNumero": "${exchangeProperty.dadosRecebidos[dadosBoleto][numeroNossoNumero]}",
+                                    "nome": "${exchangeProperty.dadosRecebidos[beneficiario][nome]}",
+                                    "cidade": "${exchangeProperty.dadosRecebidos[beneficiario][endereco][cidade]}",
+                                   "type": "{{safra_type_qrcode}}"
+                                  }
+                        - bean:
+                            id: bean-safraQrCode
+                            disabled: false
+                            ref: safraQrCode
+                            method: processarBody
+            otherwise:
+              id: otherwise-ebc2
+              steps:
+                - setHeader:
+                    id: setHeader-0b05
+                    name: CamelHttpResponseCode
+                    expression:
+                      simple:
+                        id: simple-17e3
+                        expression: "601"
+                - setProperty:
+                    id: setProperty-48a4
+                    description: "Var: errorRoute"
+                    name: errorRoute
+                    expression:
+                      simple:
+                        id: simple-de4c
+                        expression: >-
+                          "mensagem": "Alteração e ou Cancelamentos não são
+                          suportados pelo banco Safra.", "regra": true
+                - to:
+                    id: to-bcf5
+                    uri: direct
+                    parameters:
+                      name: route-trata-erros
