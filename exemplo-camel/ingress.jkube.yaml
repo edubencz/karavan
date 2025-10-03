@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: $PROJECT_ID
+spec:
+  tls:
+    - hosts:
+        - $PROJECT_ID.workspace-dev.nexdom.tec.br
+      secretName: tls-secret
+  rules:
+    - host: $PROJECT_ID.workspace-dev.nexdom.tec.br
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: $PROJECT_ID
+                port:
+                  number: 80
