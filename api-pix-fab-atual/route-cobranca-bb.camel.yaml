@@ -19,21 +19,6 @@
                   - java.lang.Exception
                 steps:
                   - setHeader:
-                      id: setHeader-http-status
-                      disabled: true
-                      name: CamelHttpResponseCode
-                      expression:
-                        simple:
-                          id: simple-http-status
-                          expression: ${header.CamelHttpResponseCode}
-                  - setBody:
-                      id: setBody-erro
-                      disabled: true
-                      expression:
-                        simple:
-                          id: simple-erro
-                          expression: ${exception.getResponseBody()}
-                  - setHeader:
                       id: setHeader-9309
                       name: CamelHttpResponseCode
                       expression:
@@ -56,6 +41,9 @@
                       parameters:
                         name: route-trata-erros
             steps:
+              - removeHeaders:
+                  id: removeHeaders-d9b0
+                  pattern: "*"
               - setHeaders:
                   id: setHeaders-9f41
                   headers:
@@ -82,10 +70,6 @@
                           id: simple-aed1
                           expression: ${exchangeProperty.rota[tipo]} == 'registrar'
                       steps:
-                        - log:
-                            id: log-ea73
-                            description: "# REGISTRO BOLETO BB #"
-                            message: "# REGISTRO BOLETO BB #"
                         - setProperty:
                             id: setProperty-c32f
                             description: urlRegistroBoleto
@@ -94,6 +78,10 @@
                               simple:
                                 id: simple-e96b
                                 expression: ${exchangeProperty.bancoURL}
+                        - log:
+                            id: log-ea73
+                            description: "# REGISTRO BOLETO BB #"
+                            message: "# REGISTRO BOLETO BB #"
                         - toD:
                             id: to-241b
                             uri: https
@@ -122,7 +110,10 @@
                         - log:
                             id: log-5560
                             description: "# ALTERAR BOLETO BB #"
-                            message: "# ALTERAR BOLETO BB: ${body}"
+                            message: >-
+                              # ALTERAR BOLETO BB:
+                              ${exchangeProperty.bancoURL}/${exchangeProperty.boletoNossoNumero} 
+                              ${body}
                         - toD:
                             id: to-45dd
                             uri: https
@@ -131,7 +122,8 @@
                                 ${exchangeProperty.urlRegistroBoleto}?gw-dev-app-key=${exchangeProperty.bancoPayloadDados[appKey]}
                               bridgeEndpoint: true
                               httpMethod: PATCH
-                              logHttpActivity: true
+                              logHttpActivity: false
+                              throwExceptionOnFailure: false
                     - id: when-10bc
                       description: Cancelar
                       expression:
@@ -139,10 +131,6 @@
                           id: simple-e31d
                           expression: ${exchangeProperty.rota[tipo]} == 'cancelar'
                       steps:
-                        - log:
-                            id: log-b4b1
-                            description: "# CANCELAR BOLETO BB #"
-                            message: "# CANCELAR BOLETO BB #"
                         - setProperty:
                             id: setProperty-5244
                             description: urlRegistroBoleto
@@ -152,6 +140,10 @@
                                 id: simple-c113
                                 expression: >-
                                   ${exchangeProperty.bancoURL}/${exchangeProperty.boletoNossoNumero}/baixar
+                        - log:
+                            id: log-b4b1
+                            description: "# CANCELAR BOLETO BB #"
+                            message: "# CANCELAR BOLETO BB #"
                         - toD:
                             id: to-acc8
                             uri: https

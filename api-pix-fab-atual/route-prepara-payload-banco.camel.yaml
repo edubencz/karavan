@@ -17,6 +17,10 @@
               simple:
                 id: simple-b02e
                 expression: ${exchangeProperty.dadosRecebidos}
+        - log:
+            id: log-88be
+            description: "# BODY RECEBIDO #"
+            message: "# BODY RECEBIDO ${body}"
         - doTry:
             id: doTry-fe70
             doCatch:

@@ -120,6 +120,10 @@
                   - stop:
                       id: stop-e94c
                       disabled: true
+                  - log:
+                      id: log-a37e
+                      description: "# LOG 400 #"
+                      message: "# LOG 400 # ${body}"
                   - choice:
                       id: choice-7fc2
                       when:
