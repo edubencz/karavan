@@ -2,4 +2,14 @@ spec:
   replicas: 1
   template:
     spec:
-      serviceAccount: karavan
+      serviceAccount: karavan-integration
+      containers:
+        - name: api-pix-fab-atual
+          env:
+          resources:
+            limits:
+              cpu: 100m
+              memory: 500Mi
+            requests:
+              cpu: 50m
+              memory: 350Mi
