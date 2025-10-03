@@ -80,12 +80,28 @@
                           exception:
                             - java.lang.Exception
                           steps:
-                            - setBody:
-                                id: setBody-acdb
+                            - setHeader:
+                                id: setHeader-3a7f
+                                name: CamelHttpResponseCode
                                 expression:
                                   simple:
-                                    id: simple-6c63
-                                    expression: ${exception.getResponseBody()}
+                                    id: simple-f741
+                                    expression: "400"
+                            - setProperty:
+                                id: setProperty-7397
+                                description: "var: errorRoute"
+                                name: errorRoute
+                                expression:
+                                  simple:
+                                    id: simple-9619
+                                    expression: >-
+                                      "informativo": "Erro no envio de payload",
+                                      "route": "route-cobranca-santander"
+                            - to:
+                                id: to-cdac
+                                uri: direct
+                                parameters:
+                                  name: route-trata-erros
                       steps:
                         - choice:
                             id: choice-926d
