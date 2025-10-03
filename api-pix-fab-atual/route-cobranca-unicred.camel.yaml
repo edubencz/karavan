@@ -11,189 +11,146 @@
             id: log-920c
             description: "# ROUTE Unicred COBRANCA #"
             message: "# ROUTE Unicred COBRANCA #"
-        - doTry:
-            id: doTry-6908
-            doCatch:
-              - id: doCatch-32e3
-                exception:
-                  - java.lang.Exception
+        - choice:
+            id: choice-2a4b
+            when:
+              - id: when-dbec
+                description: Registrar
+                expression:
+                  simple:
+                    id: simple-1d38
+                    expression: ${exchangeProperty.rota[tipo]} == 'registrar'
                 steps:
-                  - log:
-                      id: log-24ed
-                      description: "# ERRO ENVIO PAYLOAD #"
-                      message: "# ERRO ENVIO PAYLOAD # ${body}"
-                  - setHeader:
-                      id: setHeader-9e0c
-                      disabled: true
-                      name: CamelHttpResponseCode
-                      expression:
-                        simple:
-                          id: simple-e5d0
-                          expression: "400"
-                  - setProperty:
-                      id: setProperty-806e
-                      description: "Var: errorRoute"
-                      name: errorRoute
-                      expression:
-                        simple:
-                          id: simple-e10c
-                          expression: >-
-                            "informativo": "Erro no envio de payload", "route":
-                            "route-cobranca-unicred"
-                  - to:
-                      id: to-5a3c
-                      uri: direct
-                      parameters:
-                        name: route-trata-erros
-                  - setBody:
-                      id: setBody-8630
-                      disabled: true
-                      expression:
-                        simple:
-                          id: simple-af7f
-                          expression: ${exception.getResponseBody()}
-            steps:
-              - setProperty:
-                  id: setProperty-5407
-                  description: urlRegistroBoleto
-                  name: urlRegistroBoleto
-                  expression:
-                    simple:
-                      id: simple-1c7c
-                      expression: >-
-                        ${exchangeProperty.bancoURL}/${exchangeProperty.bancoPayloadDados[customAttributes][idBeneficiario]}/titulos
-              - removeHeaders:
-                  id: removeHeaders-c018
-                  pattern: "*"
-              - setHeaders:
-                  id: setHeaders-09b2
-                  headers:
-                    - id: setHeader-376a
-                      name: Authorization
-                      expression:
-                        simple:
-                          id: simple-00eb
-                          expression: Bearer ${exchangeProperty.tokenBancario}
-                    - id: setHeader-a7a6
-                      name: cooperativa
-                      expression:
-                        simple:
-                          id: simple-784c
-                          expression: >-
-                            ${exchangeProperty.bancoPayloadDados[customAttributes][cooperativa]}
-                    - id: setHeader-403b
-                      name: apiKey
-                      expression:
-                        simple:
-                          id: simple-5f83
-                          expression: ${exchangeProperty.bancoPayloadDados[appKey]}
-                    - id: setHeader-6661
-                      name: Content-Type
-                      expression:
-                        simple:
-                          id: simple-f6d3
-                          expression: application/json
-              - log:
-                  id: log-d59d
-                  message: ${headers}
-              - toD:
-                  id: to-b6e3
-                  uri: https
-                  parameters:
-                    bridgeEndpoint: true
-                    httpMethod: POST
-                    logHttpActivity: false
-                    httpUri: ${exchangeProperty.urlRegistroBoleto}
-              - log:
-                  id: log-a63e
-                  description: "# RECEBEU ID BOLETO UNICRED #"
-                  message: "# RECEBEU ID BOLETO UNICRED # ${body}"
-              - setHeader:
-                  id: setHeader-bc0e
-                  disabled: false
-                  name: Content-Type
-                  expression:
-                    simple:
-                      id: simple-d936
-                      expression: application/json
-              - setProperty:
-                  id: setProperty-2578
-                  description: "Unicred: idBoleto"
-                  name: idBoleto
-                  expression:
-                    simple:
-                      id: simple-a3d4
-                      expression: ${body}
-              - setBody:
-                  id: setBody-f81c
-                  disabled: false
-                  expression:
-                    simple:
-                      id: simple-f000
-                      expression: "{ \"txId\": \"${body}\" }"
-              - stop:
-                  id: stop-e85e
-                  disabled: false
-              - doTry:
-                  id: doTry-4e04
-                  doCatch:
-                    - id: doCatch-66ff
-                      exception:
-                        - java.lang.Exception
+                  - doTry:
+                      id: doTry-6908
+                      doCatch:
+                        - id: doCatch-32e3
+                          exception:
+                            - java.lang.Exception
+                          steps:
+                            - setHeader:
+                                id: setHeader-9e0c
+                                disabled: true
+                                name: CamelHttpResponseCode
+                                expression:
+                                  simple:
+                                    id: simple-e5d0
+                                    expression: "400"
+                            - setProperty:
+                                id: setProperty-806e
+                                description: "Var: errorRoute"
+                                name: errorRoute
+                                expression:
+                                  simple:
+                                    id: simple-e10c
+                                    expression: >-
+                                      "informativo": "Erro no envio de payload",
+                                      "route": "route-cobranca-unicred"
+                            - to:
+                                id: to-5a3c
+                                uri: direct
+                                parameters:
+                                  name: route-trata-erros
                       steps:
-                        - setBody:
-                            id: setBody-5022
+                        - setProperty:
+                            id: setProperty-5407
+                            description: urlRegistroBoleto
+                            name: urlRegistroBoleto
                             expression:
                               simple:
-                                id: simple-7cd0
-                                expression: ${exception.getResponseBody()}
-                  steps:
-                    - delay:
-                        id: delay-18e6
-                        expression:
-                          simple:
-                            id: simple-39da
-                            expression: "5000"
-                    - removeHeaders:
-                        id: removeHeaders-12c4
-                        pattern: "*"
-                    - setProperty:
-                        id: setProperty-66ff
-                        description: "Unicred: urlBuscaBoleto"
-                        name: urlBuscaBoleto
-                        expression:
-                          simple:
-                            id: simple-ac4b
-                            expression: >-
-                              api.e-unicred.com.br/homolog/cobranca/v2/beneficiarios/${exchangeProperty.bancoPayloadDados[customAttributes][idBeneficiario]}/titulos/${exchangeProperty.idBoleto}/status
-                    - setHeaders:
-                        id: setHeaders-40d0
-                        headers:
-                          - id: setHeader-7e11
-                            name: Authorization
-                            expression:
-                              simple:
-                                id: simple-1be0
-                                expression: Bearer ${exchangeProperty.tokenBancario}
-                          - id: setHeader-73c6
-                            name: cooperativa
-                            expression:
-                              simple:
-                                id: simple-4115
+                                id: simple-1c7c
                                 expression: >-
-                                  ${exchangeProperty.bancoPayloadDados[customAttributes][cooperativa]}
-                          - id: setHeader-be64
-                            name: apiKey
+                                  ${exchangeProperty.bancoURL}/${exchangeProperty.bancoPayloadDados[customAttributes][idBeneficiario]}/titulos
+                        - removeHeaders:
+                            id: removeHeaders-c018
+                            pattern: "*"
+                        - setHeaders:
+                            id: setHeaders-09b2
+                            headers:
+                              - id: setHeader-376a
+                                name: Authorization
+                                expression:
+                                  simple:
+                                    id: simple-00eb
+                                    expression: Bearer ${exchangeProperty.tokenBancario}
+                              - id: setHeader-a7a6
+                                name: cooperativa
+                                expression:
+                                  simple:
+                                    id: simple-784c
+                                    expression: >-
+                                      ${exchangeProperty.bancoPayloadDados[customAttributes][cooperativa]}
+                              - id: setHeader-403b
+                                name: apiKey
+                                expression:
+                                  simple:
+                                    id: simple-5f83
+                                    expression: >-
+                                      ${exchangeProperty.bancoPayloadDados[appKey]}
+                              - id: setHeader-6661
+                                name: Content-Type
+                                expression:
+                                  simple:
+                                    id: simple-f6d3
+                                    expression: application/json
+                        - toD:
+                            id: to-b6e3
+                            uri: https
+                            parameters:
+                              bridgeEndpoint: true
+                              httpMethod: POST
+                              logHttpActivity: false
+                              httpUri: ${exchangeProperty.urlRegistroBoleto}
+                        - log:
+                            id: log-a63e
+                            description: "# RECEBEU ID BOLETO UNICRED #"
+                            disabled: true
+                            message: "# RECEBEU ID BOLETO UNICRED # "
+                        - setHeader:
+                            id: setHeader-bc0e
+                            disabled: false
+                            name: Content-Type
                             expression:
                               simple:
-                                id: simple-1fdf
-                                expression: ${exchangeProperty.bancoPayloadDados[appKey]}
-                    - toD:
-                        id: toD-8f94
-                        disabled: false
-                        uri: https
-                        parameters:
-                          httpUri: ${exchangeProperty.urlBuscaBoleto}
-                          httpMethod: GET
-                          bridgeEndpoint: true
-                          logHttpActivity: false
+                                id: simple-d936
+                                expression: application/json
+                        - setProperty:
+                            id: setProperty-2578
+                            description: "Unicred: idBoleto"
+                            name: idBoleto
+                            expression:
+                              simple:
+                                id: simple-a3d4
+                                expression: ${body}
+                        - setBody:
+                            id: setBody-f81c
+                            disabled: false
+                            expression:
+                              simple:
+                                id: simple-f000
+                                expression: "{ \"txId\": \"${body}\" }"
+            otherwise:
+              id: otherwise-f8e7
+              steps:
+                - setHeader:
+                    id: setHeader-fed2
+                    name: CamelHttpResponseCode
+                    expression:
+                      simple:
+                        id: simple-ff12
+                        expression: "601"
+                - setProperty:
+                    id: setProperty-77d6
+                    description: "Var: errorRoute"
+                    name: errorRoute
+                    expression:
+                      simple:
+                        id: simple-c055
+                        expression: >-
+                          "mensagem": "Alteração e ou Cancelamentos não são
+                          suportados pelo banco Unicred.", "regra": true
+                - to:
+                    id: to-b677
+                    uri: direct
+                    parameters:
+                      name: route-trata-erros
