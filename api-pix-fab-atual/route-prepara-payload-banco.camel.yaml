@@ -20,6 +20,7 @@
         - log:
             id: log-88be
             description: "# BODY RECEBIDO #"
+            disabled: true
             message: "# BODY RECEBIDO ${body}"
         - doTry:
             id: doTry-fe70
@@ -87,7 +88,7 @@
                         - log:
                             id: log-6452
                             description: "# VERIFICA ERRO EM GER. PAYLOAD #"
-                            message: "# VERIFICA ERRO EM GER. PAYLOAD # ${body}"
+                            message: "# VERIFICA ERRO EM GER. PAYLOAD #"
                         - choice:
                             id: choice-4afe
                             when:

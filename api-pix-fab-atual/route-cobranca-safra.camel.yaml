@@ -11,20 +11,6 @@
             id: log-2552
             description: "# ROUTE SAFRA COBRANCA #"
             message: "# ROUTE SAFRA COBRANCA #"
-        - setProperty:
-            id: setProperty-aca2
-            description: "Var: linhaDigitavel"
-            disabled: true
-            name: safraLinhaDigitavel
-            expression:
-              simple:
-                id: simple-2207
-                expression: "42296122000000509847124000085544400002868152"
-        - log:
-            id: log-1d9a
-            description: "# RESP FINAL #"
-            disabled: true
-            message: "# RESP FINAL ${body}"
         - doTry:
             id: doTry-12d1
             doCatch:
@@ -32,9 +18,13 @@
                 exception:
                   - java.lang.Exception
                 steps:
-                  - log:
-                      id: log-1b5c
-                      message: ${body}
+                  - setHeader:
+                      id: setHeader-c0f5
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-27bf
+                          expression: "400"
                   - setProperty:
                       id: setProperty-9955
                       description: "Var: errorRoute"
@@ -51,50 +41,6 @@
                       uri: direct
                       parameters:
                         name: route-trata-erros
-                  - stop:
-                      id: stop-b68f
-                  - setBody:
-                      id: setBody-550a
-                      expression:
-                        simple:
-                          id: simple-91fd
-                          expression: ${exception.getResponseBody()}
-                  - choice:
-                      id: choice-cd6f
-                      when:
-                        - id: when-f2b7
-                          expression:
-                            simple:
-                              id: simple-19ce
-                              expression: ${header.CamelHttpResponseCode} != 200
-                          steps:
-                            - log:
-                                id: log-2680
-                                message: "# ERRO $400 ${body}"
-                            - setProperty:
-                                id: setProperty-59ae
-                                name: CamelHttpResponseCode
-                                expression:
-                                  simple:
-                                    id: simple-6244
-                                    expression: ${header.CamelHttpResponseCode}
-                            - setHeader:
-                                id: setHeader-ae4a
-                                disabled: true
-                                name: Exchange.HTTP_RESPONSE_CODE
-                                expression:
-                                  simple:
-                                    id: simple-14f2
-                                    expression: ${header.CamelHttpResponseCode}
-                            - setBody:
-                                id: setBody-9833
-                                disabled: true
-                                expression:
-                                  simple:
-                                    id: simple-5342
-                                    expression: "{ \"error\" : \"${exception.message}\" }"
-                      otherwise:
-                        id: otherwise-4284
             steps:
               - removeHeaders:
                   id: removeHeaders-0ef9
@@ -123,15 +69,9 @@
                           id: simple-9eb7
                           expression: application/json
               - log:
-                  id: log-7052
-                  description: "# SAFRA HEADERS"
-                  disabled: true
-                  message: ${headers}
-              - log:
-                  id: log-b3e8
-                  description: "# ENVIO AO SAFRA #"
-                  disabled: true
-                  message: "# ENVIO AO SAFRA # ${body}"
+                  id: log-bc68
+                  description: "# SAFRA BODY ENVIO #"
+                  message: "# SAFRA BODY ENVIO # ${body}"
               - toD:
                   id: to-8679
                   uri: https
@@ -147,6 +87,8 @@
               - log:
                   id: log-405d
                   message: "SAFRA: ${body}"
+              - stop:
+                  id: stop-4e22
               - setProperty:
                   id: setProperty-617e
                   description: "Var: codigoBarras"

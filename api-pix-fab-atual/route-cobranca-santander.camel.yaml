@@ -107,6 +107,7 @@
                             id: choice-926d
                             when:
                               - id: when-66d7
+                                description: Registrar
                                 expression:
                                   simple:
                                     id: simple-17de
