@@ -49,7 +49,7 @@ public class MontaSicredi {
             case "registrar":
                 return montarEmissao(dadosBanco, dadosBoleto,  dadosJuros, dadosMulta, dadosPagador, dadosBeneficiario, instrucoes, mensagens, dadosDescontos);
             case "alterar":
-                return montarAlteracao(dadosBanco, dadosBoleto, dadosJuros, dadosMulta, dadosPagador, dadosDescontos);
+                return montarAlteracao(dadosBanco, dadosBoleto);
             case "cancelamento":
             case "cancelar":
                 return montarCancelamento(dadosBanco, dadosBoleto);
@@ -215,20 +215,59 @@ public class MontaSicredi {
     }
 
     public String montarAlteracao(Map<String, Object> dadosBanco,
-                                    Map<String, Object> dadosBoleto,
-                                    Map<String, Object> dadosJuros,
-                                    Map<String, Object> dadosMulta,
-                                    Map<String, Object> dadosPagador,
-                                    Map<String, Object> dadosDescontos) throws Exception {
-        Map<String, Object> payload = new LinkedHashMap<>();
-        
-        return "";//objectMapper.writeValueAsString(payload);
+                                    Map<String, Object> dadosBoleto) throws Exception {
+        try {
+            Map<String, Object> payload = new LinkedHashMap<>();
+            //payload.put("nossoNumero", dadosBoleto.get("numeroNossoNumero"));
+
+            if ("S".equals(dadosBoleto.get("alteraSaldo").toString().trim())) {
+                if ("A".equals(dadosBoleto.get("tipoMovimento").toString().trim())) {
+                    Map<String, Object> erro = new LinkedHashMap<>();
+                    erro.put("regra", true);
+                    erro.put("mensagem", "Operação de acréscimo não é suportada para o Sicredi.");
+                    return objectMapper.writeValueAsString(erro);
+                }
+                else {
+                    payload.put("valorDesconto1", dadosBoleto.get("valorMovimento"));
+                }
+            } else if ("S".equals(dadosBoleto.get("alteraVencimento").toString().trim())) {
+                payload.put("dataVencimento", dadosBoleto.get("dataVencimento"));
+            }            
+
+            return objectMapper.writeValueAsString(payload);
+        } 
+        catch (Exception e) {
+            Map<String, Object> erro = new LinkedHashMap<>();
+            erro.put("payload", true);
+            erro.put("mensagem", e.getMessage());
+            try {
+                return objectMapper.writeValueAsString(erro);
+            } catch (Exception ex) {
+                erro.put("payload", true);
+                erro.put("mensagem", "Erro montar alteração para o Sicredi");
+                return objectMapper.writeValueAsString(erro);
+            }
+        }
     }
 
     public String montarCancelamento(Map<String, Object> dadosBanco,
                                    Map<String, Object> dadosBoleto) throws Exception {
-        Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("numeroConvenio", dadosBanco.get("convenio"));
-        return objectMapper.writeValueAsString(payload);
+        try {
+            Map<String, Object> payload = new LinkedHashMap<>();
+            payload.put("nossoNumero", dadosBoleto.get("numeroNossoNumero"));
+            return "{}"; //objectMapper.writeValueAsString(payload);
+        } 
+        catch (Exception e) {
+            Map<String, Object> erro = new LinkedHashMap<>();
+            erro.put("payload", true);
+            erro.put("mensagem", e.getMessage());
+            try {
+                return objectMapper.writeValueAsString(erro);
+            } catch (Exception ex) {
+                erro.put("payload", true);
+                erro.put("mensagem", "Erro montar cancelamento para o Sicredi");
+                return objectMapper.writeValueAsString(erro);
+            }
+        }
     }
 }

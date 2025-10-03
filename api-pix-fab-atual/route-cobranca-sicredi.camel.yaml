@@ -53,18 +53,175 @@
                 exception:
                   - java.lang.Exception
                 steps:
-                  - setBody:
-                      id: setBody-ab12
+                  - log:
+                      id: log-62ff
+                      message: sdasdasdasa
+                  - setHeader:
+                      id: setHeader-c57b
+                      name: CamelHttpResponseCode
                       expression:
                         simple:
-                          id: simple-9577
-                          expression: ${exception.getResponseBody()}
+                          id: simple-c130
+                          expression: "400"
+                  - setProperty:
+                      id: setProperty-ffb3
+                      description: errorRoute
+                      name: "Var: errorRoute"
+                      expression:
+                        simple:
+                          id: simple-b7a0
+                          expression: >-
+                            "informativo": "Erro no envio de payload", "route":
+                            "route-cobranca-sicredi"
+                  - to:
+                      id: to-70a4
+                      uri: direct
+                      parameters:
+                        name: route-trata-erros
             steps:
-              - toD:
-                  id: to-5df9
-                  uri: https
-                  parameters:
-                    httpUri: ${exchangeProperty.bancoURL}
-                    bridgeEndpoint: true
-                    httpMethod: POST
-                    logHttpActivity: false
+              - setProperty:
+                  id: setProperty-5cc3
+                  description: "Var: bancoURL"
+                  name: bancoURL
+                  expression:
+                    simple:
+                      id: simple-efd2
+                      expression: ${exchangeProperty.bancoURL}
+              - choice:
+                  id: choice-84f8
+                  when:
+                    - id: when-37f6
+                      description: Registrar
+                      expression:
+                        simple:
+                          id: simple-a5e7
+                          expression: ${exchangeProperty.rota[tipo]} == 'registrar'
+                      steps:
+                        - log:
+                            id: log-c83f
+                            description: "# ROTA SICREDI REGISTRAR #"
+                            message: "# ROTA SICREDI REGISTRAR #"
+                        - toD:
+                            id: to-5df9
+                            uri: https
+                            parameters:
+                              httpUri: ${exchangeProperty.bancoURL}
+                              bridgeEndpoint: true
+                              httpMethod: POST
+                              logHttpActivity: false
+                    - id: when-cda4
+                      description: Alterar
+                      expression:
+                        simple:
+                          id: simple-a455
+                          expression: ${exchangeProperty.rota[tipo]} == 'alterar'
+                      steps:
+                        - choice:
+                            id: choice-e5b7
+                            when:
+                              - id: when-4ffe
+                                description: Vencimento
+                                expression:
+                                  groovy:
+                                    id: groovy-84d9
+                                    expression: >-
+                                      def tipo = request.body as String
+
+                                      tipo != null && (tipo =~
+                                      /"dataVencimento"\s*:/).find()
+                                steps:
+                                  - log:
+                                      id: log-e46d
+                                      description: "# SICREDI DATA VENCIMENTO ? #"
+                                      message: "# SICREDI DATA VENCIMENTO #"
+                                  - setProperty:
+                                      id: setProperty-d43c
+                                      description: "Var: bancoURL"
+                                      name: bancoURL
+                                      expression:
+                                        simple:
+                                          id: simple-7cb1
+                                          expression: >-
+                                            ${exchangeProperty.bancoURL}/${exchangeProperty.boletoNossoNumero}/data-vencimento
+                            otherwise:
+                              id: otherwise-f8c6
+                              steps:
+                                - log:
+                                    id: log-bf0f
+                                    description: "# SICREDI DESCONTO #"
+                                    message: "# SICREDI DESCONTO #"
+                                - setProperty:
+                                    id: setProperty-74ed
+                                    description: "Var: bancoURL"
+                                    name: bancoURL
+                                    expression:
+                                      simple:
+                                        id: simple-ad49
+                                        expression: >-
+                                          ${exchangeProperty.bancoURL}/${exchangeProperty.boletoNossoNumero}/desconto
+                        - toD:
+                            id: to-1509
+                            disabled: false
+                            uri: https
+                            parameters:
+                              httpUri: ${exchangeProperty.bancoURL}
+                              bridgeEndpoint: true
+                              httpMethod: PATCH
+                              logHttpActivity: false
+                    - id: when-3a18
+                      description: Cancelar
+                      expression:
+                        simple:
+                          id: simple-e286
+                          expression: ${exchangeProperty.rota[tipo]} == 'cancelar'
+                      steps:
+                        - setProperty:
+                            id: setProperty-f17e
+                            description: "Var: bancoURL"
+                            name: bancoURL
+                            expression:
+                              simple:
+                                id: simple-56fe
+                                expression: >-
+                                  ${exchangeProperty.bancoURL}/${exchangeProperty.boletoNossoNumero}/baixa
+                        - log:
+                            id: log-8eb2
+                            description: "# CANCELAR SICREDI #"
+                            message: >-
+                              # CANCELAR SICREDI # ${body}
+                              ${exchangeProperty.bancoURL}
+                        - toD:
+                            id: to-918d
+                            uri: https
+                            parameters:
+                              httpUri: ${exchangeProperty.bancoURL}
+                              bridgeEndpoint: true
+                              httpMethod: PATCH
+                              logHttpActivity: false
+                  otherwise:
+                    id: otherwise-1d9e
+                    steps:
+                      - setHeader:
+                          id: setHeader-258e
+                          name: CamelHttpResponseCode
+                          expression:
+                            simple:
+                              id: simple-abc3
+                              expression: "601"
+                      - setProperty:
+                          id: setProperty-adcf
+                          description: "var: errorRoute"
+                          name: errorRoute
+                          expression:
+                            simple:
+                              id: simple-681c
+                              expression: >-
+                                "informativo": "Erro no envio de payload",
+                                "route": "route-cobranca-sicredi", "mensagem":
+                                "Tipo de envio só pode ser Registrar Alterar
+                                Cancelar"
+                      - to:
+                          id: to-0675
+                          uri: direct
+                          parameters:
+                            name: route-trata-erros
