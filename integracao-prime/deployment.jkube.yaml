@@ -22,3 +22,10 @@ spec:
                 -Dotel.service.name=integracao-prime
                 -Dotel.instrumentation.runtime-metrics.enabled=true
                 -Dotel.instrumentation.jvm-metrics.enabled=true
+        - resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
