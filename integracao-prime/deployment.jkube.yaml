@@ -24,9 +24,9 @@ spec:
                 -Dotel.instrumentation.jvm-metrics.enabled=true
           resources:
             limits:
-              cpu: 100m
+              cpu: 200m
               memory: 500Mi
             requests:
-              cpu: 50m
+              cpu: 100m
               memory: 350Mi
               
