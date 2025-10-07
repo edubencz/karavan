@@ -12,7 +12,7 @@
             expression:
               groovy:
                 id: groovy-a598
-                expression: "def correlationId = java.util.UUID.randomUUID().toString()\r\nexchange.setProperty(\"correlationId\", correlationId)\r\norg.slf4j.MDC.put(\"correlationid\", correlationId)"
+                expression: "def holder = exchange.getProperty(\"OpenTracing.activeSpan\")\r\ndef span = holder.getSpan()\r\ndef traceId = span.traceId()\r\nexchange.setProperty(\"correlationId\", traceId)\r\norg.slf4j.MDC.put(\"correlationid\", traceId)\r\n"
         - log:
             id: log-e045
             message: Iniciando integração com múltiplas APIs
@@ -64,6 +64,7 @@
             logName: route
 - route:
     id: get-exchange
+    description: ExchangeRate
     from:
       id: from-6f35
       uri: direct
@@ -71,7 +72,8 @@
         name: get-exchange
       steps:
         - to:
-            id: to-aadd
+            id: ExchangeRate
+            description: ExchangeRate
             uri: https
             parameters:
               httpUri: api.exchangerate-api.com/v4/latest/USD
@@ -89,6 +91,7 @@
                 expression: $.rates.BRL
 - route:
     id: get-weather
+    description: Wheater
     from:
       id: from-a1a7
       uri: direct
@@ -96,7 +99,8 @@
         name: get-weather
       steps:
         - to:
-            id: to-a46f
+            id: Wheater
+            description: Wheater
             uri: https
             parameters:
               httpUri: >-
@@ -115,6 +119,7 @@
                 expression: $.current_weather.temperature
 - route:
     id: get-news
+    description: News
     from:
       id: from-6581
       uri: direct
@@ -122,7 +127,8 @@
         name: get-news
       steps:
         - to:
-            id: to-c525
+            id: News
+            description: News
             uri: https
             parameters:
               httpUri: hn.algolia.com/api/v1/search?query=technology
