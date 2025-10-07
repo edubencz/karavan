@@ -1,13 +1,17 @@
 - rest:
-    id: rest-9f43
+    id: atualiza-status
     consumes: application/json
     produces: application/json
+    tag: atualiza-status
     post:
       - id: post-0988
+        description: atualiza-status
         path: /atualiza_status
         to: direct:valida-payload
+        routeId: atualiza-status
 - route:
     id: valida-payload
+    trace: false
     from:
       id: from-9a4a
       uri: direct
