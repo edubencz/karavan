@@ -14,7 +14,7 @@
             expression:
               simple:
                 id: simple-a3d4
-                expression: ${exchangeProperty.dadosRecebidos[txid]}
+                expression: ${exchangeProperty.dadosRecebidos[dadosBoleto][txid]}
         - doTry:
             id: doTry-4e04
             doCatch:
