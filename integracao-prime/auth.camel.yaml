@@ -15,6 +15,22 @@
         name: valida-payload
         bridgeErrorHandler: false
       steps:
+        - script:
+            id: script-9771
+            expression:
+              groovy:
+                id: groovy-9eaa
+                expression: |-
+                  def holder = exchange.getProperty("OpenTracing.activeSpan")
+                  def span = holder.getSpan()
+                  def traceId = span.traceId()
+                  exchange.setProperty("correlationId", traceId)
+                  org.slf4j.MDC.put("correlationid", traceId)
+        - log:
+            id: log-3962
+            message: Executando comunicação Prime
+            loggingLevel: INFO
+            logName: route
         - doTry:
             id: doTry-dfa0
             doCatch:
@@ -22,6 +38,11 @@
                 exception:
                   - java.lang.Exception
                 steps:
+                  - log:
+                      id: log-f48c
+                      message: Erro validação payload Prime
+                      loggingLevel: INFO
+                      logName: route
                   - setHeader:
                       id: setHeader-1c75
                       name: CamelHttpResponseCode
@@ -37,7 +58,8 @@
                           expression: >-
                             { "message": "Erro no
                             payload:${exception.message.replaceAll('\\r?\\n', '
-                            ')}" }
+                            ')}", "trace":
+                            "${exchange.getProperty("correlationId")}" }
                   - stop:
                       id: stop-2f34
             steps:
@@ -92,6 +114,11 @@
                 exception:
                   - java.lang.Exception
                 steps:
+                  - log:
+                      id: log-e814
+                      message: Erro criptografia Prime
+                      loggingLevel: INFO
+                      logName: route
                   - setHeader:
                       id: set-header-status90
                       name: CamelHttpResponseCode
@@ -106,7 +133,8 @@
                           id: simple-ddae
                           expression: >-
                             { "message": "Erro no processo de criptografia:
-                            ${exception.message}" }
+                            ${exception.message}", "trace":
+                            "${exchange.getProperty("correlationId")}" }
                   - stop:
                       id: stop-d5c2
             steps:
@@ -170,10 +198,6 @@
             id: unmarshal-529a
             gzipDeflater:
               id: gzipDeflater-7d8a
-        - log:
-            id: log-4277
-            message: ${body}
-            logName: após deflater
         - choice:
             id: verifica-status
             when:
@@ -183,6 +207,11 @@
                     id: simple-3d74
                     expression: ${header.CamelHttpResponseCode} != 200
                 steps:
+                  - log:
+                      id: log-8410
+                      message: Erro auth Prime
+                      loggingLevel: INFO
+                      logName: route
                   - setHeader:
                       id: setHeader-b81c
                       name: CamelHttpResponseCode
@@ -197,13 +226,19 @@
                           id: constant-7166
                           expression: >-
                             { "message": "Erro na autenticação - status
-                            inválido." }
+                            inválido.", "trace":
+                            "${exchange.getProperty("correlationId")}"}
               - id: when-90d1
                 expression:
                   simple:
                     id: simple-4975
                     expression: ${body} regex '.*(critica|erro).*'
                 steps:
+                  - log:
+                      id: log-1199
+                      message: Erro auth Prime
+                      loggingLevel: INFO
+                      logName: route
                   - removeHeaders:
                       id: removeHeaders-12ba
                       pattern: "*"
@@ -234,14 +269,17 @@
                             { "message": "Erro na autenticação - 401 - Retorno
                             PRIME: ${body.replaceAll('\\r?\\n', '
                             ').replaceAll('[\\\\\"]', ' ').replaceAll('<[^>]+>',
-                            '')}" }
+                            '')}, "trace":
+                            "${exchange.getProperty("correlationId")}"}
             otherwise:
               id: otherwise-380c
               steps:
                 - log:
-                    id: log-e8b4
-                    message: ${body}
-                    logName: após auth
+                    id: log-8202
+                    disabled: false
+                    message: Sucesso auth Prime
+                    loggingLevel: INFO
+                    logName: route
                 - convertBodyTo:
                     id: convert-body-xml
                     type: java.lang.String
@@ -314,6 +352,11 @@
                     id: simple-8dbc
                     expression: ${header.CamelHttpResponseCode} != 200
                 steps:
+                  - log:
+                      id: log-4017
+                      message: Finalizado comunicação Prime erro
+                      loggingLevel: INFO
+                      logName: route
                   - removeHeaders:
                       id: removeHeaders-5853
                       pattern: "*"
@@ -344,12 +387,20 @@
                             { "message": "Erro no destino da requisição. Retorno
                             PRIME: ${body.replaceAll('\\r?\\n', '
                             ').replaceAll('[\\\\\"]', ' ').replaceAll('<[^>]+>',
-                            '')}" }
+                            '')}", "trace":
+                            "${exchange.getProperty("correlationId")}" }
             otherwise:
               id: otherwise-c59b
               steps:
+                - log:
+                    id: log-5232
+                    disabled: false
+                    message: Finalizado comunicação Prime sucesso
+                    loggingLevel: INFO
+                    logName: route
                 - unmarshal:
                     id: unmarshal-9acb
+                    disabled: false
                     gzipDeflater:
                       id: gzipDeflater-7147
                 - removeHeader:
