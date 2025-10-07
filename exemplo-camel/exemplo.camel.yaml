@@ -7,9 +7,17 @@
         timerName: demo-timer
         period: "30000"
       steps:
+        - script:
+            id: script-392e
+            expression:
+              groovy:
+                id: groovy-a598
+                expression: "def correlationId = java.util.UUID.randomUUID().toString()\r\nexchange.setProperty(\"correlationId\", correlationId)\r\norg.slf4j.MDC.put(\"correlationid\", correlationId)"
         - log:
             id: log-e045
             message: Iniciando integração com múltiplas APIs
+            loggingLevel: INFO
+            logName: route
         - setProperty:
             id: setProperty-11fa
             name: startTime
@@ -52,6 +60,8 @@
         - log:
             id: log-3ffb
             message: "Payload final unificado: ${body}"
+            loggingLevel: INFO
+            logName: route
 - route:
     id: get-exchange
     from:
