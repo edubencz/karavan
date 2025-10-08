@@ -1,4 +1,3 @@
 data:
-  application.properties: |
-    url_nintegrator = varivaelQueVeioDoConfigmap
-    ambiente = configmap
+  URL_NINTEGRATOR: url_vinda_do_configmap
+  AMBIENTE: ambiente_configmap

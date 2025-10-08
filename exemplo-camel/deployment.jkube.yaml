@@ -22,3 +22,13 @@ spec:
                 -Dotel.service.name=exemplo-camel
                 -Dotel.instrumentation.runtime-metrics.enabled=true
                 -Dotel.instrumentation.jvm-metrics.enabled=true
+            - name: URL_NINTEGRATOR     
+              valueFrom:
+                configMapKeyRef:
+                  name: exemplo-camel
+                  key: URL_NINTEGRATOR
+            - name: AMBIENTE     
+              valueFrom:
+                configMapKeyRef:
+                  name: exemplo-camel
+                  key: AMBIENTE
