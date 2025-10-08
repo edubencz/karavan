@@ -11,6 +11,10 @@ spec:
       serviceAccount: karavan-integration
       containers:
         - name: exemplo-camel
+          image: registry.services-dev.nexdom.tec.br/karavan/${PROJECT_ID}:latest
+          envFrom:
+            - configMapRef:
+                name: ${PROJECT_ID}
           env:
             - name: JAVA_TOOL_OPTIONS
               value: >
@@ -22,13 +26,3 @@ spec:
                 -Dotel.service.name=exemplo-camel
                 -Dotel.instrumentation.runtime-metrics.enabled=true
                 -Dotel.instrumentation.jvm-metrics.enabled=true
-            - name: URL_NINTEGRATOR     
-              valueFrom:
-                configMapKeyRef:
-                  name: exemplo-camel
-                  key: URL_NINTEGRATOR
-            - name: AMBIENTE     
-              valueFrom:
-                configMapKeyRef:
-                  name: exemplo-camel
-                  key: AMBIENTE
