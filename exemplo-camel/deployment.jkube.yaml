@@ -11,10 +11,10 @@ spec:
       serviceAccount: karavan-integration
       containers:
         - name: exemplo-camel
-          image: registry.services-dev.nexdom.tec.br/karavan/${PROJECT_ID}:latest
+          image: registry.services-dev.nexdom.tec.br/karavan/exemplo-camel:latest
           envFrom:
             - configMapRef:
-                name: ${PROJECT_ID}
+                name: exemplo-camel
           env:
             - name: JAVA_TOOL_OPTIONS
               value: >
