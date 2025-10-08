@@ -20,7 +20,7 @@
                 steps:
                   - setHeader:
                       id: setHeader-9309
-                      disabled: true
+                      disabled: false
                       name: CamelHttpResponseCode
                       expression:
                         simple:
