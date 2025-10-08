@@ -18,6 +18,11 @@
             message: Iniciando integração com múltiplas APIs
             loggingLevel: INFO
             logName: route
+        - log:
+            id: log-dea4
+            message: "var amb: {{url_nintegrator}}"
+            loggingLevel: INFO
+            logName: route
         - setProperty:
             id: setProperty-11fa
             name: startTime
