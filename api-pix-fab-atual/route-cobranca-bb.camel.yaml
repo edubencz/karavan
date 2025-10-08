@@ -20,6 +20,7 @@
                 steps:
                   - setHeader:
                       id: setHeader-9309
+                      disabled: true
                       name: CamelHttpResponseCode
                       expression:
                         simple:
@@ -90,7 +91,7 @@
                                 ${exchangeProperty.urlRegistroBoleto}?gw-dev-app-key=${exchangeProperty.bancoPayloadDados[appKey]}
                               bridgeEndpoint: true
                               httpMethod: POST
-                              logHttpActivity: true
+                              logHttpActivity: false
                     - id: when-d15a
                       description: Alterar
                       expression:

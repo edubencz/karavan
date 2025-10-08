@@ -81,6 +81,7 @@
                         - log:
                             id: log-bc68
                             description: "# SAFRA BODY ENVIO #"
+                            disabled: true
                             message: "# SAFRA BODY ENVIO # ${body}"
                         - toD:
                             id: to-8679

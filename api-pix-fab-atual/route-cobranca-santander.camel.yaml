@@ -129,6 +129,13 @@
                                         httpUri: >-
                                           {{santander_url}}/${exchangeProperty.bancoPayloadDados[customAttributes][workspace]}/bank_slips
                                         sslContextParameters: "#${exchangeProperty.sslBeanId}"
+                                  - setHeader:
+                                      id: setHeader-979c
+                                      name: CamelHttpResponseCode
+                                      expression:
+                                        simple:
+                                          id: simple-2ecf
+                                          expression: "200"
                             otherwise:
                               id: otherwise-c98c
                               steps:

@@ -712,11 +712,53 @@
                     uri: direct
                     parameters:
                       name: route-efetua-oauth-banco
+        - setProperty:
+            id: setProperty-6e1e
+            description: "Var: tempoInicioEnvio"
+            name: tempoInicioEnvio
+            expression:
+              groovy:
+                id: groovy-2787
+                expression: System.currentTimeMillis()
         - to:
             id: to-8cfe
             uri: direct
             parameters:
               name: route-prepara-payload-banco
+        - setProperty:
+            id: setProperty-1392
+            description: "Var: tempoEnvio"
+            name: tempoEnvio
+            expression:
+              groovy:
+                id: groovy-0fba
+                expression: |-
+                  def startRaw = exchange.getProperty('tempoInicioEnvio')
+                  if (startRaw == null || startRaw == '') {
+                    return -1
+                  }
+                  try {
+                    Long start = startRaw
+                    long now = System.currentTimeMillis()
+                    long diff = now - start
+                    return diff
+                  } catch (Exception e) {
+                    return -2
+                  }
+        - setBody:
+            id: setBody-1dc9
+            expression:
+              groovy:
+                id: groovy-c31c
+                expression: |
+                  def bodyText = exchange.getIn().getBody(String.class)
+                  if (bodyText != null && bodyText.endsWith("}")) {
+                      def tempo = exchange.getProperty("tempoAutenticacao")
+                      def tempoEnvio = exchange.getProperty("tempoEnvio")
+                      bodyText = bodyText.substring(0, bodyText.length() - 1) +
+                          ", \"tempoAutenticacao\": ${tempo}, \"tempoEnvio\": ${tempoEnvio} }"
+                  }
+                  return bodyText
 - route:
     id: route-efetua-oauth-banco
     from:
@@ -1030,12 +1072,12 @@
             message: "# BANCO OAUTH URL ${exchangeProperty.bancoOAuthUrl}"
         - setProperty:
             id: setProperty-4916
-            description: "var: timeInicioAuth"
-            name: timeInicioAuth
+            description: "Var: tempoInicioAutenticacao"
+            name: tempoInicioAutenticacao
             expression:
-              simple:
-                id: simple-c187
-                expression: ${date:now:ms}
+              groovy:
+                id: groovy-1154
+                expression: System.currentTimeMillis()
         - doTry:
             id: doTry-e0c4
             doCatch:
@@ -1109,6 +1151,26 @@
                             bridgeEndpoint: true
                             httpMethod: POST
                             logHttpActivity: false
+        - setProperty:
+            id: setProperty-3f93
+            description: "Var: tempoAutenticacao"
+            name: tempoAutenticacao
+            expression:
+              groovy:
+                id: groovy-43c1
+                expression: |-
+                  def startRaw = exchange.getProperty('tempoInicioAutenticacao')
+                  if (startRaw == null || startRaw == '') {
+                    return -1
+                  }
+                  try {
+                    Long start = startRaw
+                    long now = System.currentTimeMillis()
+                    long diff = now - start
+                    return diff
+                  } catch (Exception e) {
+                    return -2
+                  }
         - unmarshal:
             id: unmarshal-bb71
             disabled: false

@@ -9,11 +9,13 @@
         - log:
             id: log-66df
             description: errorRoute Status
+            disabled: true
             message: "errorRoute Status: ${header.CamelHttpResponseCode}"
         - log:
             id: log-30dc
             description: errorRoute
-            message: "errorRoute: ${exchangeProperty.errorRoute}"
+            disabled: true
+            message: "errorRoute: ${exchangeProperty.errorRoute} ${body}"
         - choice:
             id: choice-e5df
             when:
@@ -42,9 +44,6 @@
                         simple:
                           id: simple-npe-header
                           expression: "500"
-                  - log:
-                      id: log-npe
-                      message: "Erro NullPointerException tratado: ${exception.message}"
               - id: when-resolve-endpoint
                 description: ResolveEndpointFailedException
                 expression:
@@ -72,11 +71,9 @@
                         simple:
                           id: simple-7f0b
                           expression: "500"
-                  - log:
-                      id: log-813e
-                      message: "Erro SSL/endpoint tratado: ${exception.message}"
               - id: when-0aee
                 description: statusCode (400)
+                disabled: true
                 expression:
                   simple:
                     id: simple-378c
@@ -103,9 +100,6 @@
                         simple:
                           id: simple-30e0
                           expression: ${exception.statusCode}
-                  - log:
-                      id: log-24b9
-                      message: "Erro 400 tratado (API externa): ${body}"
               - id: when-400-interno
                 description: CamelHttpResponseCode (400)
                 expression:
@@ -116,13 +110,15 @@
                   - log:
                       id: log-ec8f
                       description: "# ERRO 400 CAMEL #"
-                      message: "# ERRO 400 CAMEL: ${exchangeProperty.errorRoute}"
+                      disabled: true
+                      message: "# ERRO 400 CAMEL: "
                   - stop:
                       id: stop-e94c
                       disabled: true
                   - log:
                       id: log-a37e
                       description: "# LOG 400 #"
+                      disabled: true
                       message: "# LOG 400 # ${body}"
                   - choice:
                       id: choice-7fc2
@@ -136,6 +132,7 @@
                             - log:
                                 id: log-353a
                                 description: "# ERRO AQUI #"
+                                disabled: true
                                 message: "# ERRO AQUI #"
                             - setBody:
                                 id: setBody-f12a
@@ -152,6 +149,7 @@
                           - log:
                               id: log-7b79
                               description: "# ERRO AQUI F #"
+                              disabled: true
                               message: "# ERRO AQUI F#"
                           - setBody:
                               id: setBody-8711
@@ -218,9 +216,6 @@
                         simple:
                           id: simple-106f
                           expression: ${exception.statusCode}
-                  - log:
-                      id: log-ed5d
-                      message: "Erro 404 tratado: ${body}"
               - id: when-c3ab
                 description: statusCode (204)
                 expression:
@@ -245,11 +240,9 @@
                         simple:
                           id: simple-6086
                           expression: ${exception.statusCode}
-                  - log:
-                      id: log-f15e
-                      message: "Erro 204 tratado: ${body}"
               - id: when-503-exception
                 description: statusCode (503)
+                disabled: true
                 expression:
                   simple:
                     id: simple-503-exception
@@ -287,10 +280,6 @@
                     id: simple-503-header
                     expression: ${header.CamelHttpResponseCode} == 503
                 steps:
-                  - log:
-                      id: log-c579
-                      description: Erro 503
-                      message: "# Erro 503 ${body}"
                   - setBody:
                       id: setBody-503-header
                       expression:
@@ -309,9 +298,6 @@
                         simple:
                           id: simple-503-header-header
                           expression: "503"
-                  - log:
-                      id: log-503-header
-                      message: "Erro 503 tratado (header): ${exception.message}"
               - id: when-503-exception-alt
                 description: statusCode (401)
                 disabled: false
@@ -320,10 +306,6 @@
                     id: simple-503-exception-alt
                     expression: ${exception.statusCode} == 401
                 steps:
-                  - log:
-                      id: log-9feb
-                      description: Erro 401 StatusCode
-                      message: "# Erro 401 StatusCode ${body}"
                   - setBody:
                       id: setBody-503-exception-alt
                       expression:
@@ -343,11 +325,6 @@
                         simple:
                           id: simple-503-exception-alt-header
                           expression: "503"
-                  - log:
-                      id: log-503-exception-alt
-                      message: >-
-                        Erro 503 alternativo tratado (exception):
-                        ${exception.message}
               - id: when-503-header-alt
                 description: Camel = 422
                 disabled: false
@@ -356,10 +333,6 @@
                     id: simple-503-header-alt
                     expression: ${header.CamelHttpResponseCode} == 422
                 steps:
-                  - log:
-                      id: log-5c3a
-                      description: Erro Camel 422
-                      message: "#Erro Camel 422 ${body}"
                   - setBody:
                       id: setBody-503-header-alt
                       expression:
@@ -377,11 +350,6 @@
                         simple:
                           id: simple-503-header-alt-header
                           expression: "503"
-                  - log:
-                      id: log-503-header-alt
-                      message: >-
-                        Erro 503 alternativo tratado (header):
-                        ${exception.message}
               - id: when-422
                 description: statusCode (422)
                 expression:
@@ -389,10 +357,6 @@
                     id: simple-422
                     expression: ${exception.statusCode} == 422
                 steps:
-                  - log:
-                      id: log-adf8
-                      description: Erro 422 StatusCode
-                      message: "# Erro 422 StatusCode  ${body}"
                   - setBody:
                       id: setBody-422
                       expression:
@@ -410,9 +374,6 @@
                         simple:
                           id: simple-422-header
                           expression: "400"
-                  - log:
-                      id: log-422
-                      message: "Erro 422 tratado: ${body}"
               - id: when-423
                 description: statusCode (600)
                 expression:
@@ -420,10 +381,6 @@
                     id: simple-423
                     expression: ${header.CamelHttpResponseCode} == 600
                 steps:
-                  - log:
-                      id: log-adf82
-                      description: Erro 600 StatusCode
-                      message: "# Erro 600 StatusCode  ${body}"
                   - setBody:
                       id: setBody-423
                       expression:
@@ -439,9 +396,6 @@
                         simple:
                           id: simple-423-header
                           expression: "400"
-                  - log:
-                      id: log-4222
-                      message: "Erro 422 tratado: ${body}"
               - id: when-23c2
                 description: statusCode (601) Regra
                 expression:
@@ -449,10 +403,6 @@
                     id: simple-7a9d
                     expression: ${header.CamelHttpResponseCode} == 601
                 steps:
-                  - log:
-                      id: log-3f8d
-                      description: Erro 601 StatusCode
-                      message: "# Erro 601 StatusCode  ${body}"
                   - setBody:
                       id: setBody-bbcd
                       expression:
@@ -463,10 +413,6 @@
               id: otherwise-6391
               description: Nao identificado
               steps:
-                - log:
-                    id: log-189f
-                    description: Erro Nao identificado
-                    message: "# Erro Nao identificado  ${body}"
                 - setBody:
                     id: setBody-0283
                     expression:
@@ -484,13 +430,68 @@
                       simple:
                         id: simple-aedb
                         expression: "500"
-                - log:
-                    id: log-6e31
-                    message: "Erro não mapeado: ${exception.message}"
         - log:
             id: log-5d62
             description: "# STATUS 200 NAGENT COLOCA LIXO #"
             message: "# STATUS 200 NAGENT COLOCA LIXO #"
+        - choice:
+            id: choice-f959
+            when:
+              - id: when-2178
+                expression:
+                  simple:
+                    id: simple-1a46
+                    expression: ${exchangeProperty.tempoEnvio} != null
+                steps:
+                  - log:
+                      id: log-fc7e
+                      description: "# EXISTE TEMPO ENVIO #"
+                      message: "# EXISTE TEMPO ENVIO # ${exchangeProperty.tempoEnvio}"
+            otherwise:
+              id: otherwise-95e6
+              steps:
+                - log:
+                    id: log-961a
+                    description: "# NAO EXISTE TEMPO ENVIO #"
+                    message: "# NAO EXISTE TEMPO ENVIO #"
+                - setProperty:
+                    id: setProperty-c6ce
+                    description: "Var: tempoEnvio"
+                    name: tempoEnvio
+                    expression:
+                      groovy:
+                        id: groovy-2b11
+                        expression: >-
+                          def startRaw =
+                          exchange.getProperty('tempoInicioEnvio')
+
+                          if (startRaw == null || startRaw == '') {
+                            return -1
+                          }
+
+                          try {
+                            Long start = startRaw
+                            long now = System.currentTimeMillis()
+                            long diff = now - start
+                            return diff
+                          } catch (Exception e) {
+                            return -2
+                          }
+        - setBody:
+            id: setBody-1ba5
+            expression:
+              groovy:
+                id: groovy-0922
+                expression: |
+                  def bodyText = exchange.getIn().getBody(String.class)
+                  if (bodyText != null && bodyText.endsWith("}")) {
+                      def tempo = exchange.getProperty("tempoAutenticacao")
+                      def tempoEnvio = exchange.getProperty("tempoEnvio")
+                      def correlationid = exchange.getProperty("correlationId")
+                      bodyText = bodyText.substring(0, bodyText.length() - 1) +
+                          ", \"tempoAutenticacao\": ${tempo}, \"tempoEnvio\": ${tempoEnvio}, \"correlationid\": \"${correlationid}\" }"
+                  }
+                  return bodyText
         - setHeader:
             id: setHeader-1a01
             disabled: false
