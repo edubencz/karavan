@@ -15,6 +15,17 @@
       parameters:
         name: validar-payload
       steps:
+        - script:
+            id: script-cf98
+            expression:
+              groovy:
+                id: groovy-e26f
+                expression: |-
+                  def holder = exchange.getProperty("OpenTracing.activeSpan")
+                  def span = holder.getSpan()
+                  def traceId = span.traceId()
+                  exchange.setProperty("correlationId", traceId)
+                  org.slf4j.MDC.put("correlationid", traceId)
         - doTry:
             id: doTry-valida-payload
             doCatch:
@@ -53,7 +64,10 @@
               - log:
                   id: log-f8e1
                   description: "# CHEGOU NO INTEGRADOR #"
+                  disabled: true
                   message: "# CHEGOU NO INTEGRADOR #"
+                  loggingLevel: INFO
+                  logName: route
               - to:
                   id: to-json-validator-schema
                   uri: json-validator
@@ -169,6 +183,7 @@
         - log:
             id: log-8f30
             description: "# route-trata-banco-workspace #"
+            disabled: true
             message: "# route-trata-banco-workspace #"
         - choice:
             id: choice-d5f8
@@ -183,6 +198,7 @@
                   - log:
                       id: log-8d7f
                       description: "# BANCO BB #"
+                      disabled: true
                       message: "# BANCO : ${exchangeProperty.rota[codigoBanco]}"
                   - setProperty:
                       id: bancoConsumo-bb
@@ -226,6 +242,7 @@
                   - log:
                       id: log-8d7f1
                       description: "# BANCO SANTANDER #"
+                      disabled: true
                       message: "# BANCO : ${exchangeProperty.rota[codigoBanco]}"
                   - setProperty:
                       id: bancoConsumo-santander
@@ -269,6 +286,7 @@
                   - log:
                       id: log-8d7f2
                       description: "# BANCO SICREDI #"
+                      disabled: true
                       message: "# BANCO : ${exchangeProperty.rota[codigoBanco]}"
                   - setProperty:
                       id: bancoConsumo-sicredi
@@ -304,6 +322,7 @@
                   - log:
                       id: log-8d7f3
                       description: "# BANCO UNICRED #"
+                      disabled: true
                       message: "# BANCO : ${exchangeProperty.rota[codigoBanco]}"
                   - setProperty:
                       id: bancoConsumo-unicred
@@ -339,6 +358,7 @@
                   - log:
                       id: log-8d7f4
                       description: "# BANCO SAFRA #"
+                      disabled: true
                       message: "# BANCO : ${exchangeProperty.rota[codigoBanco]}"
                   - setProperty:
                       id: bancoConsumo-safra
@@ -374,6 +394,7 @@
                   - log:
                       id: log-8d7f5
                       description: "# BANCO SICOOB #"
+                      disabled: true
                       message: "# BANCO : ${exchangeProperty.rota[codigoBanco]}"
                   - setProperty:
                       id: bancoConsumo-sicoob
@@ -409,6 +430,7 @@
                   - log:
                       id: log-8d7f6
                       description: "# BANCO ITAU #"
+                      disabled: true
                       message: "# BANCO : ${exchangeProperty.rota[codigoBanco]}"
                   - setProperty:
                       id: bancoConsumo-itau
@@ -444,6 +466,7 @@
                   - log:
                       id: log-8d7f9
                       description: "# BANCO BRADESCO #"
+                      disabled: true
                       message: "# BANCO : ${exchangeProperty.rota[codigoBanco]}"
                   - setProperty:
                       id: bancoConsumo-bradesco
@@ -475,6 +498,7 @@
                 - log:
                     id: log-e3d4
                     description: "# ERRO BUSCA BANCO APPLICATION #"
+                    disabled: true
                     message: "# ERRO BUSCA BANCO APPLICATION #"
                 - setHeader:
                     id: setHeader-0e39
@@ -507,12 +531,6 @@
               simple:
                 id: simple-4b69
                 expression: ${exchangeProperty.integradorAuthorization}
-        - log:
-            id: log-192e
-            description: "# CONSUMO #"
-            message: >-
-              # CONSUMO:
-              {{url_nintegrator}}/PIX/${exchangeProperty.bancoConsumo}
         - doTry:
             id: doTry-e0ba
             doCatch:
@@ -574,10 +592,6 @@
                     simple:
                       id: simple-65a1
                       expression: ${body[integrationCredential]}
-              - log:
-                  id: log-9b2f
-                  disabled: true
-                  message: ${exchangeProperty.bancoPayloadDados}
               - to:
                   id: to-5bb3
                   uri: direct
@@ -595,6 +609,7 @@
         - log:
             id: log-28c0
             description: "# ROUTE: route-busta-redis-token #"
+            disabled: true
             message: "# ROUTE: route-busta-redis-token #"
         - setHeader:
             id: setHeader-redis-token-key
@@ -615,6 +630,7 @@
         - log:
             id: log-74ed
             description: "# EXISTE TOKEN: "
+            disabled: true
             message: "# EXISTE TOKEN: ${exchangeProperty.redisToken}"
         - setProperty:
             id: setProperty-8c66
@@ -637,6 +653,7 @@
                   - log:
                       id: log-534a
                       description: "# EXISTE TOKEN SEGUE PARA PAYLOAD #"
+                      disabled: true
                       message: "# EXISTE TOKEN SEGUE PARA PAYLOAD #"
                   - setHeader:
                       id: setHeader-0bd3
@@ -682,34 +699,24 @@
                         simple:
                           id: simple-104f
                           expression: ${body[Senha]}
-                  - log:
-                      id: log-d6e6
-                      description: "# SENHA CERTIFICADO #"
-                      message: "# SENHA CERTIFICADO: bancoSenhaCertificado"
             otherwise:
               id: otherwise-78e1
               steps:
                 - log:
                     id: log-b652
                     description: "# NAO EXISTE TOKEN SEGUE OAUTH #"
+                    disabled: true
                     message: "# NAO EXISTE TOKEN SEGUE OAUTH #"
                 - to:
                     id: to-bfe7
                     uri: direct
                     parameters:
                       name: route-efetua-oauth-banco
-                - log:
-                    id: log-d6aa
-                    message: "# VOLTOU PARA REDIS VALIDA TOKEN###"
         - to:
             id: to-8cfe
             uri: direct
             parameters:
               name: route-prepara-payload-banco
-        - log:
-            id: log-f58b
-            description: "# AQUI RECEBE O RETORNO FINAL DO BANCOS #"
-            message: "# AQUI RECEBE O RETORNO FINAL DO BANCOS #"
 - route:
     id: route-efetua-oauth-banco
     from:
@@ -718,10 +725,6 @@
       parameters:
         name: route-efetua-oauth-banco
       steps:
-        - log:
-            id: log-ab81
-            description: "# ROUTE-route-efetua-oauth-banco #"
-            message: "# ROUTE-route-efetua-oauth-banco #"
         - choice:
             id: choice-71cc
             description: Geração de Certificado
@@ -736,10 +739,6 @@
                       && ${exchangeProperty.bancoPayloadDados[certificate].trim}
                       != ''
                 steps:
-                  - log:
-                      id: log-f18d
-                      description: "# GERA CERTIFICADO #"
-                      message: "# GERA CERTIFICADO #"
                   - bean:
                       id: bean-f5f9
                       description: "Bean: criarArquivoCertificado"
@@ -761,17 +760,8 @@
                         simple:
                           id: simple-4d2a
                           expression: ${exchangeProperty.sslBeanId}
-                  - log:
-                      id: log-5bcb
-                      description: "# ARQ. CERT. GERADO PELO JAVA#"
-                      message: "# ARQ. CERT. GERADO PELO JAVA#"
             otherwise:
               id: otherwise-1b5b
-              steps:
-                - log:
-                    id: log-9214
-                    description: "# NÃO EXISTE CERTIFICADO #"
-                    message: "# NÃO EXISTE CERTIFICADO #"
         - setHeader:
             id: setHeader-8770
             description: "Header: Content-Type"
@@ -780,14 +770,6 @@
               simple:
                 id: simple-5ce1
                 expression: application/x-www-form-urlencoded
-        - log:
-            id: log-f2fa
-            description: "# VALIDA BANCO PARA AUTH2 #"
-            message: "# VALIDA BANCO PARA AUTH2 #"
-        - log:
-            id: log-9527
-            description: "# DADOS DO BANCO #"
-            message: "# DADOS DO BANCO # ${exchangeProperty.bancoPayloadDados}"
         - removeHeaders:
             id: removeHeaders-179b
             pattern: "*"
@@ -1034,16 +1016,26 @@
         - log:
             id: log-a28f
             description: "# AUTH HEADERS #"
-            disabled: false
+            disabled: true
             message: "# AUTH HEADERS # ${headers}"
         - log:
             id: log-2fe9
             description: "# AUTH BODY #"
+            disabled: true
             message: "# AUTH BODY # ${body}"
         - log:
             id: log-d6d4
             description: "# BANCO OAUTH URL#"
+            disabled: true
             message: "# BANCO OAUTH URL ${exchangeProperty.bancoOAuthUrl}"
+        - setProperty:
+            id: setProperty-4916
+            description: "var: timeInicioAuth"
+            name: timeInicioAuth
+            expression:
+              simple:
+                id: simple-c187
+                expression: ${date:now:ms}
         - doTry:
             id: doTry-e0c4
             doCatch:
@@ -1051,10 +1043,6 @@
                 exception:
                   - java.lang.Exception
                 steps:
-                  - log:
-                      id: log-bba8
-                      description: "# ERRO BUSCR TOKEN #"
-                      message: "# ERRO BUSCR TOKEN #"
                   - setProperty:
                       id: setProperty-d440
                       description: "Var: errorRoute"
@@ -1088,6 +1076,7 @@
                         - log:
                             id: log-4fa5
                             description: "# AUTH COM CERT #"
+                            disabled: true
                             message: "# AUTH COM CERT #"
                         - toD:
                             id: to-efb5
@@ -1105,10 +1094,12 @@
                       - log:
                           id: log-badf
                           description: "# AUTH SEM CERT #"
+                          disabled: true
                           message: "# AUTH SEM CERT #"
                       - log:
                           id: log-7ddc
                           description: "# NAO PODE LOG HTTPS #"
+                          disabled: true
                           message: "# NAO PODE LOG HTTPS :UNICRED CRASHA O SERVICO #"
                       - toD:
                           id: to-2051
@@ -1118,19 +1109,11 @@
                             bridgeEndpoint: true
                             httpMethod: POST
                             logHttpActivity: false
-              - log:
-                  id: log-6720
-                  description: "# TOKEN RECEBIDO #"
-                  message: "# TOKEN RECEBIDO #"
         - unmarshal:
             id: unmarshal-bb71
             disabled: false
             json:
               id: json-5bc3
-        - log:
-            id: log-0097
-            description: "# COMU. OAUTH2 FINALIZADA #"
-            message: "# COMU. OAUTH2 FINALIZADA #"
         - choice:
             id: choice-f7f2
             when:

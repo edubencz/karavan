@@ -1,15 +1,31 @@
+metadata:
+    labels:
+        org.apache.camel.karavan/type: project
 spec:
   replicas: 1
   template:
+    metadata:
+      labels:
+        org.apache.camel.karavan/type: project
     spec:
       serviceAccount: karavan-integration
       containers:
         - name: api-pix-fab-atual
           env:
+            - name: JAVA_TOOL_OPTIONS
+              value: >
+                -Dotel.java.global-autoconfigure.enabled=true
+                -Dotel.metrics.exporter=otlp
+                -Dotel.traces.exporter=otlp
+                -Dotel.logs.exporter=otlp
+                -Dotel.exporter.otlp.endpoint=http://otel-collector.monitoring:4317
+                -Dotel.service.name=api-pix-fab-atual
+                -Dotel.instrumentation.runtime-metrics.enabled=true
+                -Dotel.instrumentation.jvm-metrics.enabled=true
           resources:
             limits:
-              cpu: 100m
-              memory: 500Mi
+              cpu: 600m
+              memory: 900Mi
             requests:
-              cpu: 100m
-              memory: 350Mi
+              cpu: 400m
+              memory: 800Mi
