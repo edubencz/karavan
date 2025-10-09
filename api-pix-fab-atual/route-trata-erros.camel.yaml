@@ -82,6 +82,7 @@
                   - log:
                       id: log-0711
                       description: "# ERRO 400 #"
+                      disabled: true
                       message: "# ERRO 400 #"
                   - setBody:
                       id: setBody-48fa
@@ -426,49 +427,34 @@
             id: log-5d62
             description: "# STATUS 200 NAGENT COLOCA LIXO #"
             message: "# STATUS 200 NAGENT COLOCA LIXO #"
-        - choice:
-            id: choice-f959
-            when:
-              - id: when-2178
-                expression:
-                  simple:
-                    id: simple-1a46
-                    expression: ${exchangeProperty.tempoEnvio} != null
-                steps:
-                  - log:
-                      id: log-fc7e
-                      description: "# EXISTE TEMPO ENVIO #"
-                      message: "# EXISTE TEMPO ENVIO # ${exchangeProperty.tempoEnvio}"
-            otherwise:
-              id: otherwise-95e6
-              steps:
-                - log:
-                    id: log-961a
-                    description: "# NAO EXISTE TEMPO ENVIO #"
-                    message: "# NAO EXISTE TEMPO ENVIO #"
-                - setProperty:
-                    id: setProperty-c6ce
-                    description: "Var: tempoEnvio"
-                    name: tempoEnvio
-                    expression:
-                      groovy:
-                        id: groovy-2b11
-                        expression: >-
-                          def startRaw =
-                          exchange.getProperty('tempoInicioEnvio')
-
-                          if (startRaw == null || startRaw == '') {
-                            return -1
-                          }
-
-                          try {
-                            Long start = startRaw
-                            long now = System.currentTimeMillis()
-                            long diff = now - start
-                            return diff
-                          } catch (Exception e) {
-                            return -2
-                          }
+        - setHeader:
+            id: setHeader-1a01
+            disabled: false
+            name: CamelHttpResponseCode
+            expression:
+              simple:
+                id: simple-abc6
+                expression: "200"
+        - setProperty:
+            id: setProperty-c6ce
+            description: "Var: tempoEnvio"
+            name: tempoEnvio
+            expression:
+              groovy:
+                id: groovy-2b11
+                expression: |-
+                  def startRaw = exchange.getProperty('tempoInicioEnvio')
+                  if (startRaw == null || startRaw == '') {
+                    return -1
+                  }
+                  try {
+                    Long start = startRaw
+                    long now = System.currentTimeMillis()
+                    long diff = now - start
+                    return diff
+                  } catch (Exception e) {
+                    return -2
+                  }
         - setBody:
             id: setBody-1ba5
             expression:
@@ -484,17 +470,5 @@
                           ", \"tempoAutenticacao\": ${tempo}, \"tempoEnvio\": ${tempoEnvio}, \"correlationid\": \"${correlationId}\" }"
                   }
                   return bodyText
-        - log:
-            id: log-2513
-            description: "# HOUVE ERRO #"
-            message: "# HOUVE ERRO # ${body}"
-        - setHeader:
-            id: setHeader-1a01
-            disabled: false
-            name: CamelHttpResponseCode
-            expression:
-              simple:
-                id: simple-abc6
-                expression: "200"
         - stop:
             id: stop-09e3

@@ -83,15 +83,41 @@
                             id: log-ea73
                             description: "# REGISTRO BOLETO BB #"
                             message: "# REGISTRO BOLETO BB #"
-                        - toD:
-                            id: to-241b
-                            uri: https
-                            parameters:
-                              httpUri: >-
-                                ${exchangeProperty.urlRegistroBoleto}?gw-dev-app-key=${exchangeProperty.bancoPayloadDados[appKey]}
-                              bridgeEndpoint: true
-                              httpMethod: POST
-                              logHttpActivity: false
+                        - choice:
+                            id: choice-6a6f
+                            when:
+                              - id: when-cf28
+                                description: COM CERTIFICDO
+                                expression:
+                                  simple:
+                                    id: simple-2cc6
+                                    expression: >-
+                                      ${exchangeProperty.securityContext} !=
+                                      null &&
+                                      ${exchangeProperty.securityContext.trim}
+                                      != ''
+                                steps:
+                                  - toD:
+                                      id: to-241b
+                                      uri: https
+                                      parameters:
+                                        httpUri: >-
+                                          ${exchangeProperty.urlRegistroBoleto}?gw-dev-app-key=${exchangeProperty.bancoPayloadDados[appKey]}
+                                        bridgeEndpoint: true
+                                        httpMethod: POST
+                                        logHttpActivity: false
+                                        sslContextParameters: "#${exchangeProperty.sslBeanId}"
+                            otherwise:
+                              id: otherwise-19e1
+                              steps:
+                                - toD:
+                                    id: to-b663
+                                    uri: https
+                                    parameters:
+                                      httpUri: >-
+                                        ${exchangeProperty.urlRegistroBoleto}?gw-dev-app-key=${exchangeProperty.bancoPayloadDados[appKey]}
+                                      bridgeEndpoint: true
+                                      httpMethod: POST
                     - id: when-d15a
                       description: Alterar
                       expression:
@@ -115,16 +141,42 @@
                               # ALTERAR BOLETO BB:
                               ${exchangeProperty.bancoURL}/${exchangeProperty.boletoNossoNumero} 
                               ${body}
-                        - toD:
-                            id: to-45dd
-                            uri: https
-                            parameters:
-                              httpUri: >-
-                                ${exchangeProperty.urlRegistroBoleto}?gw-dev-app-key=${exchangeProperty.bancoPayloadDados[appKey]}
-                              bridgeEndpoint: true
-                              httpMethod: PATCH
-                              logHttpActivity: false
-                              throwExceptionOnFailure: false
+                        - choice:
+                            id: choice-1fc6
+                            when:
+                              - id: when-5727
+                                description: COM CERTIFICADO
+                                expression:
+                                  groovy:
+                                    id: groovy-d259
+                                    expression: >-
+                                      ${exchangeProperty.securityContext} !=
+                                      null &&
+                                      ${exchangeProperty.securityContext.trim}
+                                      != ''
+                                steps:
+                                  - toD:
+                                      id: to-45dd
+                                      uri: https
+                                      parameters:
+                                        httpUri: >-
+                                          ${exchangeProperty.urlRegistroBoleto}?gw-dev-app-key=${exchangeProperty.bancoPayloadDados[appKey]}
+                                        bridgeEndpoint: true
+                                        httpMethod: PATCH
+                                        logHttpActivity: false
+                                        throwExceptionOnFailure: false
+                                        sslContextParameters: "#${exchangeProperty.sslBeanId}"
+                            otherwise:
+                              id: otherwise-36f9
+                              steps:
+                                - toD:
+                                    id: to-be1f
+                                    uri: https
+                                    parameters:
+                                      httpUri: >-
+                                        ${exchangeProperty.urlRegistroBoleto}?gw-dev-app-key=${exchangeProperty.bancoPayloadDados[appKey]}
+                                      bridgeEndpoint: true
+                                      httpMethod: PATCH
                     - id: when-10bc
                       description: Cancelar
                       expression:
@@ -145,14 +197,40 @@
                             id: log-b4b1
                             description: "# CANCELAR BOLETO BB #"
                             message: "# CANCELAR BOLETO BB #"
-                        - toD:
-                            id: to-acc8
-                            uri: https
-                            parameters:
-                              httpUri: >-
-                                ${exchangeProperty.urlRegistroBoleto}?gw-dev-app-key=${exchangeProperty.bancoPayloadDados[appKey]}
-                              bridgeEndpoint: true
-                              httpMethod: POST
+                        - choice:
+                            id: choice-260e
+                            when:
+                              - id: when-717e
+                                description: COM CERTIFICADO
+                                expression:
+                                  simple:
+                                    id: simple-f704
+                                    expression: >-
+                                      ${exchangeProperty.securityContext} !=
+                                      null &&
+                                      ${exchangeProperty.securityContext.trim}
+                                      != ''
+                                steps:
+                                  - toD:
+                                      id: to-acc8
+                                      uri: https
+                                      parameters:
+                                        httpUri: >-
+                                          ${exchangeProperty.urlRegistroBoleto}?gw-dev-app-key=${exchangeProperty.bancoPayloadDados[appKey]}
+                                        bridgeEndpoint: true
+                                        httpMethod: POST
+                                        sslContextParameters: "#${exchangeProperty.sslBeanId}"
+                            otherwise:
+                              id: otherwise-d2a1
+                              steps:
+                                - toD:
+                                    id: to-8eb2
+                                    uri: https
+                                    parameters:
+                                      httpUri: >-
+                                        ${exchangeProperty.urlRegistroBoleto}?gw-dev-app-key=${exchangeProperty.bancoPayloadDados[appKey]}
+                                      bridgeEndpoint: true
+                                      httpMethod: POST
                   otherwise:
                     id: otherwise-0b3b
                     steps:
