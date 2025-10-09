@@ -93,14 +93,39 @@
                                   simple:
                                     id: simple-f6d3
                                     expression: application/json
-                        - toD:
-                            id: to-b6e3
-                            uri: https
-                            parameters:
-                              bridgeEndpoint: true
-                              httpMethod: POST
-                              logHttpActivity: false
-                              httpUri: ${exchangeProperty.urlRegistroBoleto}
+                        - choice:
+                            id: choice-4c34
+                            when:
+                              - id: when-acd7
+                                description: COM CERTIFICADO
+                                expression:
+                                  simple:
+                                    id: simple-762c
+                                    expression: >-
+                                      ${exchangeProperty.securityContext} !=
+                                      null &&
+                                      ${exchangeProperty.securityContext.trim}
+                                      != ''
+                                steps:
+                                  - toD:
+                                      id: to-b6e3
+                                      uri: https
+                                      parameters:
+                                        bridgeEndpoint: true
+                                        httpMethod: POST
+                                        logHttpActivity: false
+                                        httpUri: ${exchangeProperty.urlRegistroBoleto}
+                                        sslContextParameters: "#${exchangeProperty.sslBeanId}"
+                            otherwise:
+                              id: otherwise-961f
+                              steps:
+                                - toD:
+                                    id: to-5039
+                                    uri: https
+                                    parameters:
+                                      httpUri: ${exchangeProperty.urlRegistroBoleto}
+                                      bridgeEndpoint: true
+                                      httpMethod: POST
                         - log:
                             id: log-a63e
                             description: "# RECEBEU ID BOLETO UNICRED #"
