@@ -155,10 +155,6 @@
                                       ${exchangeProperty.securityContext.trim}
                                       != ''
                                 steps:
-                                  - log:
-                                      id: log-5b99
-                                      description: "# BB COM CERTIFICADO #"
-                                      message: "# BB COM CERTIFICADO #"
                                   - toD:
                                       id: to-45dd
                                       uri: https
@@ -173,10 +169,6 @@
                             otherwise:
                               id: otherwise-36f9
                               steps:
-                                - log:
-                                    id: log-2ffb
-                                    description: "# BB SEM CERTIFICADO #"
-                                    message: "# BB SEM CERTIFICADO #"
                                 - toD:
                                     id: to-be1f
                                     uri: https
