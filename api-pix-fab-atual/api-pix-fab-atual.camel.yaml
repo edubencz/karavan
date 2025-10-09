@@ -624,7 +624,7 @@
             disabled: false
             uri: kamelet:redis-sink
             parameters:
-              redisHost: fesc-sql-dev01.fesc.sgusuite.com.br
+              redisHost: "{{url_redis}}"
               redisPort: 6379
               command: EXISTS
         - log:
@@ -667,7 +667,7 @@
                       description: BuscaToken
                       uri: kamelet:redis-sink
                       parameters:
-                        redisHost: fesc-sql-dev01.fesc.sgusuite.com.br
+                        redisHost: "{{url_redis}}"
                         redisPort: 6379
                         command: GET
                   - unmarshal:
@@ -1283,7 +1283,7 @@
                       description: CriaToken
                       uri: kamelet:redis-sink
                       parameters:
-                        redisHost: fesc-sql-dev01.fesc.sgusuite.com.br
+                        redisHost: "{{url_redis}}"
                         redisPort: 6379
                         command: SETEX
                   - log:
