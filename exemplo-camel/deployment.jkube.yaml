@@ -1,14 +1,40 @@
+kind: Deployment
+apiVersion: apps/v1
 metadata:
-    labels:
-        org.apache.camel.karavan/type: project
+  name: exemplo-camel
+  namespace: integration
+  labels:
+    app: exemplo-camel
+    app.kubernetes.io/name: exemplo-camel
+    app.kubernetes.io/part-of: exemplo-camel
+    app.kubernetes.io/runtime: camel
+    app.kubernetes.io/version: '1'
+    group: karavan
+    org.apache.camel.karavan/type: project
+    provider: karavan
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: exemplo-camel
+      app.kubernetes.io/name: exemplo-camel
+      app.kubernetes.io/part-of: exemplo-camel
+      group: karavan
+      provider: karavan
   template:
     metadata:
+      name: exemplo-camel
+      namespace: integration
       labels:
+        app: exemplo-camel
+        app.kubernetes.io/name: exemplo-camel
+        app.kubernetes.io/part-of: exemplo-camel
+        app.kubernetes.io/runtime: camel
+        app.kubernetes.io/version: '1'
+        group: karavan
         org.apache.camel.karavan/type: project
+        provider: karavan
     spec:
-      serviceAccount: karavan-integration
       containers:
         - name: exemplo-camel
           image: registry.services-dev.nexdom.tec.br/karavan/exemplo-camel:latest
@@ -19,10 +45,19 @@ spec:
             - name: JAVA_TOOL_OPTIONS
               value: >
                 -Dotel.java.global-autoconfigure.enabled=true
-                -Dotel.metrics.exporter=otlp
-                -Dotel.traces.exporter=otlp
+                -Dotel.metrics.exporter=otlp -Dotel.traces.exporter=otlp
                 -Dotel.logs.exporter=otlp
                 -Dotel.exporter.otlp.endpoint=http://otel-collector.monitoring:4317
                 -Dotel.service.name=exemplo-camel
                 -Dotel.instrumentation.runtime-metrics.enabled=true
                 -Dotel.instrumentation.jvm-metrics.enabled=true
+            - name: KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name

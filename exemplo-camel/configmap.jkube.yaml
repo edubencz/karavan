@@ -1,3 +1,16 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: exemplo-camel
+  namespace: integration
+  labels:
+    app: exemplo-camel
+    app.kubernetes.io/managed-by: jkube
+    app.kubernetes.io/name: exemplo-camel
+    app.kubernetes.io/part-of: exemplo-camel
+    app.kubernetes.io/runtime: camel
+    group: karavan
+    provider: karavan
 data:
-  URL_NINTEGRATOR: url_vinda_do_configmap
   AMBIENTE: ambiente_configmap
+  URL_NINTEGRATOR: url_vinda_do_configmap

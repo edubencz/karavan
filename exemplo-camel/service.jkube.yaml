@@ -1,0 +1,34 @@
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: exemplo-camel
+  namespace: integration
+  labels:
+    app: exemplo-camel
+    app.kubernetes.io/name: exemplo-camel
+    app.kubernetes.io/part-of: exemplo-camel
+    app.kubernetes.io/runtime: camel
+    app.kubernetes.io/version: '1'
+    group: karavan
+    provider: karavan
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: 100m
+    nginx.ingress.kubernetes.io/proxy-read-timeout: '300'
+    nginx.ingress.kubernetes.io/proxy-send-timeout: '300'
+spec:
+  tls:
+    - hosts:
+        - exemplo-camel.integration-dev.nexdom.tec.br
+      secretName: tls-secret
+  rules:
+    - host: exemplo-camel.integration-dev.nexdom.tec.br
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: exemplo-camel
+                port:
+                  number: 80
