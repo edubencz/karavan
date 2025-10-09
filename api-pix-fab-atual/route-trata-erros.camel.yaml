@@ -73,7 +73,7 @@
                           expression: "500"
               - id: when-0aee
                 description: statusCode (400)
-                disabled: true
+                disabled: false
                 expression:
                   simple:
                     id: simple-378c
@@ -112,14 +112,6 @@
                       description: "# ERRO 400 CAMEL #"
                       disabled: true
                       message: "# ERRO 400 CAMEL: "
-                  - stop:
-                      id: stop-e94c
-                      disabled: true
-                  - log:
-                      id: log-a37e
-                      description: "# LOG 400 #"
-                      disabled: true
-                      message: "# LOG 400 # ${body}"
                   - choice:
                       id: choice-7fc2
                       when:
