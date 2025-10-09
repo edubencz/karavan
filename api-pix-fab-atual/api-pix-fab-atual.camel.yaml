@@ -755,9 +755,9 @@
                   if (bodyText != null && bodyText.endsWith("}")) {
                       def tempo = exchange.getProperty("tempoAutenticacao")
                       def tempoEnvio = exchange.getProperty("tempoEnvio")
-                      def correlationid = exchange.getProperty("correlationid")
+                      def correlationId = exchange.getProperty("correlationId")
                       bodyText = bodyText.substring(0, bodyText.length() - 1) +
-                          ", \"tempoAutenticacao\": ${tempo}, \"tempoEnvio\": ${tempoEnvio}, \"correlationid\": \"${correlationid}\" }"
+                          ", \"tempoAutenticacao\": ${tempo}, \"tempoEnvio\": ${tempoEnvio}, \"correlationid\": \"${correlationId}\" }"
                   }
                   return bodyText
 - route:
