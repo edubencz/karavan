@@ -1,0 +1,500 @@
+- route:
+    id: route-trata-erros
+    from:
+      id: from-b5b2
+      uri: direct
+      parameters:
+        name: route-trata-erros
+      steps:
+        - log:
+            id: log-66df
+            description: errorRoute Status
+            disabled: true
+            message: "errorRoute Status: ${header.CamelHttpResponseCode}"
+        - log:
+            id: log-30dc
+            description: errorRoute
+            disabled: true
+            message: "errorRoute: ${exchangeProperty.errorRoute} ${body}"
+        - choice:
+            id: choice-e5df
+            when:
+              - id: when-nullpointer
+                description: NullException
+                disabled: true
+                expression:
+                  simple:
+                    id: simple-npe
+                    expression: ${exception.class} == 'java.lang.NullPointerException'
+                steps:
+                  - setBody:
+                      id: setBody-npe
+                      expression:
+                        simple:
+                          id: simple-npe-body
+                          expression: >-
+                            { "status": 500, "error": "Erro interno de aplicação
+                            (NullPointerException)",
+                              ${exchangeProperty.errorRoute}, "exception": "${exception.message}" }
+                  - setHeader:
+                      id: setHeader-npe
+                      disabled: true
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-npe-header
+                          expression: "500"
+              - id: when-resolve-endpoint
+                description: ResolveEndpointFailedException
+                expression:
+                  simple:
+                    id: simple-15ab
+                    expression: >-
+                      ${exception.class} ==
+                      'org.apache.camel.ResolveEndpointFailedException'
+                steps:
+                  - setBody:
+                      id: setBody-ed4a
+                      expression:
+                        simple:
+                          id: simple-da57
+                          expression: >-
+                            { "status": 500, "error": "Falha ao resolver
+                            endpoint ou certificado inválido",
+                            ${exchangeProperty.errorRoute}, "exception":
+                            ${exception.message} }
+                  - setHeader:
+                      id: setHeader-9514
+                      disabled: true
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-7f0b
+                          expression: "500"
+              - id: when-0aee
+                description: statusCode (400)
+                disabled: false
+                expression:
+                  simple:
+                    id: simple-378c
+                    expression: ${exception.statusCode} == 400
+                steps:
+                  - log:
+                      id: log-0711
+                      description: "# ERRO 400 #"
+                      message: "# ERRO 400 #"
+                  - setBody:
+                      id: setBody-48fa
+                      expression:
+                        simple:
+                          id: simple-8b32
+                          expression: >-
+                            { "status": 400, "error": "Informação não
+                            identificada", "retorno" :
+                              ${exception.getResponseBody()} }
+                  - setHeader:
+                      id: setHeader-c91d
+                      disabled: true
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-30e0
+                          expression: ${exception.statusCode}
+              - id: when-400-interno
+                description: CamelHttpResponseCode (400)
+                expression:
+                  simple:
+                    id: simple-8941
+                    expression: ${header.CamelHttpResponseCode} == 400
+                steps:
+                  - log:
+                      id: log-ec8f
+                      description: "# ERRO 400 CAMEL #"
+                      disabled: true
+                      message: "# ERRO 400 CAMEL: "
+                  - choice:
+                      id: choice-7fc2
+                      when:
+                        - id: when-d88c
+                          expression:
+                            simple:
+                              id: simple-9d53
+                              expression: ${exception.getResponseBody()} != null
+                          steps:
+                            - log:
+                                id: log-353a
+                                description: "# ERRO AQUI #"
+                                disabled: true
+                                message: "# ERRO AQUI #"
+                            - setBody:
+                                id: setBody-f12a
+                                expression:
+                                  simple:
+                                    id: simple-f6f7
+                                    expression: >-
+                                      { "status": 400, "error": "Informação não
+                                      identificada", "retorno" :
+                                        ${exception.getResponseBody()} }
+                      otherwise:
+                        id: otherwise-be59
+                        steps:
+                          - log:
+                              id: log-7b79
+                              description: "# ERRO AQUI F #"
+                              disabled: true
+                              message: "# ERRO AQUI F#"
+                          - setBody:
+                              id: setBody-8711
+                              expression:
+                                simple:
+                                  id: simple-3a74
+                                  expression: >-
+                                    { "status": 400, "error": "Informação não
+                                    identificada",
+                                    ${exchangeProperty.errorRoute} }
+                  - log:
+                      id: log-e1d0
+                      message: "Erro 400 tratado (choice interno): ${body}"
+              - id: when-f2ea
+                description: statusCode (403)
+                disabled: true
+                expression:
+                  simple:
+                    id: simple-ee9e
+                    expression: ${exception.statusCode} == 403
+                steps:
+                  - setBody:
+                      id: setBody-2854
+                      expression:
+                        simple:
+                          id: simple-174d
+                          expression: >-
+                            { "status": 403, "error": "Token inválido ou mal
+                            formatado", ${exchangeProperty.errorRoute},
+                            "exception": "${exception.getResponseBody() != null
+                            ? exception.getResponseBody() : ''}" }
+                  - setHeader:
+                      id: setHeader-cf28
+                      disabled: true
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-fd86
+                          expression: ${exception.statusCode}
+                  - log:
+                      id: log-c91e
+                      message: "Erro 403 tratado: ${body}"
+              - id: when-cc34
+                description: statusCode (404)
+                expression:
+                  simple:
+                    id: simple-81f2
+                    expression: ${exception.statusCode} == 404
+                steps:
+                  - setBody:
+                      id: setBody-9ad0
+                      expression:
+                        simple:
+                          id: simple-4039
+                          expression: |-
+                            { "status": 404, "error": "NOT_FOUND",
+                              ${exchangeProperty.errorRoute}, "exception":
+                              ${exception.getResponseBody()} }
+                  - setHeader:
+                      id: setHeader-d76a
+                      disabled: true
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-106f
+                          expression: ${exception.statusCode}
+              - id: when-c3ab
+                description: statusCode (204)
+                expression:
+                  simple:
+                    id: simple-6ee8
+                    expression: ${exception.statusCode} == 204
+                steps:
+                  - setBody:
+                      id: setBody-d453
+                      expression:
+                        simple:
+                          id: simple-2766
+                          expression: |-
+                            { "status": 204, "error": "NOT_FOUND",
+                              ${exchangeProperty.errorRoute}, "exception":
+                              ${exception.getResponseBody()} }
+                  - setHeader:
+                      id: setHeader-1f30
+                      disabled: true
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-6086
+                          expression: ${exception.statusCode}
+              - id: when-503-exception
+                description: statusCode (503)
+                disabled: true
+                expression:
+                  simple:
+                    id: simple-503-exception
+                    expression: ${exception.statusCode} == 503
+                steps:
+                  - log:
+                      id: log-5429
+                      description: Erro 503 StatusCode
+                      message: "# Erro 503 StatusCode ${body}"
+                  - setBody:
+                      id: setBody-503-exception
+                      expression:
+                        simple:
+                          id: simple-503-exception-body
+                          expression: >-
+                            { "status": 503, "error": "Serviço bancário
+                            indisponível",
+                              ${exchangeProperty.errorRoute}, "exception":
+                              "${exception.message}" }
+                  - setHeader:
+                      id: setHeader-503-exception
+                      disabled: true
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-503-exception-header
+                          expression: "503"
+                  - log:
+                      id: log-503-exception
+                      message: "Erro 503 tratado (exception): ${exception.message}"
+              - id: when-503-header
+                description: CamelHttpResponseCode (503)
+                expression:
+                  simple:
+                    id: simple-503-header
+                    expression: ${header.CamelHttpResponseCode} == 503
+                steps:
+                  - setBody:
+                      id: setBody-503-header
+                      expression:
+                        simple:
+                          id: simple-503-header-body
+                          expression: >-
+                            { "status": 503, "error": "Serviço bancário
+                            indisponível",
+                              ${exchangeProperty.errorRoute}, "exception":
+                              "${exception.message}" }
+                  - setHeader:
+                      id: setHeader-503-header
+                      disabled: true
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-503-header-header
+                          expression: "503"
+              - id: when-503-exception-alt
+                description: statusCode (401)
+                disabled: false
+                expression:
+                  simple:
+                    id: simple-503-exception-alt
+                    expression: ${exception.statusCode} == 401
+                steps:
+                  - setBody:
+                      id: setBody-503-exception-alt
+                      expression:
+                        simple:
+                          id: simple-503-exception-alt-body
+                          expression: >-
+                            { "status": 401, "error": "Erro alternativo: Serviço
+                            bancário indisponível ou conexão com o banco
+                            inválida, reveja dados banco no Workspace",
+                              ${exchangeProperty.errorRoute}, "exception":
+                              "${exception.message}" }
+                  - setHeader:
+                      id: setHeader-503-exception-alt
+                      disabled: true
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-503-exception-alt-header
+                          expression: "503"
+              - id: when-503-header-alt
+                description: Camel = 422
+                disabled: false
+                expression:
+                  simple:
+                    id: simple-503-header-alt
+                    expression: ${header.CamelHttpResponseCode} == 422
+                steps:
+                  - setBody:
+                      id: setBody-503-header-alt
+                      expression:
+                        simple:
+                          id: simple-503-header-alt-body
+                          expression: >-
+                            { "status": 422, "error": "Erro alternativo: Serviço
+                            bancário indisponível",
+                              ${exchangeProperty.errorRoute}, "exception":
+                              "${exception.message}" }
+                  - setHeader:
+                      id: setHeader-503-header-alt
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-503-header-alt-header
+                          expression: "503"
+              - id: when-422
+                description: statusCode (422)
+                expression:
+                  simple:
+                    id: simple-422
+                    expression: ${exception.statusCode} == 422
+                steps:
+                  - setBody:
+                      id: setBody-422
+                      expression:
+                        simple:
+                          id: simple-422-body
+                          expression: |
+                            { "status": 422, "error": "NOT_FOUND",
+                              ${exchangeProperty.errorRoute}, "exception":
+                              ${exception.getResponseBody()} }
+                  - setHeader:
+                      id: setHeader-422
+                      disabled: true
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-422-header
+                          expression: "400"
+              - id: when-423
+                description: statusCode (600)
+                expression:
+                  simple:
+                    id: simple-423
+                    expression: ${header.CamelHttpResponseCode} == 600
+                steps:
+                  - setBody:
+                      id: setBody-423
+                      expression:
+                        simple:
+                          id: simple-423-body
+                          expression: |
+                            { "status": 600, ${exchangeProperty.errorRoute} }
+                  - setHeader:
+                      id: setHeader-423
+                      disabled: true
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-423-header
+                          expression: "400"
+              - id: when-23c2
+                description: statusCode (601) Regra
+                expression:
+                  simple:
+                    id: simple-7a9d
+                    expression: ${header.CamelHttpResponseCode} == 601
+                steps:
+                  - setBody:
+                      id: setBody-bbcd
+                      expression:
+                        simple:
+                          id: simple-3063
+                          expression: "{ \"status\": 601, ${exchangeProperty.errorRoute} }"
+            otherwise:
+              id: otherwise-6391
+              description: Nao identificado
+              steps:
+                - setBody:
+                    id: setBody-0283
+                    expression:
+                      simple:
+                        id: simple-7e3e
+                        expression: >-
+                          { "status": 500, "error": "Falha interna ou não
+                          mapeada",
+                            ${exchangeProperty.errorRoute}, "exception": ${exception.getResponseBody()}  }
+                - setHeader:
+                    id: setHeader-cb7d
+                    disabled: true
+                    name: CamelHttpResponseCode
+                    expression:
+                      simple:
+                        id: simple-aedb
+                        expression: "500"
+        - log:
+            id: log-5d62
+            description: "# STATUS 200 NAGENT COLOCA LIXO #"
+            message: "# STATUS 200 NAGENT COLOCA LIXO #"
+        - choice:
+            id: choice-f959
+            when:
+              - id: when-2178
+                expression:
+                  simple:
+                    id: simple-1a46
+                    expression: ${exchangeProperty.tempoEnvio} != null
+                steps:
+                  - log:
+                      id: log-fc7e
+                      description: "# EXISTE TEMPO ENVIO #"
+                      message: "# EXISTE TEMPO ENVIO # ${exchangeProperty.tempoEnvio}"
+            otherwise:
+              id: otherwise-95e6
+              steps:
+                - log:
+                    id: log-961a
+                    description: "# NAO EXISTE TEMPO ENVIO #"
+                    message: "# NAO EXISTE TEMPO ENVIO #"
+                - setProperty:
+                    id: setProperty-c6ce
+                    description: "Var: tempoEnvio"
+                    name: tempoEnvio
+                    expression:
+                      groovy:
+                        id: groovy-2b11
+                        expression: >-
+                          def startRaw =
+                          exchange.getProperty('tempoInicioEnvio')
+
+                          if (startRaw == null || startRaw == '') {
+                            return -1
+                          }
+
+                          try {
+                            Long start = startRaw
+                            long now = System.currentTimeMillis()
+                            long diff = now - start
+                            return diff
+                          } catch (Exception e) {
+                            return -2
+                          }
+        - setBody:
+            id: setBody-1ba5
+            expression:
+              groovy:
+                id: groovy-0922
+                expression: |
+                  def bodyText = exchange.getIn().getBody(String.class)
+                  if (bodyText != null && bodyText.endsWith("}")) {
+                      def tempo = exchange.getProperty("tempoAutenticacao")
+                      def tempoEnvio = exchange.getProperty("tempoEnvio")
+                      def correlationId = exchange.getProperty("correlationId")
+                      bodyText = bodyText.substring(0, bodyText.length() - 1) +
+                          ", \"tempoAutenticacao\": ${tempo}, \"tempoEnvio\": ${tempoEnvio}, \"correlationid\": \"${correlationId}\" }"
+                  }
+                  return bodyText
+        - log:
+            id: log-2513
+            description: "# HOUVE ERRO #"
+            message: "# HOUVE ERRO # ${body}"
+        - setHeader:
+            id: setHeader-1a01
+            disabled: false
+            name: CamelHttpResponseCode
+            expression:
+              simple:
+                id: simple-abc6
+                expression: "200"
+        - stop:
+            id: stop-09e3

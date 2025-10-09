@@ -1,0 +1,334 @@
+- route:
+    id: route-prepara-payload-banco
+    nodePrefixId: route-prepara-payload-banco
+    from:
+      id: from-route-busta-redis-token
+      uri: direct
+      parameters:
+        name: route-prepara-payload-banco
+      steps:
+        - log:
+            id: log-05db
+            description: "# route-prepara-payload-banco #"
+            message: "# route-prepara-payload-banco #"
+        - setBody:
+            id: setBody-96ff
+            expression:
+              simple:
+                id: simple-b02e
+                expression: ${exchangeProperty.dadosRecebidos}
+        - log:
+            id: log-88be
+            description: "# BODY RECEBIDO #"
+            disabled: true
+            message: "# BODY RECEBIDO ${body}"
+        - doTry:
+            id: doTry-fe70
+            doCatch:
+              - id: doCatch-61ed
+                exception:
+                  - java.lang.Exception
+                steps:
+                  - log:
+                      id: log-2033
+                      description: "# ERRO AO MONTAR PAYLOAD #"
+                      message: "# ERRO AO MONTAR PAYLOAD #"
+                  - setHeader:
+                      id: setHeader-6f81
+                      name: CamelHttpResponseCode
+                      expression:
+                        simple:
+                          id: simple-9e8d
+                          expression: "400"
+                  - setProperty:
+                      id: setProperty-5654
+                      description: "Var: errorRoute"
+                      name: errorRoute
+                      expression:
+                        simple:
+                          id: simple-4952
+                          expression: >-
+                            "informativo":"Erro ao montar payload para envio ao
+                            banco","route":"route-prepara-payload-banco","erro":"${exception.message
+                            ?: "Erro desconhecido"}"
+                  - log:
+                      id: log-22c5
+                      description: "# DRIRECT ROTA DE TRATA ERRO #"
+                      message: "# DRIRECT ROTA DE TRATA ERRO #"
+                  - to:
+                      id: to-f7e3
+                      uri: direct
+                      parameters:
+                        name: route-trata-erros
+                  - stop:
+                      id: stop-903d
+            steps:
+              - log:
+                  id: log-65f5
+                  disabled: true
+                  message: ${body}
+              - choice:
+                  id: choice-5fbf
+                  when:
+                    - id: when-aa48
+                      expression:
+                        simple:
+                          id: simple-cad6
+                          expression: ${exchangeProperty.rota[tipo]} !=  "consulta"
+                      steps:
+                        - log:
+                            id: log-9017
+                            description: "# MONTA PAYLOAD JAVA #"
+                            message: "# MONTA PAYLOAD JAVA #"
+                        - bean:
+                            id: bean-4a67
+                            description: "Bean: MontaJsonPayload"
+                            ref: montaPayload
+                            method: montarPayload
+                        - log:
+                            id: log-6452
+                            description: "# VERIFICA ERRO EM GER. PAYLOAD #"
+                            message: "# VERIFICA ERRO EM GER. PAYLOAD #"
+                        - choice:
+                            id: choice-4afe
+                            when:
+                              - id: when-4ac5
+                                expression:
+                                  simple:
+                                    id: simple-833c
+                                    expression: ${body} contains '"payload":true'
+                                steps:
+                                  - log:
+                                      id: log-0e02
+                                      description: "# ERRO MONTAGEM PAYLOAD JAVA #"
+                                      message: "# ERRO MONTAGEM PAYLOAD JAVA #"
+                                  - log:
+                                      id: log-dba0
+                                      description: " # FORCA ERRO NO BODY #"
+                                      message: " # FORCA ERRO NO BODY: ${body}"
+                                  - setProperty:
+                                      id: setProperty-124b
+                                      description: "Var: errorRoute"
+                                      name: errorRoute
+                                      expression:
+                                        simple:
+                                          id: simple-a7a1
+                                          expression: >-
+                                            "route":"route-prepara-payload-banco",
+                                            "informativo": ${body}
+                                  - setHeader:
+                                      id: setHeader-fb65
+                                      name: CamelHttpResponseCode
+                                      expression:
+                                        simple:
+                                          id: simple-a704
+                                          expression: "400"
+                                  - to:
+                                      id: to-58a9
+                                      uri: direct
+                                      parameters:
+                                        name: route-trata-erros
+                                  - stop:
+                                      id: stop-e322
+                              - id: when-ad42
+                                expression:
+                                  simple:
+                                    id: simple-8715
+                                    expression: ${body} contains '"regra":true'
+                                steps:
+                                  - log:
+                                      id: log-47b7
+                                      description: "# ERRO MONT. PAYLOAD REGRA #"
+                                      message: "# ERRO MONT. PAYLOAD REGRA #"
+                                  - setProperty:
+                                      id: setProperty-0a35
+                                      description: "Var: errorRoute"
+                                      name: errorRoute
+                                      expression:
+                                        simple:
+                                          id: simple-0617
+                                          expression: >-
+                                            "route":"route-prepara-payload-banco",
+                                            "informativo": ${body}
+                                  - setHeader:
+                                      id: setHeader-7273
+                                      name: CamelHttpResponseCode
+                                      expression:
+                                        simple:
+                                          id: simple-e995
+                                          expression: "601"
+                                  - to:
+                                      id: to-0460
+                                      uri: direct
+                                      parameters:
+                                        name: route-trata-erros
+                                  - stop:
+                                      id: stop-9171
+                            otherwise:
+                              id: otherwise-1a96
+                              steps:
+                                - log:
+                                    id: log-024d
+                                    description: " # PAYLOAD SEM ERROS #"
+                                    message: " # PAYLOAD SEM ERROS #"
+                  otherwise:
+                    id: otherwise-b89f
+                    steps:
+                      - log:
+                          id: log-a64e
+                          description: "# BUSCA BOLETO UNICRED #"
+                          message: "# BUSCA BOLETO UNICRED #"
+                      - to:
+                          id: to-cee0
+                          uri: direct
+                          parameters:
+                            name: route-consulta-unicred
+                      - stop:
+                          id: stop-3db0
+              - log:
+                  id: log-a1c3
+                  description: "# PAYLOAD MONTADO SEM ERROS #"
+                  message: "# PAYLOAD MONTADO SEM ERROS #"
+        - log:
+            id: log-8139
+            description: "# PAYLOAD #"
+            disabled: true
+            message: "# PAYLOAD # ${body}"
+        - setProperty:
+            id: setProperty-c7d8
+            description: "Body: payloadEnvio"
+            name: payloadEnvio
+            expression:
+              simple:
+                id: simple-a9b2
+                expression: ${body}
+        - choice:
+            id: choice-0fe2
+            when:
+              - id: when-a85f
+                description: bancoArquivoCertificado!= ""
+                expression:
+                  simple:
+                    id: simple-a692
+                    expression: >-
+                      ${exchangeProperty.bancoPayloadDados[certificate]} != null
+                      && ${exchangeProperty.bancoPayloadDados[certificate]} !=
+                      ""
+                steps:
+                  - log:
+                      id: log-4635
+                      description: "# BUSCA ARQ CERT. JAVA #"
+                      message: "# BUSCA ARQ CERT. JAVA #"
+                  - bean:
+                      id: bean-6f72
+                      description: "Bean: buscaArquivoCertificado"
+                      ref: certificadoArquivo
+                      method: buscarArquivoCertificado
+                  - setProperty:
+                      id: setProperty-08bc
+                      description: "SSL: addCertificado"
+                      name: sslBeanId
+                      expression:
+                        simple:
+                          id: simple-586c
+                          expression: ${body}
+            otherwise:
+              id: otherwise-c99e
+              steps:
+                - log:
+                    id: log-656f
+                    description: "# NAO USA CERTIFICADO PARA ENVIO AO BANCO #"
+                    message: "# NAO USA CERTIFICADO PARA ENVIO AO BANCO #"
+        - log:
+            id: log-2197
+            description: "# ROTA PARA ENVIO #"
+            message: "# ROTA PARA ENVIO: ${exchangeProperty.rota[codigoBanco]}"
+        - choice:
+            id: choice-ec60
+            when:
+              - id: when-b0f4
+                description: BB (1)
+                expression:
+                  simple:
+                    id: simple-8b31
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 1
+                steps:
+                  - to:
+                      id: to-1155
+                      uri: direct
+                      parameters:
+                        name: route-cobranca-bb
+              - id: when-1254
+                description: Santander (33)
+                expression:
+                  simple:
+                    id: simple-a57d
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 33
+                steps:
+                  - to:
+                      id: to-8e67
+                      uri: direct
+                      parameters:
+                        name: route-cobranca-santander
+              - id: when-dd24
+                description: Itau (341)
+                expression:
+                  simple:
+                    id: simple-8a5c
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 341
+                steps:
+                  - to:
+                      id: to-5036
+                      uri: direct
+                      parameters:
+                        name: route-cobranca-itau
+              - id: when-579f
+                description: Sicredi (748)
+                expression:
+                  simple:
+                    id: simple-4d54
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 748
+                steps:
+                  - to:
+                      id: to-acce
+                      uri: direct
+                      parameters:
+                        name: route-cobranca-sicredi
+              - id: when-1cc5
+                description: Unicred (136)
+                expression:
+                  simple:
+                    id: simple-fa4b
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 136
+                steps:
+                  - to:
+                      id: to-068a
+                      uri: direct
+                      parameters:
+                        name: route-cobranca-unicred
+              - id: when-020f
+                description: Sicoob (756)
+                expression:
+                  simple:
+                    id: simple-48b6
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 756
+                steps:
+                  - to:
+                      id: to-79fd
+                      uri: direct
+                      parameters:
+                        name: route-cobranca-sicoob
+              - id: when-7f96
+                description: Safra (422)
+                expression:
+                  simple:
+                    id: simple-b5aa
+                    expression: ${exchangeProperty.rota[codigoBanco]} == 422
+                steps:
+                  - to:
+                      id: to-dec4
+                      uri: direct
+                      parameters:
+                        name: route-cobranca-safra
+            otherwise:
+              id: otherwise-cb94

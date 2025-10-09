@@ -1,0 +1,182 @@
+- route:
+    id: route-cobranca-santander
+    nodePrefixId: route-ecf
+    from:
+      id: from-route-cobranca-santander
+      uri: direct
+      parameters:
+        name: route-cobranca-santander
+      steps:
+        - log:
+            id: log-4eef
+            description: "# ROUTE-route-cobranca-santander #"
+            message: "# ROUTE-route-cobranca-santander #"
+        - choice:
+            id: choice-2d52
+            when:
+              - id: when-4d35
+                description: Existe Workspace
+                expression:
+                  simple:
+                    id: simple-e468
+                    expression: >-
+                      ${exchangeProperty.bancoPayloadDados[customAttributes][workspace]}
+                      != null &&
+                      ${exchangeProperty.bancoPayloadDados[customAttributes][workspace]}
+                      != ''
+                steps:
+                  - log:
+                      id: log-018e
+                      description: "# ENVIO AO SANTANDER #"
+                      message: "# ENVIO AO SANTANDER #"
+                  - setProperty:
+                      id: setProperty-bdc8
+                      description: bancoURL
+                      name: bancoURL
+                      expression:
+                        simple:
+                          id: simple-0e37
+                          expression: >-
+                            {{santander_url}}/${exchangeProperty.bancoPayloadDados[customAttributes][workspace]}/bank_slips
+                  - setHeaders:
+                      id: setHeaders-90f8
+                      headers:
+                        - id: setHeader-ba73
+                          name: X-Application-Key
+                          expression:
+                            simple:
+                              id: simple-847a
+                              expression: ${exchangeProperty.bancoPayloadDados[clientId]}
+                        - id: setHeader-bcfe
+                          name: Authorization
+                          expression:
+                            simple:
+                              id: simple-674c
+                              expression: Bearer ${exchangeProperty[tokenBancario]}
+                  - setBody:
+                      id: setBody-6cf5
+                      disabled: false
+                      expression:
+                        simple:
+                          id: simple-1919
+                          expression: ${exchangeProperty.payloadEnvio}
+                  - log:
+                      id: log-d431
+                      description: "# ENVIO AO SANTANDER #"
+                      disabled: true
+                      message: "# ENVIO AO SANTANDER # ${body}"
+                  - log:
+                      id: log-abf6
+                      description: "# ssBeanId"
+                      message: "# ssBeanId: ${exchangeProperty.sslBeanId}"
+                  - log:
+                      id: log-ea0b
+                      description: "# URL # "
+                      message: "# URL # ${exchangeProperty.bancoURL}"
+                  - doTry:
+                      id: doTry-251b
+                      doCatch:
+                        - id: doCatch-bead
+                          exception:
+                            - java.lang.Exception
+                          steps:
+                            - setHeader:
+                                id: setHeader-3a7f
+                                name: CamelHttpResponseCode
+                                expression:
+                                  simple:
+                                    id: simple-f741
+                                    expression: "400"
+                            - setProperty:
+                                id: setProperty-7397
+                                description: "var: errorRoute"
+                                name: errorRoute
+                                expression:
+                                  simple:
+                                    id: simple-9619
+                                    expression: >-
+                                      "informativo": "Erro no envio de payload",
+                                      "route": "route-cobranca-santander"
+                            - to:
+                                id: to-cdac
+                                uri: direct
+                                parameters:
+                                  name: route-trata-erros
+                      steps:
+                        - choice:
+                            id: choice-926d
+                            when:
+                              - id: when-66d7
+                                description: Registrar
+                                expression:
+                                  simple:
+                                    id: simple-17de
+                                    expression: >-
+                                      ${exchangeProperty.rota[tipo]} ==
+                                      'registrar'
+                                steps:
+                                  - log:
+                                      id: log-151e
+                                      description: "# SANT REGISTRAR POST #"
+                                      message: "# REGISTRAR POST #"
+                                  - toD:
+                                      id: to-69a2
+                                      uri: https
+                                      parameters:
+                                        bridgeEndpoint: true
+                                        httpMethod: POST
+                                        logHttpActivity: false
+                                        httpUri: >-
+                                          {{santander_url}}/${exchangeProperty.bancoPayloadDados[customAttributes][workspace]}/bank_slips
+                                        sslContextParameters: "#${exchangeProperty.sslBeanId}"
+                                  - setHeader:
+                                      id: setHeader-979c
+                                      name: CamelHttpResponseCode
+                                      expression:
+                                        simple:
+                                          id: simple-2ecf
+                                          expression: "200"
+                            otherwise:
+                              id: otherwise-c98c
+                              steps:
+                                - log:
+                                    id: log-4a6d
+                                    description: "# SANT PATCH # "
+                                    message: "# SANT PATCH # "
+                                - toD:
+                                    id: to-1645
+                                    uri: https
+                                    parameters:
+                                      httpUri: >-
+                                        {{santander_url}}/${exchangeProperty.bancoPayloadDados[customAttributes][workspace]}/bank_slips
+                                      bridgeEndpoint: true
+                                      httpMethod: PATCH
+                                      logHttpActivity: false
+                                      sslContextParameters: "#${exchangeProperty.sslBeanId}"
+            otherwise:
+              id: otherwise-8149
+              steps:
+                - setHeader:
+                    id: setHeader-ce26
+                    name: CamelHttpResponseCode
+                    expression:
+                      simple:
+                        id: simple-3c63
+                        expression: "400"
+                - setProperty:
+                    id: setProperty-66f6
+                    description: "Var: errorRoute"
+                    name: errorRoute
+                    expression:
+                      simple:
+                        id: simple-4483
+                        expression: >-
+                          "informativo": "Workspace não cadastrada no
+                          Workspace", route: "route-cobranca-santander"
+                - to:
+                    id: to-76b5
+                    uri: direct
+                    parameters:
+                      name: route-trata-erros
+                - stop:
+                    id: stop-cc68
