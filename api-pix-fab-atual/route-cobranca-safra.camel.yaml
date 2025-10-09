@@ -83,14 +83,39 @@
                             description: "# SAFRA BODY ENVIO #"
                             disabled: true
                             message: "# SAFRA BODY ENVIO # ${body}"
-                        - toD:
-                            id: to-8679
-                            uri: https
-                            parameters:
-                              httpUri: ${exchangeProperty.bancoURL}
-                              bridgeEndpoint: true
-                              httpMethod: POST
-                              logHttpActivity: false
+                        - choice:
+                            id: choice-4dec
+                            when:
+                              - id: when-1314
+                                description: COM CERTIFICADO
+                                expression:
+                                  simple:
+                                    id: simple-680a
+                                    expression: >-
+                                      ${exchangeProperty.securityContext} !=
+                                      null &&
+                                      ${exchangeProperty.securityContext.trim}
+                                      != ''
+                                steps:
+                                  - toD:
+                                      id: to-8679
+                                      uri: https
+                                      parameters:
+                                        httpUri: ${exchangeProperty.bancoURL}
+                                        bridgeEndpoint: true
+                                        httpMethod: POST
+                                        logHttpActivity: false
+                                        sslContextParameters: "#${exchangeProperty.sslBeanId}"
+                            otherwise:
+                              id: otherwise-dd26
+                              steps:
+                                - toD:
+                                    id: to-a90a
+                                    uri: https
+                                    parameters:
+                                      httpUri: ${exchangeProperty.bancoURL}
+                                      bridgeEndpoint: true
+                                      httpMethod: POST
                         - unmarshal:
                             id: unmarshal-25b2
                             json:

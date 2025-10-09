@@ -93,14 +93,39 @@
                               simple:
                                 id: simple-e6e1
                                 expression: ${exchangeProperty.bancoURL}
-                        - toD:
-                            id: to-f030
-                            uri: https
-                            parameters:
-                              httpUri: ${exchangeProperty.urlRegistroBoleto}
-                              bridgeEndpoint: true
-                              httpMethod: POST
-                              logHttpActivity: false
+                        - choice:
+                            id: choice-28dd
+                            when:
+                              - id: when-91e6
+                                description: COM CERTIFICADO
+                                expression:
+                                  simple:
+                                    id: simple-508c
+                                    expression: >-
+                                      ${exchangeProperty.securityContext} !=
+                                      null &&
+                                      ${exchangeProperty.securityContext.trim}
+                                      != ''
+                                steps:
+                                  - toD:
+                                      id: to-f030
+                                      uri: https
+                                      parameters:
+                                        httpUri: ${exchangeProperty.urlRegistroBoleto}
+                                        bridgeEndpoint: true
+                                        httpMethod: POST
+                                        logHttpActivity: false
+                                        sslContextParameters: "#${exchangeProperty.sslBeanId}"
+                            otherwise:
+                              id: otherwise-2b12
+                              steps:
+                                - toD:
+                                    id: to-bc5a
+                                    uri: https
+                                    parameters:
+                                      httpUri: ${exchangeProperty.urlRegistroBoleto}
+                                      bridgeEndpoint: true
+                                      httpMethod: POST
                         - stop:
                             id: stop-e85f
                     - id: when-e594
@@ -126,14 +151,39 @@
                               # SICOOB ENVIA ALTERACAO #
                               ${exchangeProperty.urlRegistroBoleto}
                             logName: "# SICOOB ENVIA ALTERACAO #"
-                        - toD:
-                            id: to-b52b
-                            disabled: false
-                            uri: https
-                            parameters:
-                              bridgeEndpoint: true
-                              httpMethod: PATCH
-                              httpUri: ${exchangeProperty.urlRegistroBoleto}
+                        - choice:
+                            id: choice-69a5
+                            when:
+                              - id: when-dffd
+                                description: COM CERTIFICADO
+                                expression:
+                                  simple:
+                                    id: simple-d9e8
+                                    expression: >-
+                                      ${exchangeProperty.securityContext} !=
+                                      null &&
+                                      ${exchangeProperty.securityContext.trim}
+                                      != ''
+                                steps:
+                                  - toD:
+                                      id: to-b52b
+                                      disabled: false
+                                      uri: https
+                                      parameters:
+                                        bridgeEndpoint: true
+                                        httpMethod: PATCH
+                                        httpUri: ${exchangeProperty.urlRegistroBoleto}
+                                        sslContextParameters: "#${exchangeProperty.sslBeanId}"
+                            otherwise:
+                              id: otherwise-9d1f
+                              steps:
+                                - toD:
+                                    id: to-c241
+                                    uri: https
+                                    parameters:
+                                      httpUri: ${exchangeProperty.urlRegistroBoleto}
+                                      bridgeEndpoint: true
+                                      httpMethod: PATCH
                     - id: when-49ab
                       description: Cancelar
                       expression:
@@ -156,13 +206,38 @@
                             message: >-
                               # SICOOB ENVIA CANCELAR #
                               ${exchangeProperty.urlRegistroBoleto}
-                        - toD:
-                            id: to-6514
-                            uri: https
-                            parameters:
-                              httpUri: ${exchangeProperty.urlRegistroBoleto}
-                              httpMethod: POST
-                              bridgeEndpoint: true
+                        - choice:
+                            id: choice-d3f4
+                            when:
+                              - id: when-7794
+                                description: COM CERTIFICADO
+                                expression:
+                                  simple:
+                                    id: simple-8fed
+                                    expression: >-
+                                      ${exchangeProperty.securityContext} !=
+                                      null &&
+                                      ${exchangeProperty.securityContext.trim}
+                                      != ''
+                                steps:
+                                  - toD:
+                                      id: to-6514
+                                      uri: https
+                                      parameters:
+                                        httpUri: ${exchangeProperty.urlRegistroBoleto}
+                                        httpMethod: POST
+                                        bridgeEndpoint: true
+                                        sslContextParameters: "#${exchangeProperty.sslBeanId}"
+                            otherwise:
+                              id: otherwise-6d4e
+                              steps:
+                                - toD:
+                                    id: to-3b4c
+                                    uri: https
+                                    parameters:
+                                      httpUri: ${exchangeProperty.urlRegistroBoleto}
+                                      bridgeEndpoint: true
+                                      httpMethod: POST
                   otherwise:
                     id: otherwise-1066
               - choice:

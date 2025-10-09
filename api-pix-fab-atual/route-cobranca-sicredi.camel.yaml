@@ -101,14 +101,39 @@
                             id: log-c83f
                             description: "# ROTA SICREDI REGISTRAR #"
                             message: "# ROTA SICREDI REGISTRAR #"
-                        - toD:
-                            id: to-5df9
-                            uri: https
-                            parameters:
-                              httpUri: ${exchangeProperty.bancoURL}
-                              bridgeEndpoint: true
-                              httpMethod: POST
-                              logHttpActivity: false
+                        - choice:
+                            id: choice-4760
+                            when:
+                              - id: when-5d47
+                                description: COM REGISTRO
+                                expression:
+                                  simple:
+                                    id: simple-f617
+                                    expression: >-
+                                      ${exchangeProperty.securityContext} !=
+                                      null &&
+                                      ${exchangeProperty.securityContext.trim}
+                                      != ''
+                                steps:
+                                  - toD:
+                                      id: to-5df9
+                                      uri: https
+                                      parameters:
+                                        httpUri: ${exchangeProperty.bancoURL}
+                                        bridgeEndpoint: true
+                                        httpMethod: POST
+                                        logHttpActivity: false
+                                        sslContextParameters: "#${exchangeProperty.sslBeanId}"
+                            otherwise:
+                              id: otherwise-8523
+                              steps:
+                                - toD:
+                                    id: to-f212
+                                    uri: https
+                                    parameters:
+                                      httpUri: ${exchangeProperty.bancoURL}
+                                      bridgeEndpoint: true
+                                      httpMethod: POST
                     - id: when-cda4
                       description: Alterar
                       expression:
@@ -159,15 +184,40 @@
                                         id: simple-ad49
                                         expression: >-
                                           ${exchangeProperty.bancoURL}/${exchangeProperty.boletoNossoNumero}/desconto
-                        - toD:
-                            id: to-1509
-                            disabled: false
-                            uri: https
-                            parameters:
-                              httpUri: ${exchangeProperty.bancoURL}
-                              bridgeEndpoint: true
-                              httpMethod: PATCH
-                              logHttpActivity: false
+                        - choice:
+                            id: choice-afb3
+                            when:
+                              - id: when-6d0a
+                                description: COM CERTIFICADO
+                                expression:
+                                  simple:
+                                    id: simple-4c71
+                                    expression: >-
+                                      ${exchangeProperty.securityContext} !=
+                                      null &&
+                                      ${exchangeProperty.securityContext.trim}
+                                      != ''
+                                steps:
+                                  - toD:
+                                      id: to-1509
+                                      disabled: false
+                                      uri: https
+                                      parameters:
+                                        httpUri: ${exchangeProperty.bancoURL}
+                                        bridgeEndpoint: true
+                                        httpMethod: PATCH
+                                        logHttpActivity: false
+                                        sslContextParameters: "#${exchangeProperty.sslBeanId}"
+                            otherwise:
+                              id: otherwise-3708
+                              steps:
+                                - toD:
+                                    id: to-9e76
+                                    uri: https
+                                    parameters:
+                                      httpUri: ${exchangeProperty.bancoURL}
+                                      bridgeEndpoint: true
+                                      httpMethod: PATCH
                     - id: when-3a18
                       description: Cancelar
                       expression:
@@ -190,14 +240,39 @@
                             message: >-
                               # CANCELAR SICREDI # ${body}
                               ${exchangeProperty.bancoURL}
-                        - toD:
-                            id: to-918d
-                            uri: https
-                            parameters:
-                              httpUri: ${exchangeProperty.bancoURL}
-                              bridgeEndpoint: true
-                              httpMethod: PATCH
-                              logHttpActivity: false
+                        - choice:
+                            id: choice-02cb
+                            when:
+                              - id: when-dcc5
+                                description: COM REGISTRO
+                                expression:
+                                  simple:
+                                    id: simple-aa2a
+                                    expression: >-
+                                      ${exchangeProperty.securityContext} !=
+                                      null &&
+                                      ${exchangeProperty.securityContext.trim}
+                                      != ''
+                                steps:
+                                  - toD:
+                                      id: to-918d
+                                      uri: https
+                                      parameters:
+                                        httpUri: ${exchangeProperty.bancoURL}
+                                        bridgeEndpoint: true
+                                        httpMethod: PATCH
+                                        logHttpActivity: false
+                                        sslContextParameters: "#${exchangeProperty.sslBeanId}"
+                            otherwise:
+                              id: otherwise-2c64
+                              steps:
+                                - toD:
+                                    id: to-1f00
+                                    uri: https
+                                    parameters:
+                                      httpUri: ${exchangeProperty.bancoURL}
+                                      bridgeEndpoint: true
+                                      httpMethod: PATCH
                   otherwise:
                     id: otherwise-1d9e
                     steps:
