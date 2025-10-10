@@ -82,6 +82,7 @@
                         - log:
                             id: log-ea73
                             description: "# REGISTRO BOLETO BB #"
+                            disabled: true
                             message: "# REGISTRO BOLETO BB # ${body}"
                         - choice:
                             id: choice-6a6f
@@ -137,6 +138,7 @@
                         - log:
                             id: log-5560
                             description: "# ALTERAR BOLETO BB #"
+                            disabled: true
                             message: "# ALTERAR BOLETO BB #"
                         - choice:
                             id: choice-1fc6
@@ -193,6 +195,7 @@
                         - log:
                             id: log-b4b1
                             description: "# CANCELAR BOLETO BB #"
+                            disabled: true
                             message: "# CANCELAR BOLETO BB # ${body}"
                         - choice:
                             id: choice-260e
