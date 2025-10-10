@@ -82,7 +82,7 @@
                         - log:
                             id: log-ea73
                             description: "# REGISTRO BOLETO BB #"
-                            message: "# REGISTRO BOLETO BB #"
+                            message: "# REGISTRO BOLETO BB # ${body}"
                         - choice:
                             id: choice-6a6f
                             when:
@@ -137,10 +137,7 @@
                         - log:
                             id: log-5560
                             description: "# ALTERAR BOLETO BB #"
-                            message: >-
-                              # ALTERAR BOLETO BB:
-                              ${exchangeProperty.bancoURL}/${exchangeProperty.boletoNossoNumero} 
-                              ${body}
+                            message: "# ALTERAR BOLETO BB #"
                         - choice:
                             id: choice-1fc6
                             when:
@@ -196,7 +193,7 @@
                         - log:
                             id: log-b4b1
                             description: "# CANCELAR BOLETO BB #"
-                            message: "# CANCELAR BOLETO BB #"
+                            message: "# CANCELAR BOLETO BB # ${body}"
                         - choice:
                             id: choice-260e
                             when:
