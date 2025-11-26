@@ -5,6 +5,7 @@
         path: /soap-api
         to: direct:soap-route
         consumes: application/xml
+        produces: application/xml
 - route:
     id: route-1297
     description: soap-router
