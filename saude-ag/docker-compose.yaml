@@ -1,0 +1,8 @@
+services:
+  saude-ag:
+    image: saude-ag
+    restart: always
+    ports:
+      - "8085:8080"
+    networks:
+      - karavan

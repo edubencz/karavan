@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:tns="http://example.com/BookService/"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                  targetNamespace="http://example.com/BookService/">
+
+    <!-- Types definition: defines the data structures used in messages -->
+    <wsdl:types>
+        <xsd:schema targetNamespace="http://example.com/BookService/">
+            <xsd:element name="GetBookRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="bookId" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="GetBookResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="title" type="xsd:string"/>
+                        <xsd:element name="author" type="xsd:string"/>
+                        <xsd:element name="isbn" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:schema>
+    </wsdl:types>
+
+    <!-- Message definitions: defines the input and output messages for operations -->
+    <wsdl:message name="GetBookInput">
+        <wsdl:part name="parameters" element="tns:GetBookRequest"/>
+    </wsdl:message>
+    <wsdl:message name="GetBookOutput">
+        <wsdl:part name="parameters" element="tns:GetBookResponse"/>
+    </wsdl:message>
+
+    <!-- PortType definition: defines the operations offered by the service -->
+    <wsdl:portType name="BookServicePortType">
+        <wsdl:operation name="GetBook">
+            <wsdl:input message="tns:GetBookInput"/>
+            <wsdl:output message="tns:GetBookOutput"/>
+        </wsdl:operation>
+    </wsdl:portType>
+
+    <!-- Binding definition: specifies the protocol and data format for the service -->
+    <wsdl:binding name="BookServiceSoapBinding" type="tns:BookServicePortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="GetBook">
+            <soap:operation soapAction="http://example.com/BookService/GetBook"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+
+    <!-- Service definition: defines the location of the service -->
+    <wsdl:service name="BookService">
+        <wsdl:port name="BookServicePort" binding="tns:BookServiceSoapBinding">
+            <soap:address location="http://example.com/BookService/"/>
+        </wsdl:port>
+    </wsdl:service>
+
+</wsdl:definitions>
