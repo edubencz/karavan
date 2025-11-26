@@ -1,14 +1,1 @@
-- route:
-    id: route-a007
-    nodePrefixId: route-3f4
-    from:
-      id: from-49d7
-      uri: cxf
-      parameters:
-        dataFormat: PAYLOAD
-        wsdlURL: api.wsdl
-        address: api
-      steps:
-        - log:
-            id: log-c2db
-            message: ${body}
+[]
