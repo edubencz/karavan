@@ -131,13 +131,34 @@
                             expression:
                               simple:
                                 id: simple-2e4d
-                                expression: "INSERT INTO movimentacao\r\n(id, tipo, descricao, valor, moeda, origem, destino, status, data_criacao, referencia_externa)\r\nVALUES (\r\n'${exchangeId}',\r\n'${variable.tipo}',\r\n'${variable.descricao}',\r\n${variable.valor},\r\n'${variable.moeda}',\r\n'${variable.origem}',\r\n'${variable.destino}',\r\n'${variable.status}',\r\nCURRENT_TIMESTAMP,\r\n'${variable.referencia}'\r\n)"
-                        - to:
-                            id: to-14cc
-                            description: access_db
-                            uri: direct
+                                expression: >-
+                                  INSERT INTO movimentacao (id, tipo, descricao,
+                                  valor, moeda, origem, destino, status,
+                                  data_criacao, referencia_externa) VALUES
+                                  ('${exchangeId}', '${variable.tipo}',
+                                  '${variable.descricao}', ${variable.valor},
+                                  '${variable.moeda}', '${variable.origem}',
+                                  '${variable.destino}', '${variable.status}',
+                                  CURRENT_TIMESTAMP, '${variable.referencia}' )
+                        - setBody:
+                            id: setBody-d1e6
+                            expression:
+                              simple:
+                                id: simple-2867
+                                expression: >-
+                                  INSERT INTO movimentacao (id, tipo, descricao,
+                                  valor, moeda, origem, destino, status,
+                                  data_criacao, referencia_externa) VALUES
+                                  ('${exchangeId}', '${variable.tipo}',
+                                  '${variable.descricao}', ${variable.valor},
+                                  '${variable.moeda}', '${variable.origem}',
+                                  '${variable.destino}', '${variable.status}',
+                                  CURRENT_TIMESTAMP, '${variable.referencia}' )
+                        - toD:
+                            id: to-600f
+                            uri: jdbc
                             parameters:
-                              name: access_db
+                              dataSourceName: dataSource
                         - stop:
                             id: stop-f0ec
             otherwise:
@@ -213,10 +234,3 @@
             id: marshal-ca05
             jacksonXml:
               id: jacksonXml-d1f9
-- beans:
-    - name: dataSource
-      type: org.h2.jdbcx.JdbcDataSource
-      properties:
-        uRL: jdbc:h2:mem:mockdb;DB_CLOSE_DELAY=-1
-        user: sa
-        password: ""
