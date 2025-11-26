@@ -8,7 +8,7 @@
       steps:
         - log:
             id: log-f5e0
-            message: "Recebido payload: ${body}"
+            message: "Recebido payloads: ${body}"
         - unmarshal:
             id: unmarshal-e548
             json:
