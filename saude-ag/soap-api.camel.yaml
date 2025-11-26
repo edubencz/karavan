@@ -156,9 +156,20 @@
                                   CURRENT_TIMESTAMP, '${variable.referencia}' )
                         - toD:
                             id: to-600f
+                            description: JDBC
                             uri: jdbc
                             parameters:
                               dataSourceName: dataSource
+                        - log:
+                            id: log-3016
+                            message: after db
+                            loggingLevel: WARN
+                        - setBody:
+                            id: setBody-a160
+                            expression:
+                              constant:
+                                id: constant-88e7
+                                expression: finalizado
                         - stop:
                             id: stop-f0ec
             otherwise:
@@ -226,6 +237,7 @@
       steps:
         - toD:
             id: to-2324
+            disabled: true
             uri: sql
             parameters:
               query: ${exchangeProperty.sql_command}
