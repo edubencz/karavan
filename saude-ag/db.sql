@@ -22,7 +22,7 @@ data DATE
 );
 
 CREATE TABLE IF NOT EXISTS movimentacao (
-    id INT PRIMARY KEY,
+    id VARCHAR(100) PRIMARY KEY,
     tipo VARCHAR(50), -- Ex: "repasse", "glosa", "recebimento"
     descricao VARCHAR(255),
     valor DECIMAL(12,2),
