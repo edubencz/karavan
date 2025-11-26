@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS pedidos;
 DROP TABLE IF EXISTS produtos;
 DROP TABLE IF EXISTS clientes;
+DROP TABLE IF EXISTS movimentacao;
 
 CREATE TABLE IF NOT EXISTS produtos (
 id INT PRIMARY KEY,
@@ -18,6 +19,20 @@ cliente_id INT,
 produto_id INT,
 quantidade INT,
 data DATE
+);
+
+CREATE TABLE IF NOT EXISTS movimentacao (
+    id INT PRIMARY KEY,
+    tipo VARCHAR(50), -- Ex: "repasse", "glosa", "recebimento"
+    descricao VARCHAR(255),
+    valor DECIMAL(12,2),
+    moeda VARCHAR(10) DEFAULT 'BRL',
+    origem VARCHAR(100), -- Ex: "Hospital X"
+    destino VARCHAR(100), -- Ex: "Convênio Y"
+    status VARCHAR(50), -- Ex: "pendente", "processado", "erro"
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_processamento TIMESTAMP,
+    referencia_externa VARCHAR(100) -- Ex: número de lote, chave de integração
 );
 
 INSERT INTO produtos (id, nome, preco) VALUES 

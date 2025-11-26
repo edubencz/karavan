@@ -58,6 +58,88 @@
                           expression: >-
                             SELECT * FROM produtos WHERE id =
                             ${exchangeProperty.produtoId}
+              - id: when-5e34
+                description: Registra Movimento
+                expression:
+                  simple:
+                    id: simple-63ad
+                    expression: ${header.SOAPAction} == 'registrarMovimentacoes'
+                steps:
+                  - split:
+                      id: split-7edb
+                      expression:
+                        xpath:
+                          id: xpath-e8b3
+                          expression: //*[local-name()='Movimentacao']
+                      steps:
+                        - setVariables:
+                            id: setVariables-de56
+                            variables:
+                              - id: setVariable-7570
+                                name: tipo
+                                expression:
+                                  xpath:
+                                    id: xpath-42c9
+                                    expression: //*[local-name()='tipo']/text()
+                              - id: setVariable-e05e
+                                name: descricao
+                                expression:
+                                  xpath:
+                                    id: xpath-234e
+                                    expression: //*[local-name()='descricao']/text()
+                              - id: setVariable-bff6
+                                name: valor
+                                expression:
+                                  xpath:
+                                    id: xpath-992e
+                                    expression: //*[local-name()='valor']/text()
+                              - id: setVariable-4274
+                                name: moeda
+                                expression:
+                                  xpath:
+                                    id: xpath-d3f4
+                                    expression: //*[local-name()='moeda']/text()
+                              - id: setVariable-48e9
+                                name: origem
+                                expression:
+                                  xpath:
+                                    id: xpath-bf5a
+                                    expression: //*[local-name()='origem']/text()
+                              - id: setVariable-202b
+                                name: destino
+                                expression:
+                                  xpath:
+                                    id: xpath-3857
+                                    expression: //*[local-name()='destino']/text()
+                              - id: setVariable-bc04
+                                name: status
+                                expression:
+                                  xpath:
+                                    id: xpath-599a
+                                    expression: //*[local-name()='status']/text()
+                              - id: setVariable-45da
+                                name: referencia
+                                expression:
+                                  xpath:
+                                    id: xpath-b84d
+                                    expression: >-
+                                      //*[local-name()='referencia_externa']/text()
+                        - setProperty:
+                            id: setProperty-c518
+                            description: Set SQL
+                            name: sql_command
+                            expression:
+                              simple:
+                                id: simple-2e4d
+                                expression: "INSERT INTO movimentacao\r\n(id, tipo, descricao, valor, moeda, origem, destino, status, data_criacao, referencia_externa)\r\nVALUES (\r\n'${exchangeId}',\r\n'${variable.tipo}',\r\n'${variable.descricao}',\r\n${variable.valor},\r\n'${variable.moeda}',\r\n'${variable.origem}',\r\n'${variable.destino}',\r\n'${variable.status}',\r\nCURRENT_TIMESTAMP,\r\n'${variable.referencia}'\r\n)"
+                        - to:
+                            id: to-14cc
+                            description: access_db
+                            uri: direct
+                            parameters:
+                              name: access_db
+                        - stop:
+                            id: stop-f0ec
             otherwise:
               id: otherwise-f51a
               steps:
