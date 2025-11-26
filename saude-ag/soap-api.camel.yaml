@@ -1,1 +1,36 @@
-[]
+- rest:
+    id: rest-b1b6
+    post:
+      - id: post-eda6
+        path: /soap-api
+        to: direct:soap-route
+- route:
+    id: route-1297
+    description: soap-router
+    from:
+      id: from-719d
+      uri: direct
+      parameters:
+        name: soap-route
+      steps:
+        - log:
+            id: log-c943
+            message: "Requisição recebida: ${body}"
+        - to:
+            id: to-232b
+            uri: sql
+            parameters:
+              query: SELECT * FROM produtos
+              dataSource: "#bean:dataSource"
+        - marshal:
+            id: marshal-ca04
+            json:
+              id: json-2ae0
+              library: Jackson
+- beans:
+    - name: dataSource
+      type: org.h2.jdbcx.JdbcDataSource
+      properties:
+        uRL: jdbc:h2:mem:mockdb;DB_CLOSE_DELAY=-1
+        user: sa
+        password: ""
