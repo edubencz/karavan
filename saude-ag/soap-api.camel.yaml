@@ -4,6 +4,7 @@
       - id: post-eda6
         path: /soap-api
         to: direct:soap-route
+        consumes: application/xml
 - route:
     id: route-1297
     description: soap-router
@@ -13,20 +14,122 @@
       parameters:
         name: soap-route
       steps:
-        - log:
-            id: log-c943
-            message: "Requisição recebida: ${body}"
+        - choice:
+            id: choice-e7cf
+            description: Router
+            when:
+              - id: when-b4a6
+                description: Listar Produtos
+                expression:
+                  simple:
+                    id: simple-06ce
+                    expression: ${header.SOAPAction} == 'listarProdutos'
+                steps:
+                  - setProperty:
+                      id: setProperty-0bd2
+                      description: Set SQL
+                      name: sql_command
+                      expression:
+                        constant:
+                          id: constant-a9a3
+                          expression: SELECT * FROM produtos
+              - id: when-5fa4
+                description: Produto por ID
+                expression:
+                  simple:
+                    id: simple-4c5c
+                    expression: ${header.SOAPAction} == 'buscarProdutoPorId'
+                steps:
+                  - setProperty:
+                      id: setProperty-dda3
+                      name: produtoId
+                      expression:
+                        xpath:
+                          id: xpath-bbdc
+                          expression: //*[local-name()='produtoId']/text()
+                  - setProperty:
+                      id: setProperty-f553
+                      description: Set SQL
+                      name: sql_command
+                      expression:
+                        simple:
+                          id: simple-b0f6
+                          expression: >-
+                            SELECT * FROM produtos WHERE id =
+                            ${exchangeProperty.produtoId}
+            otherwise:
+              id: otherwise-f51a
+              steps:
+                - choice:
+                    id: choice-5bc6
+                    when:
+                      - id: when-7c92
+                        description: Listar Clientes
+                        expression:
+                          simple:
+                            id: simple-80b4
+                            expression: ${header.SOAPAction} == 'listarClientes'
+                        steps:
+                          - setProperty:
+                              id: setProperty-9bf1
+                              description: Set SQL
+                              name: sql_command
+                              expression:
+                                constant:
+                                  id: constant-8a35
+                                  expression: SELECT * FROM clientes
+                      - id: when-ae5a
+                        description: Listar Pedidos
+                        expression:
+                          simple:
+                            id: simple-edb7
+                            expression: ${header.SOAPAction} == 'listarPedidos'
+                        steps:
+                          - setProperty:
+                              id: setProperty-ac6d
+                              description: Set SQL
+                              name: sql_command
+                              expression:
+                                constant:
+                                  id: constant-efad
+                                  expression: SELECT * FROM pedidos
+                    otherwise:
+                      id: otherwise-242f
+                      description: Operação desconhecida
+                      steps:
+                        - setBody:
+                            id: setBody-87a5
+                            expression:
+                              constant:
+                                id: constant-6405
+                                expression: <erro>Operação desconhecida</erro>
+                        - stop:
+                            id: stop-333f
         - to:
-            id: to-232b
+            id: to-f3cd
+            description: access_db
+            uri: direct
+            parameters:
+              name: access_db
+- route:
+    id: route-1292
+    description: access_db
+    from:
+      id: from-7191
+      uri: direct
+      parameters:
+        name: access_db
+      steps:
+        - toD:
+            id: to-2324
             uri: sql
             parameters:
-              query: SELECT * FROM produtos
+              query: ${exchangeProperty.sql_command}
               dataSource: "#bean:dataSource"
         - marshal:
-            id: marshal-ca04
-            json:
-              id: json-2ae0
-              library: Jackson
+            id: marshal-ca05
+            jacksonXml:
+              id: jacksonXml-d1f9
 - beans:
     - name: dataSource
       type: org.h2.jdbcx.JdbcDataSource
