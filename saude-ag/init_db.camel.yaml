@@ -1,3 +1,10 @@
+- beans:
+    - name: dataSource
+      type: org.h2.jdbcx.JdbcDataSource
+      properties:
+        uRL: jdbc:h2:mem:mockdb;DB_CLOSE_DELAY=-1
+        user: sa
+        password: ""
 - route:
     id: route-08bc
     description: init db
@@ -17,10 +24,3 @@
             parameters:
               dataSource: "#bean:dataSource"
               query: file:db.sql
-- beans:
-    - name: dataSource
-      type: org.h2.jdbcx.JdbcDataSource
-      properties:
-        uRL: jdbc:h2:mem:mockdb;DB_CLOSE_DELAY=-1
-        user: sa
-        password: ""

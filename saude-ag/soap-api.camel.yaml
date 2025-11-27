@@ -160,18 +160,8 @@
                             uri: jdbc
                             parameters:
                               dataSourceName: dataSource
-                        - log:
-                            id: log-3016
-                            message: after db
-                            loggingLevel: WARN
-                        - setBody:
-                            id: setBody-a160
-                            expression:
-                              constant:
-                                id: constant-88e7
-                                expression: finalizado
-                        - stop:
-                            id: stop-f0ec
+                  - stop:
+                      id: stop-1d06
             otherwise:
               id: otherwise-f51a
               steps:
@@ -208,6 +198,21 @@
                                 constant:
                                   id: constant-efad
                                   expression: SELECT * FROM pedidos
+                      - id: when-0d04
+                        description: Listar Movimentos
+                        expression:
+                          simple:
+                            id: simple-bc68
+                            expression: ${header.SOAPAction} == 'listarMovimentos'
+                        steps:
+                          - setProperty:
+                              id: sql_movimentos
+                              description: Set SQL
+                              name: sql_command
+                              expression:
+                                simple:
+                                  id: simple-28a7
+                                  expression: SELECT * FROM movimentacao
                     otherwise:
                       id: otherwise-242f
                       description: Operação desconhecida
@@ -237,7 +242,7 @@
       steps:
         - toD:
             id: to-2324
-            disabled: true
+            disabled: false
             uri: sql
             parameters:
               query: ${exchangeProperty.sql_command}
