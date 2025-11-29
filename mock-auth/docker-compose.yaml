@@ -1,0 +1,8 @@
+services:
+  mock-auth:
+    image: mock-auth
+    restart: always
+    ports:
+      - "8086:8080"
+    networks:
+      - karavan

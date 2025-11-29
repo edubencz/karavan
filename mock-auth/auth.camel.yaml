@@ -1,0 +1,124 @@
+- rest:
+    id: rest-f180
+    get:
+      - id: get-9e6e
+        path: /userinfo
+        to: direct:user-info
+    post:
+      - id: post-996e
+        path: /token
+        to: direct:auth
+- route:
+    id: auth
+    nodePrefixId: route-34a
+    from:
+      id: from-fb04
+      uri: direct
+      parameters:
+        name: auth
+      steps:
+        - unmarshal:
+            id: unmarshal-4aec
+            json:
+              id: json-79fc
+        - choice:
+            id: choice-8971
+            when:
+              - id: when-c340
+                expression:
+                  simple:
+                    id: simple-8925
+                    expression: >-
+                      ${body[username]} == 'test' && ${body[password]} == '1234'
+                      && ${body[grant_type]} == 'password'
+                steps:
+                  - setHeader:
+                      id: setHeader-daa8
+                      name: Content-type
+                      expression:
+                        constant:
+                          id: constant-13ad
+                          expression: application/json
+                  - setBody:
+                      id: setBody-24ac
+                      expression:
+                        simple:
+                          id: simple-47c8
+                          expression: "{\r\n\"access_token\": \"mocked-token-12345\",\r\n\"token_type\": \"Bearer\",\r\n\"expires_in\": 3600\r\n}"
+            otherwise:
+              id: otherwise-c828
+              steps:
+                - setHeader:
+                    id: setHeader-7e0d
+                    name: CamelHttpResponseCode
+                    expression:
+                      constant:
+                        id: constant-b5f9
+                        expression: "401"
+                - setHeader:
+                    id: setHeader-2c5e
+                    name: Content-type
+                    expression:
+                      constant:
+                        id: constant-dfea
+                        expression: application/json
+                - setBody:
+                    id: setBody-fff9
+                    expression:
+                      simple:
+                        id: simple-eb21
+                        expression: "{\r\n    \"error\": \"invalid_grant\",\r\n    \"error_description\": \"Invalid credentials or grant type\"\r\n}"
+- route:
+    id: user-info
+    nodePrefixId: route-dab
+    from:
+      id: from-2561
+      uri: direct
+      parameters:
+        name: user-info
+      steps:
+        - choice:
+            id: choice-d84c
+            when:
+              - id: when-ac65
+                expression:
+                  simple:
+                    id: simple-fad7
+                    expression: ${header.Authorization} == 'Bearer mocked-token-12345'
+                steps:
+                  - setHeader:
+                      id: setHeader-a375
+                      name: Content-type
+                      expression:
+                        constant:
+                          id: constant-ca6e
+                          expression: application/json
+                  - setBody:
+                      id: setBody-0013
+                      expression:
+                        constant:
+                          id: constant-14f4
+                          expression: "{\r\n  \"sub\": \"test\",\r\n  \"name\": \"Test User\",\r\n  \"email\": \"test@example.com\"\r\n}"
+            otherwise:
+              id: otherwise-a3f9
+              steps:
+                - setHeader:
+                    id: setHeader-46b0
+                    name: CamelHttpResponseCode
+                    expression:
+                      constant:
+                        id: constant-c0cc
+                        expression: "401"
+                - setHeader:
+                    id: setHeader-87aa
+                    name: Content-type
+                    expression:
+                      constant:
+                        id: constant-f617
+                        expression: application/json
+                - setBody:
+                    id: setBody-1625
+                    expression:
+                      simple:
+                        id: simple-ff6e
+                        expression: "{\r\n  \"error\": \"invalid_token\",\r\n  \"error_description\": \"Token inválido ou ausente\"\r\n}"
