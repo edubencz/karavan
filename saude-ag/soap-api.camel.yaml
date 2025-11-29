@@ -15,6 +15,11 @@
       parameters:
         name: soap-route
       steps:
+        - to:
+            id: to-c398
+            uri: direct
+            parameters:
+              name: auth
         - choice:
             id: choice-e7cf
             description: Router
@@ -251,3 +256,52 @@
             id: marshal-ca05
             jacksonXml:
               id: jacksonXml-d1f9
+- route:
+    id: route-7f61
+    nodePrefixId: route-6f9
+    from:
+      id: from-d3a6
+      uri: direct
+      parameters:
+        name: auth
+      steps:
+        - log:
+            id: log-cfc5
+            message: ${body}
+        - choice:
+            id: choice-9e05
+            when:
+              - id: when-c54b
+                expression:
+                  simple:
+                    id: simple-0501
+                    expression: ${header.Authorization} == 'Bearer mocked-token-12345'
+            otherwise:
+              id: otherwise-2203
+              steps:
+                - setHeader:
+                    id: setHeader-c4ea
+                    name: CamelHttpResponseCode
+                    expression:
+                      constant:
+                        id: constant-7123
+                        expression: "401"
+                - setHeader:
+                    id: setHeader-dca8
+                    name: Content-type
+                    expression:
+                      constant:
+                        id: constant-6af8
+                        expression: application/json
+                - setBody:
+                    id: setBody-ed8b
+                    expression:
+                      constant:
+                        id: constant-7e80
+                        expression: |2-
+                                              {
+                                                "error": "invalid_token",
+                                                "error_description": "Token inválido ou ausente"
+                                              }
+                - stop:
+                    id: stop-89b6
