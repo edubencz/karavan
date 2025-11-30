@@ -1,0 +1,307 @@
+- rest:
+    id: rest-b1b6
+    post:
+      - id: post-eda6
+        path: /soap-api
+        to: direct:soap-route
+        consumes: application/xml
+        produces: application/xml
+- route:
+    id: route-1297
+    description: soap-router
+    from:
+      id: from-719d
+      uri: direct
+      parameters:
+        name: soap-route
+      steps:
+        - to:
+            id: to-c398
+            uri: direct
+            parameters:
+              name: auth
+        - choice:
+            id: choice-e7cf
+            description: Router
+            when:
+              - id: when-b4a6
+                description: Listar Produtos
+                expression:
+                  simple:
+                    id: simple-06ce
+                    expression: ${header.SOAPAction} == 'listarProdutos'
+                steps:
+                  - setProperty:
+                      id: setProperty-0bd2
+                      description: Set SQL
+                      name: sql_command
+                      expression:
+                        constant:
+                          id: constant-a9a3
+                          expression: SELECT * FROM produtos
+              - id: when-5fa4
+                description: Produto por ID
+                expression:
+                  simple:
+                    id: simple-4c5c
+                    expression: ${header.SOAPAction} == 'buscarProdutoPorId'
+                steps:
+                  - setProperty:
+                      id: setProperty-dda3
+                      name: produtoId
+                      expression:
+                        xpath:
+                          id: xpath-bbdc
+                          expression: //*[local-name()='produtoId']/text()
+                  - setProperty:
+                      id: setProperty-f553
+                      description: Set SQL
+                      name: sql_command
+                      expression:
+                        simple:
+                          id: simple-b0f6
+                          expression: >-
+                            SELECT * FROM produtos WHERE id =
+                            ${exchangeProperty.produtoId}
+              - id: when-5e34
+                description: Registra Movimento
+                expression:
+                  simple:
+                    id: simple-63ad
+                    expression: ${header.SOAPAction} == 'registrarMovimentacoes'
+                steps:
+                  - split:
+                      id: split-7edb
+                      expression:
+                        xpath:
+                          id: xpath-e8b3
+                          expression: //*[local-name()='Movimentacao']
+                      steps:
+                        - setVariables:
+                            id: setVariables-de56
+                            variables:
+                              - id: setVariable-7570
+                                name: tipo
+                                expression:
+                                  xpath:
+                                    id: xpath-42c9
+                                    expression: //*[local-name()='tipo']/text()
+                              - id: setVariable-e05e
+                                name: descricao
+                                expression:
+                                  xpath:
+                                    id: xpath-234e
+                                    expression: //*[local-name()='descricao']/text()
+                              - id: setVariable-bff6
+                                name: valor
+                                expression:
+                                  xpath:
+                                    id: xpath-992e
+                                    expression: //*[local-name()='valor']/text()
+                              - id: setVariable-4274
+                                name: moeda
+                                expression:
+                                  xpath:
+                                    id: xpath-d3f4
+                                    expression: //*[local-name()='moeda']/text()
+                              - id: setVariable-48e9
+                                name: origem
+                                expression:
+                                  xpath:
+                                    id: xpath-bf5a
+                                    expression: //*[local-name()='origem']/text()
+                              - id: setVariable-202b
+                                name: destino
+                                expression:
+                                  xpath:
+                                    id: xpath-3857
+                                    expression: //*[local-name()='destino']/text()
+                              - id: setVariable-bc04
+                                name: status
+                                expression:
+                                  xpath:
+                                    id: xpath-599a
+                                    expression: //*[local-name()='status']/text()
+                              - id: setVariable-45da
+                                name: referencia
+                                expression:
+                                  xpath:
+                                    id: xpath-b84d
+                                    expression: >-
+                                      //*[local-name()='referencia_externa']/text()
+                        - setProperty:
+                            id: setProperty-c518
+                            description: Set SQL
+                            name: sql_command
+                            expression:
+                              simple:
+                                id: simple-2e4d
+                                expression: >-
+                                  INSERT INTO movimentacao (id, tipo, descricao,
+                                  valor, moeda, origem, destino, status,
+                                  data_criacao, referencia_externa) VALUES
+                                  ('${exchangeId}', '${variable.tipo}',
+                                  '${variable.descricao}', ${variable.valor},
+                                  '${variable.moeda}', '${variable.origem}',
+                                  '${variable.destino}', '${variable.status}',
+                                  CURRENT_TIMESTAMP, '${variable.referencia}' )
+                        - setBody:
+                            id: setBody-d1e6
+                            expression:
+                              simple:
+                                id: simple-2867
+                                expression: >-
+                                  INSERT INTO movimentacao (id, tipo, descricao,
+                                  valor, moeda, origem, destino, status,
+                                  data_criacao, referencia_externa) VALUES
+                                  ('${exchangeId}', '${variable.tipo}',
+                                  '${variable.descricao}', ${variable.valor},
+                                  '${variable.moeda}', '${variable.origem}',
+                                  '${variable.destino}', '${variable.status}',
+                                  CURRENT_TIMESTAMP, '${variable.referencia}' )
+                        - toD:
+                            id: to-600f
+                            description: JDBC
+                            uri: jdbc
+                            parameters:
+                              dataSourceName: dataSource
+                  - stop:
+                      id: stop-1d06
+            otherwise:
+              id: otherwise-f51a
+              steps:
+                - choice:
+                    id: choice-5bc6
+                    when:
+                      - id: when-7c92
+                        description: Listar Clientes
+                        expression:
+                          simple:
+                            id: simple-80b4
+                            expression: ${header.SOAPAction} == 'listarClientes'
+                        steps:
+                          - setProperty:
+                              id: setProperty-9bf1
+                              description: Set SQL
+                              name: sql_command
+                              expression:
+                                constant:
+                                  id: constant-8a35
+                                  expression: SELECT * FROM clientes
+                      - id: when-ae5a
+                        description: Listar Pedidos
+                        expression:
+                          simple:
+                            id: simple-edb7
+                            expression: ${header.SOAPAction} == 'listarPedidos'
+                        steps:
+                          - setProperty:
+                              id: setProperty-ac6d
+                              description: Set SQL
+                              name: sql_command
+                              expression:
+                                constant:
+                                  id: constant-efad
+                                  expression: SELECT * FROM pedidos
+                      - id: when-0d04
+                        description: Listar Movimentos
+                        expression:
+                          simple:
+                            id: simple-bc68
+                            expression: ${header.SOAPAction} == 'listarMovimentos'
+                        steps:
+                          - setProperty:
+                              id: sql_movimentos
+                              description: Set SQL
+                              name: sql_command
+                              expression:
+                                simple:
+                                  id: simple-28a7
+                                  expression: SELECT * FROM movimentacao
+                    otherwise:
+                      id: otherwise-242f
+                      description: Operação desconhecida
+                      steps:
+                        - setBody:
+                            id: setBody-87a5
+                            expression:
+                              constant:
+                                id: constant-6405
+                                expression: <erro>Operação desconhecida</erro>
+                        - stop:
+                            id: stop-333f
+        - to:
+            id: to-f3cd
+            description: access_db
+            uri: direct
+            parameters:
+              name: access_db
+- route:
+    id: route-1292
+    description: access_db
+    from:
+      id: from-7191
+      uri: direct
+      parameters:
+        name: access_db
+      steps:
+        - toD:
+            id: to-2324
+            disabled: false
+            uri: sql
+            parameters:
+              query: ${exchangeProperty.sql_command}
+              dataSource: "#bean:dataSource"
+        - marshal:
+            id: marshal-ca05
+            jacksonXml:
+              id: jacksonXml-d1f9
+- route:
+    id: route-7f61
+    nodePrefixId: route-6f9
+    from:
+      id: from-d3a6
+      uri: direct
+      parameters:
+        name: auth
+      steps:
+        - log:
+            id: log-cfc5
+            message: ${body}
+        - choice:
+            id: choice-9e05
+            when:
+              - id: when-c54b
+                expression:
+                  simple:
+                    id: simple-0501
+                    expression: ${header.Authorization} == 'Bearer mocked-token-12345'
+            otherwise:
+              id: otherwise-2203
+              steps:
+                - setHeader:
+                    id: setHeader-c4ea
+                    name: CamelHttpResponseCode
+                    expression:
+                      constant:
+                        id: constant-7123
+                        expression: "401"
+                - setHeader:
+                    id: setHeader-dca8
+                    name: Content-type
+                    expression:
+                      constant:
+                        id: constant-6af8
+                        expression: application/json
+                - setBody:
+                    id: setBody-ed8b
+                    expression:
+                      constant:
+                        id: constant-7e80
+                        expression: |2-
+                                              {
+                                                "error": "invalid_token",
+                                                "error_description": "Token inválido ou ausente"
+                                              }
+                - stop:
+                    id: stop-89b6
