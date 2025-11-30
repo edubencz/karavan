@@ -14,6 +14,11 @@
         endpointName: >-
           {http://Benner.Corporativo.WebServices.DataContracts/2010/10}FinanceiroServiceSoap
       steps:
+        - to:
+            id: to-be62
+            uri: direct
+            parameters:
+              name: auth
         - log:
             id: log-e2ad
             message: ${body}
@@ -34,6 +39,42 @@
         endpointName: >-
           {http://Benner.Corporativo.WebServices.DataContracts/2010/10}FaturamentoServiceSoap
       steps:
+        - to:
+            id: to-3a3e
+            uri: direct
+            parameters:
+              name: auth
         - log:
             id: log-5685
             message: ${body}
+- route:
+    id: route-7f61
+    nodePrefixId: route-6f9
+    from:
+      id: from-d3a6
+      uri: direct
+      parameters:
+        name: auth
+      steps:
+        - choice:
+            id: choice-9e05
+            when:
+              - id: when-c54b
+                expression:
+                  simple:
+                    id: simple-0501
+                    expression: ${header.Authorization} == 'Bearer mocked-token-12345'
+            otherwise:
+              id: otherwise-2203
+              steps:
+                - setBody:
+                    id: setBody-ed8b
+                    expression:
+                      constant:
+                        id: constant-7e80
+                        expression: >-
+                          <soap:Fault
+                          xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><faultcode>soap:Client</faultcode><faultstring>Authorization
+                          header is missing</faultstring></soap:Fault>
+                - stop:
+                    id: stop-89b6
