@@ -1,15 +1,39 @@
 - route:
     id: route-4fb4
-    nodePrefixId: route-c17
+    description: Financeiro
     from:
-      id: from-becc
+      id: from-32bf
       uri: cxf
       parameters:
+        address: http://0.0.0.0:8080/financeiro
+        wsdlURL: financeiro.wsdl
         dataFormat: PAYLOAD
-        address: http://0.0.0.0:8080/soap
         loggingFeatureEnabled: true
-        wsdlURL: api.wsdl
+        serviceName: >-
+          {http://Benner.Corporativo.WebServices.DataContracts/2010/10}FinanceiroService
+        endpointName: >-
+          {http://Benner.Corporativo.WebServices.DataContracts/2010/10}FinanceiroServiceSoap
       steps:
         - log:
-            id: log-9724
+            id: log-e2ad
+            message: ${body}
+- route:
+    id: route-c301
+    description: Faturamento
+    nodePrefixId: route-388
+    from:
+      id: from-a5b3
+      uri: cxf
+      parameters:
+        address: http://0.0.0.0:8080/faturamento
+        dataFormat: PAYLOAD
+        loggingFeatureEnabled: true
+        wsdlURL: faturamento.wsdl
+        serviceName: >-
+          {http://Benner.Corporativo.WebServices.DataContracts/2010/10}FaturamentoService
+        endpointName: >-
+          {http://Benner.Corporativo.WebServices.DataContracts/2010/10}FaturamentoServiceSoap
+      steps:
+        - log:
+            id: log-5685
             message: ${body}
