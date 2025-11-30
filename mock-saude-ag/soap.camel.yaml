@@ -1,0 +1,15 @@
+- route:
+    id: route-4fb4
+    nodePrefixId: route-c17
+    from:
+      id: from-becc
+      uri: cxf
+      parameters:
+        dataFormat: PAYLOAD
+        address: http://0.0.0.0:8080/soap
+        loggingFeatureEnabled: true
+        wsdlURL: api.wsdl
+      steps:
+        - log:
+            id: log-9724
+            message: ${body}
