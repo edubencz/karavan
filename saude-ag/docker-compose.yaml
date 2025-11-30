@@ -1,9 +1,0 @@
-services:
-  saude-ag:
-    container_name: saude-ag
-    image: localhost:5555/karavan/saude-ag:latest
-    networks:
-    - karavan
-    ports:
-    - 8085:8080
-    restart: always
