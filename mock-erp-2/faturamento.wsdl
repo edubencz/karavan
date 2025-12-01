@@ -1,0 +1,653 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://Benner.Corporativo.WebServices.DataContracts/2010/10" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" targetNamespace="http://Benner.Corporativo.WebServices.DataContracts/2010/10" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Integração do módulo faturamento do sistema Corporativo</wsdl:documentation>
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://Benner.Corporativo.WebServices.DataContracts/2010/10">
+      <s:element name="Cadastrar">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="request" type="tns:CadastroNotaFiscalRequest" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="CadastroNotaFiscalRequest">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:Request">
+            <s:sequence>
+              <s:element minOccurs="0" maxOccurs="1" name="NotasFiscais" type="tns:ArrayOfCadastroNotaFiscalLayout" />
+              <s:element minOccurs="1" maxOccurs="1" name="PodeExecutarParcial" type="s:boolean" />
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="Request">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Identificador" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfCadastroNotaFiscalLayout">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="CadastroNotaFiscalLayout" nillable="true" type="tns:CadastroNotaFiscalLayout" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="CadastroNotaFiscalLayout">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:LayoutBase">
+            <s:sequence>
+              <s:element minOccurs="0" maxOccurs="1" name="Identificador" type="s:string" />
+              <s:element minOccurs="1" maxOccurs="1" name="DeveEmitirAposInclusao" type="s:boolean" />
+              <s:element minOccurs="1" maxOccurs="1" name="OperacaoFaturamento" type="s:int" />
+              <s:element minOccurs="0" maxOccurs="1" name="Parcelas" type="tns:ArrayOfParcelaLayout" />
+              <s:element minOccurs="0" maxOccurs="1" name="Itens" type="tns:ArrayOfItemLayout" />
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="LayoutBase">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Campos" type="tns:ArrayOfCampoLayout" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfCampoLayout">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="CampoLayout" nillable="true" type="tns:CampoLayout" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="CampoLayout">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Nome" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Valor" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="EntregaLoteLayout">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:LayoutBase" />
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="EntregaLayout">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:LayoutBase">
+            <s:sequence>
+              <s:element minOccurs="0" maxOccurs="1" name="Lotes" type="tns:ArrayOfEntregaLoteLayout" />
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="ArrayOfEntregaLoteLayout">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="EntregaLoteLayout" nillable="true" type="tns:EntregaLoteLayout" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ItemLayout">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:LayoutBase">
+            <s:sequence>
+              <s:element minOccurs="0" maxOccurs="1" name="Entregas" type="tns:ArrayOfEntregaLayout" />
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="ArrayOfEntregaLayout">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="EntregaLayout" nillable="true" type="tns:EntregaLayout" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ParcelaLayout">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:LayoutBase" />
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="ArrayOfParcelaLayout">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="ParcelaLayout" nillable="true" type="tns:ParcelaLayout" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfItemLayout">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="ItemLayout" nillable="true" type="tns:ItemLayout" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="NotaFiscalLayout">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Identificador" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="CodigoRetorno" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="Mensagem" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="Handle" type="s:long" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="Response">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="CodigoRetorno" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="Mensagem" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="FaturamentoResponse">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:Response">
+            <s:sequence>
+              <s:element minOccurs="0" maxOccurs="1" name="NotasFiscais" type="tns:ArrayOfNotaFiscalLayout" />
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="ArrayOfNotaFiscalLayout">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="NotaFiscalLayout" nillable="true" type="tns:NotaFiscalLayout" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="CadastrarResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CadastrarResult" type="tns:FaturamentoResponse" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CadastrarAgendado">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="request" type="tns:CadastroNotaFiscalRequest" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CadastrarAgendadoResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CadastrarAgendadoResult" type="tns:AgendamentoResponse" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="AgendamentoResponse">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:FinanceiroResponse" />
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="FinanceiroResponse">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:Response" />
+        </s:complexContent>
+      </s:complexType>
+      <s:element name="Emitir">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="request" type="tns:FuncaoFaturamentoRequest" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="FuncaoFaturamentoRequest">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:Request">
+            <s:sequence>
+              <s:element minOccurs="0" maxOccurs="1" name="NotasFiscais" type="tns:ArrayOfIdentificadorLayout" />
+              <s:element minOccurs="1" maxOccurs="1" name="PodeExecutarParcial" type="s:boolean" />
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="ArrayOfIdentificadorLayout">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="IdentificadorLayout" nillable="true" type="tns:IdentificadorLayout" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="IdentificadorLayout">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Identificador" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="EmitirResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="EmitirResult" type="tns:FaturamentoResponse" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="EmitirAgendado">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="request" type="tns:FuncaoFaturamentoRequest" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="EmitirAgendadoResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="EmitirAgendadoResult" type="tns:AgendamentoResponse" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Cancelar">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="request" type="tns:CancelamentoNotaFiscalRequest" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="CancelamentoNotaFiscalRequest">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:Request">
+            <s:sequence>
+              <s:element minOccurs="0" maxOccurs="1" name="NotasFiscais" type="tns:ArrayOfCancelamentoNotaFiscalLayout" />
+              <s:element minOccurs="1" maxOccurs="1" name="PodeExecutarParcial" type="s:boolean" />
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="ArrayOfCancelamentoNotaFiscalLayout">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="CancelamentoNotaFiscalLayout" nillable="true" type="tns:CancelamentoNotaFiscalLayout" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="CancelamentoNotaFiscalLayout">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Identificador" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="Data" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="Motivo" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="CancelarResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CancelarResult" type="tns:FaturamentoResponse" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CancelarAgendado">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="request" type="tns:CancelamentoNotaFiscalRequest" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CancelarAgendadoResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CancelarAgendadoResult" type="tns:AgendamentoResponse" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Consultar">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="request" type="tns:ConsultarRequest" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ConsultarRequest">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:FinanceiroRequest" />
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="FinanceiroRequest">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:Request" />
+        </s:complexContent>
+      </s:complexType>
+      <s:element name="ConsultarResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ConsultarResult" type="tns:FaturamentoResponse" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="RemoverIdentificador">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="request" type="tns:Request" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="RemoverIdentificadorResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="RemoverIdentificadorResult" type="tns:FaturamentoResponse" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CriarIdentificadores">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="quantidade" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ArrayOfString">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="string" nillable="true" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="CriarIdentificadoresResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CriarIdentificadoresResult" type="tns:IdentificadoresResponse" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="IdentificadoresResponse">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:Response">
+            <s:sequence>
+              <s:element minOccurs="0" maxOccurs="1" name="Identificadores" type="tns:ArrayOfString" />
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
+      <s:element name="Login">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="userName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="password" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="LoginResponse">
+        <s:complexType />
+      </s:element>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="CadastrarSoapIn">
+    <wsdl:part name="parameters" element="tns:Cadastrar" />
+  </wsdl:message>
+  <wsdl:message name="CadastrarSoapOut">
+    <wsdl:part name="parameters" element="tns:CadastrarResponse" />
+  </wsdl:message>
+  <wsdl:message name="CadastrarAgendadoSoapIn">
+    <wsdl:part name="parameters" element="tns:CadastrarAgendado" />
+  </wsdl:message>
+  <wsdl:message name="CadastrarAgendadoSoapOut">
+    <wsdl:part name="parameters" element="tns:CadastrarAgendadoResponse" />
+  </wsdl:message>
+  <wsdl:message name="EmitirSoapIn">
+    <wsdl:part name="parameters" element="tns:Emitir" />
+  </wsdl:message>
+  <wsdl:message name="EmitirSoapOut">
+    <wsdl:part name="parameters" element="tns:EmitirResponse" />
+  </wsdl:message>
+  <wsdl:message name="EmitirAgendadoSoapIn">
+    <wsdl:part name="parameters" element="tns:EmitirAgendado" />
+  </wsdl:message>
+  <wsdl:message name="EmitirAgendadoSoapOut">
+    <wsdl:part name="parameters" element="tns:EmitirAgendadoResponse" />
+  </wsdl:message>
+  <wsdl:message name="CancelarSoapIn">
+    <wsdl:part name="parameters" element="tns:Cancelar" />
+  </wsdl:message>
+  <wsdl:message name="CancelarSoapOut">
+    <wsdl:part name="parameters" element="tns:CancelarResponse" />
+  </wsdl:message>
+  <wsdl:message name="CancelarAgendadoSoapIn">
+    <wsdl:part name="parameters" element="tns:CancelarAgendado" />
+  </wsdl:message>
+  <wsdl:message name="CancelarAgendadoSoapOut">
+    <wsdl:part name="parameters" element="tns:CancelarAgendadoResponse" />
+  </wsdl:message>
+  <wsdl:message name="ConsultarSoapIn">
+    <wsdl:part name="parameters" element="tns:Consultar" />
+  </wsdl:message>
+  <wsdl:message name="ConsultarSoapOut">
+    <wsdl:part name="parameters" element="tns:ConsultarResponse" />
+  </wsdl:message>
+  <wsdl:message name="RemoverIdentificadorSoapIn">
+    <wsdl:part name="parameters" element="tns:RemoverIdentificador" />
+  </wsdl:message>
+  <wsdl:message name="RemoverIdentificadorSoapOut">
+    <wsdl:part name="parameters" element="tns:RemoverIdentificadorResponse" />
+  </wsdl:message>
+  <wsdl:message name="CriarIdentificadoresSoapIn">
+    <wsdl:part name="parameters" element="tns:CriarIdentificadores" />
+  </wsdl:message>
+  <wsdl:message name="CriarIdentificadoresSoapOut">
+    <wsdl:part name="parameters" element="tns:CriarIdentificadoresResponse" />
+  </wsdl:message>
+  <wsdl:message name="LoginSoapIn">
+    <wsdl:part name="parameters" element="tns:Login" />
+  </wsdl:message>
+  <wsdl:message name="LoginSoapOut">
+    <wsdl:part name="parameters" element="tns:LoginResponse" />
+  </wsdl:message>
+  <wsdl:portType name="FaturamentoServiceSoap">
+    <wsdl:operation name="Cadastrar">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Cadastra uma lista de documentos de faturamento</wsdl:documentation>
+      <wsdl:input message="tns:CadastrarSoapIn" />
+      <wsdl:output message="tns:CadastrarSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CadastrarAgendado">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Cadastra uma lista de documentos de faturamento de forma assincrona</wsdl:documentation>
+      <wsdl:input message="tns:CadastrarAgendadoSoapIn" />
+      <wsdl:output message="tns:CadastrarAgendadoSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Emitir">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Emite as notas fiscais para os documentos de faturamento informados</wsdl:documentation>
+      <wsdl:input message="tns:EmitirSoapIn" />
+      <wsdl:output message="tns:EmitirSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="EmitirAgendado">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Emite as notas fiscais para os documentos de faturamento informados  de forma assincrona</wsdl:documentation>
+      <wsdl:input message="tns:EmitirAgendadoSoapIn" />
+      <wsdl:output message="tns:EmitirAgendadoSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Cancelar">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Cancela uma lista de notas fiscais</wsdl:documentation>
+      <wsdl:input message="tns:CancelarSoapIn" />
+      <wsdl:output message="tns:CancelarSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CancelarAgendado">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Cancela uma lista de notas fiscais de forma assincrona</wsdl:documentation>
+      <wsdl:input message="tns:CancelarAgendadoSoapIn" />
+      <wsdl:output message="tns:CancelarAgendadoSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Consultar">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Consulta o status de chamadas anteriores</wsdl:documentation>
+      <wsdl:input message="tns:ConsultarSoapIn" />
+      <wsdl:output message="tns:ConsultarSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="RemoverIdentificador">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Remove o identificador de processamento. Não desfaz as alterações feitas pelo processamento.</wsdl:documentation>
+      <wsdl:input message="tns:RemoverIdentificadorSoapIn" />
+      <wsdl:output message="tns:RemoverIdentificadorSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CriarIdentificadores">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Cria identificadores únicos baseados em Guid</wsdl:documentation>
+      <wsdl:input message="tns:CriarIdentificadoresSoapIn" />
+      <wsdl:output message="tns:CriarIdentificadoresSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Login">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Faz a autenticação de usuário necessária para execução de todos métodos.</wsdl:documentation>
+      <wsdl:input message="tns:LoginSoapIn" />
+      <wsdl:output message="tns:LoginSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="FaturamentoServiceSoap" type="tns:FaturamentoServiceSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="Cadastrar">
+      <soap:operation soapAction="http://Benner.Corporativo.WebServices.DataContracts/2010/10/Cadastrar" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CadastrarAgendado">
+      <soap:operation soapAction="http://Benner.Corporativo.WebServices.DataContracts/2010/10/CadastrarAgendado" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Emitir">
+      <soap:operation soapAction="http://Benner.Corporativo.WebServices.DataContracts/2010/10/Emitir" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EmitirAgendado">
+      <soap:operation soapAction="http://Benner.Corporativo.WebServices.DataContracts/2010/10/EmitirAgendado" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Cancelar">
+      <soap:operation soapAction="http://Benner.Corporativo.WebServices.DataContracts/2010/10/Cancelar" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CancelarAgendado">
+      <soap:operation soapAction="http://Benner.Corporativo.WebServices.DataContracts/2010/10/CancelarAgendado" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Consultar">
+      <soap:operation soapAction="http://Benner.Corporativo.WebServices.DataContracts/2010/10/Consultar" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RemoverIdentificador">
+      <soap:operation soapAction="http://Benner.Corporativo.WebServices.DataContracts/2010/10/RemoverIdentificador" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CriarIdentificadores">
+      <soap:operation soapAction="http://Benner.Corporativo.WebServices.DataContracts/2010/10/CriarIdentificadores" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Login">
+      <soap:operation soapAction="http://Benner.Corporativo.WebServices.DataContracts/2010/10/Login" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="FaturamentoServiceSoap12" type="tns:FaturamentoServiceSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="Cadastrar">
+      <soap12:operation soapAction="http://Benner.Corporativo.WebServices.DataContracts/2010/10/Cadastrar" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CadastrarAgendado">
+      <soap12:operation soapAction="http://Benner.Corporativo.WebServices.DataContracts/2010/10/CadastrarAgendado" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Emitir">
+      <soap12:operation soapAction="http://Benner.Corporativo.WebServices.DataContracts/2010/10/Emitir" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EmitirAgendado">
+      <soap12:operation soapAction="http://Benner.Corporativo.WebServices.DataContracts/2010/10/EmitirAgendado" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Cancelar">
+      <soap12:operation soapAction="http://Benner.Corporativo.WebServices.DataContracts/2010/10/Cancelar" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CancelarAgendado">
+      <soap12:operation soapAction="http://Benner.Corporativo.WebServices.DataContracts/2010/10/CancelarAgendado" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Consultar">
+      <soap12:operation soapAction="http://Benner.Corporativo.WebServices.DataContracts/2010/10/Consultar" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RemoverIdentificador">
+      <soap12:operation soapAction="http://Benner.Corporativo.WebServices.DataContracts/2010/10/RemoverIdentificador" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CriarIdentificadores">
+      <soap12:operation soapAction="http://Benner.Corporativo.WebServices.DataContracts/2010/10/CriarIdentificadores" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Login">
+      <soap12:operation soapAction="http://Benner.Corporativo.WebServices.DataContracts/2010/10/Login" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="FaturamentoService">
+    <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Integração do módulo faturamento do sistema Corporativo</wsdl:documentation>
+    <wsdl:port name="FaturamentoServiceSoap" binding="tns:FaturamentoServiceSoap">
+      <soap:address location="http://localhost/WebApp/NonAuthenticatedServiceHost/FaturamentoService.asmx" />
+    </wsdl:port>
+    <wsdl:port name="FaturamentoServiceSoap12" binding="tns:FaturamentoServiceSoap12">
+      <soap12:address location="http://localhost/WebApp/NonAuthenticatedServiceHost/FaturamentoService.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
