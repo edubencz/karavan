@@ -1,6 +1,6 @@
 services:
-  mock-saude-ag:
-    image: mock-saude-ag
+  mock-erp-benner:
+    image: mock-erp-benner
     restart: always
     ports:
       - "8088:8080"
