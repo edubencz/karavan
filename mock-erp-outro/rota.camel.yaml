@@ -18,7 +18,7 @@
         to: direct:listar-movimentos
     post:
       - id: post-eda6
-        path: /grava-movimentacao
+        path: /gravar-movimentacao
         to: direct:gravar-movimentacao
 - route:
     id: route-1297
@@ -40,7 +40,7 @@
             expression:
               simple:
                 id: simple-6831
-                expression: "INSERT INTO movimentacao (id, tipo, descricao, valor, moeda,\r\norigem, destino, status, data_criacao, data_processamento,\r\nreferencia_externa) VALUES (\r\n'${body[id]}',\r\n'${body[tipo]}',\r\n'${body[descricao]}',\r\n${body[valor]},\r\n'${body[moeda]}',\r\n'${body[origem]}',\r\n'${body[destino]}',\r\n'${body[status]}',\r\n'${body[data_criacao]}',\r\n'${body[data_processamento]}',\r\n'${body[referencia_externa]}')"
+                expression: "INSERT INTO movimentacao (id, descricao, valor,origem, destino, status) VALUES (\r\n'${exchangeId}',\r\n'${body[descricao]}',\r\n${body[valor]},\r\n'${body[origem]}',\r\n'${body[destino]}',\r\n'${body[status]}')"
         - to:
             id: to-9c7d
             uri: jdbc
