@@ -84,8 +84,9 @@
               dataSource: "#bean:dataSource"
         - marshal:
             id: marshal-ca05
-            jacksonXml:
-              id: jacksonXml-d1f9
+            json:
+              id: json-b300
+              library: Jackson
 - route:
     id: route-7f61
     description: Auth
