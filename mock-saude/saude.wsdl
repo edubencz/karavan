@@ -1,189 +1,262 @@
-<wsdl:definitions xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://Benner.Saude.Service.IntegracaoFinanceira.DataContracts/2011/01" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" targetNamespace="http://Benner.Saude.Service.IntegracaoFinanceira.DataContracts/2011/01">
-<wsdl:types>
-<s:schema elementFormDefault="qualified" targetNamespace="http://Benner.Saude.Service.IntegracaoFinanceira.DataContracts/2011/01">
-<s:element name="RegistrarMovimentacoes">
-<s:complexType>
-<s:sequence>
-<s:element minOccurs="0" maxOccurs="1" name="request" type="tns:IntegracaoFinanceiraResquest"/>
-</s:sequence>
-</s:complexType>
-</s:element>
-<s:complexType name="IntegracaoFinanceiraResquest">
-<s:complexContent mixed="false">
-<s:extension base="tns:Request">
-<s:sequence>
-<s:element minOccurs="0" maxOccurs="1" name="Documentos" type="tns:ArrayOfDocumento"/>
-</s:sequence>
-</s:extension>
-</s:complexContent>
-</s:complexType>
-<s:complexType name="Request"/>
-<s:complexType name="ArrayOfDocumento">
-<s:sequence>
-<s:element minOccurs="0" maxOccurs="unbounded" name="Documento" nillable="true" type="tns:Documento"/>
-</s:sequence>
-</s:complexType>
-<s:complexType name="Documento">
-<s:complexContent mixed="false">
-<s:extension base="tns:LayoutBase">
-<s:sequence>
-<s:element minOccurs="0" maxOccurs="1" name="Lancamentos" type="tns:ArrayOfLancamento"/>
-</s:sequence>
-</s:extension>
-</s:complexContent>
-</s:complexType>
-<s:complexType name="LayoutBase">
-<s:sequence>
-<s:element minOccurs="0" maxOccurs="1" name="Campos" type="tns:ArrayOfCampo"/>
-</s:sequence>
-</s:complexType>
-<s:complexType name="ArrayOfCampo">
-<s:sequence>
-<s:element minOccurs="0" maxOccurs="unbounded" name="Campo" nillable="true" type="tns:Campo"/>
-</s:sequence>
-</s:complexType>
-<s:complexType name="Campo">
-<s:sequence>
-<s:element minOccurs="0" maxOccurs="1" name="Nome" type="s:string"/>
-<s:element minOccurs="0" maxOccurs="1" name="Valor"/>
-</s:sequence>
-</s:complexType>
-<s:complexType name="Movimentacao">
-<s:complexContent mixed="false">
-<s:extension base="tns:LayoutBase"/>
-</s:complexContent>
-</s:complexType>
-<s:complexType name="LancamentoCentroCusto">
-<s:complexContent mixed="false">
-<s:extension base="tns:LayoutBase"/>
-</s:complexContent>
-</s:complexType>
-<s:complexType name="Lancamento">
-<s:complexContent mixed="false">
-<s:extension base="tns:LayoutBase">
-<s:sequence>
-<s:element minOccurs="0" maxOccurs="1" name="LancamentosCentroCusto" type="tns:ArrayOfLancamentoCentroCusto"/>
-</s:sequence>
-</s:extension>
-</s:complexContent>
-</s:complexType>
-<s:complexType name="ArrayOfLancamentoCentroCusto">
-<s:sequence>
-<s:element minOccurs="0" maxOccurs="unbounded" name="LancamentoCentroCusto" nillable="true" type="tns:LancamentoCentroCusto"/>
-</s:sequence>
-</s:complexType>
-<s:complexType name="ArrayOfLancamento">
-<s:sequence>
-<s:element minOccurs="0" maxOccurs="unbounded" name="Lancamento" nillable="true" type="tns:Lancamento"/>
-</s:sequence>
-</s:complexType>
-<s:complexType name="Response"/>
-<s:complexType name="IntegracaoFinanceiraResponse">
-<s:complexContent mixed="false">
-<s:extension base="tns:Response">
-<s:sequence>
-<s:element minOccurs="0" maxOccurs="1" name="Movimentacoes" type="tns:ArrayOfMovimentacao"/>
-</s:sequence>
-</s:extension>
-</s:complexContent>
-</s:complexType>
-<s:complexType name="ArrayOfMovimentacao">
-<s:sequence>
-<s:element minOccurs="0" maxOccurs="unbounded" name="Movimentacao" nillable="true" type="tns:Movimentacao"/>
-</s:sequence>
-</s:complexType>
-<s:element name="RegistrarMovimentacoesResponse">
-<s:complexType>
-<s:sequence>
-<s:element minOccurs="0" maxOccurs="1" name="RegistrarMovimentacoesResult" type="tns:IntegracaoFinanceiraResponse"/>
-</s:sequence>
-</s:complexType>
-</s:element>
-<s:element name="Login">
-<s:complexType>
-<s:sequence>
-<s:element minOccurs="0" maxOccurs="1" name="userName" type="s:string"/>
-<s:element minOccurs="0" maxOccurs="1" name="password" type="s:string"/>
-</s:sequence>
-</s:complexType>
-</s:element>
-<s:element name="LoginResponse">
-<s:complexType/>
-</s:element>
-</s:schema>
-</wsdl:types>
-<wsdl:message name="RegistrarMovimentacoesSoapIn">
-<wsdl:part name="parameters" element="tns:RegistrarMovimentacoes"/>
-</wsdl:message>
-<wsdl:message name="RegistrarMovimentacoesSoapOut">
-<wsdl:part name="parameters" element="tns:RegistrarMovimentacoesResponse"/>
-</wsdl:message>
-<wsdl:message name="LoginSoapIn">
-<wsdl:part name="parameters" element="tns:Login"/>
-</wsdl:message>
-<wsdl:message name="LoginSoapOut">
-<wsdl:part name="parameters" element="tns:LoginResponse"/>
-</wsdl:message>
-<wsdl:portType name="IntegracaoFinanceiraServiceSoap">
-<wsdl:operation name="RegistrarMovimentacoes">
-<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Registra as movimentações recebidas do sistema financeiro</wsdl:documentation>
-<wsdl:input message="tns:RegistrarMovimentacoesSoapIn"/>
-<wsdl:output message="tns:RegistrarMovimentacoesSoapOut"/>
-</wsdl:operation>
-<wsdl:operation name="Login">
-<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Efetua a autenticação do usuário para executar os métodos do serviço</wsdl:documentation>
-<wsdl:input message="tns:LoginSoapIn"/>
-<wsdl:output message="tns:LoginSoapOut"/>
-</wsdl:operation>
-</wsdl:portType>
-<wsdl:binding name="IntegracaoFinanceiraServiceSoap" type="tns:IntegracaoFinanceiraServiceSoap">
-<soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
-<wsdl:operation name="RegistrarMovimentacoes">
-<soap:operation soapAction="http://Benner.Saude.Service.IntegracaoFinanceira.DataContracts/2011/01/RegistrarMovimentacoes" style="document"/>
-<wsdl:input>
-<soap:body use="literal"/>
-</wsdl:input>
-<wsdl:output>
-<soap:body use="literal"/>
-</wsdl:output>
-</wsdl:operation>
-<wsdl:operation name="Login">
-<soap:operation soapAction="http://Benner.Saude.Service.IntegracaoFinanceira.DataContracts/2011/01/Login" style="document"/>
-<wsdl:input>
-<soap:body use="literal"/>
-</wsdl:input>
-<wsdl:output>
-<soap:body use="literal"/>
-</wsdl:output>
-</wsdl:operation>
-</wsdl:binding>
-<wsdl:binding name="IntegracaoFinanceiraServiceSoap12" type="tns:IntegracaoFinanceiraServiceSoap">
-<soap12:binding transport="http://schemas.xmlsoap.org/soap/http"/>
-<wsdl:operation name="RegistrarMovimentacoes">
-<soap12:operation soapAction="http://Benner.Saude.Service.IntegracaoFinanceira.DataContracts/2011/01/RegistrarMovimentacoes" style="document"/>
-<wsdl:input>
-<soap12:body use="literal"/>
-</wsdl:input>
-<wsdl:output>
-<soap12:body use="literal"/>
-</wsdl:output>
-</wsdl:operation>
-<wsdl:operation name="Login">
-<soap12:operation soapAction="http://Benner.Saude.Service.IntegracaoFinanceira.DataContracts/2011/01/Login" style="document"/>
-<wsdl:input>
-<soap12:body use="literal"/>
-</wsdl:input>
-<wsdl:output>
-<soap12:body use="literal"/>
-</wsdl:output>
-</wsdl:operation>
-</wsdl:binding>
-<wsdl:service name="IntegracaoFinanceiraService">
-<wsdl:port name="IntegracaoFinanceiraServiceSoap" binding="tns:IntegracaoFinanceiraServiceSoap">
-<soap:address location="http://mga-apl004/WebAppDESENVAGSQL/NonAuthenticatedServiceHost/integracaofinanceira.asmx"/>
-</wsdl:port>
-<wsdl:port name="IntegracaoFinanceiraServiceSoap12" binding="tns:IntegracaoFinanceiraServiceSoap12">
-<soap12:address location="http://mga-apl004/WebAppDESENVAGSQL/NonAuthenticatedServiceHost/integracaofinanceira.asmx"/>
-</wsdl:port>
-</wsdl:service>
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" 
+                  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" 
+                  xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" 
+                  xmlns:tns="http://Benner.Saude.Service.IntegracaoFinanceira.DataContracts/2011/01" 
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+                  xmlns:s="http://www.w3.org/2001/XMLSchema" 
+                  xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" 
+                  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" 
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+                  targetNamespace="http://Benner.Saude.Service.IntegracaoFinanceira.DataContracts/2011/01">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://Benner.Saude.Service.IntegracaoFinanceira.DataContracts/2011/01">
+      <s:element name="RegistrarMovimentacoes">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="request" type="tns:IntegracaoFinanceiraResquest"/>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="IntegracaoFinanceiraResquest">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:Request">
+            <s:sequence>
+              <s:element minOccurs="0" maxOccurs="1" name="Documentos" type="tns:ArrayOfDocumento"/>
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="Request"/>
+      <s:complexType name="ArrayOfDocumento">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="Documento" nillable="true" type="tns:Documento"/>
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="Documento">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:LayoutBase">
+            <s:sequence>
+              <s:element minOccurs="0" maxOccurs="1" name="Lancamentos" type="tns:ArrayOfLancamento"/>
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="LayoutBase">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Campos" type="tns:ArrayOfCampo"/>
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfCampo">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="Campo" nillable="true" type="tns:Campo"/>
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="Campo">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Nome" type="s:string"/>
+          <s:element minOccurs="0" maxOccurs="1" name="Valor"/>
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="Movimentacao">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:LayoutBase"/>
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="LancamentoCentroCusto">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:LayoutBase"/>
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="Lancamento">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:LayoutBase">
+            <s:sequence>
+              <s:element minOccurs="0" maxOccurs="1" name="LancamentosCentroCusto" type="tns:ArrayOfLancamentoCentroCusto"/>
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="ArrayOfLancamentoCentroCusto">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="LancamentoCentroCusto" nillable="true" type="tns:LancamentoCentroCusto"/>
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfLancamento">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="Lancamento" nillable="true" type="tns:Lancamento"/>
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="Response"/>
+      <s:complexType name="IntegracaoFinanceiraResponse">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:Response">
+            <s:sequence>
+              <s:element minOccurs="0" maxOccurs="1" name="Movimentacoes" type="tns:ArrayOfMovimentacao"/>
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="ArrayOfMovimentacao">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="Movimentacao" nillable="true" type="tns:Movimentacao"/>
+        </s:sequence>
+      </s:complexType>
+      <s:element name="RegistrarMovimentacoesResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="RegistrarMovimentacoesResult" type="tns:IntegracaoFinanceiraResponse"/>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Login">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="userName" type="s:string"/>
+            <s:element minOccurs="0" maxOccurs="1" name="password" type="s:string"/>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="LoginResponse">
+        <s:complexType/>
+      </s:element>
+
+      <!-- *** Adicionado: operação de teste TestPost *** -->
+      <s:element name="TestPost">
+        <s:complexType>
+          <s:sequence>
+            <s:element name="mensagem" type="s:string" minOccurs="0"/>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="TestPostResponse">
+        <s:complexType/>
+      </s:element>
+      <!-- *** Fim adição TestPost *** -->
+
+    </s:schema>
+  </wsdl:types>
+
+  <!-- Mensagens originais -->
+  <wsdl:message name="RegistrarMovimentacoesSoapIn">
+    <wsdl:part name="parameters" element="tns:RegistrarMovimentacoes"/>
+  </wsdl:message>
+  <wsdl:message name="RegistrarMovimentacoesSoapOut">
+    <wsdl:part name="parameters" element="tns:RegistrarMovimentacoesResponse"/>
+  </wsdl:message>
+
+  <!-- Mensagens para TestPost -->
+  <wsdl:message name="TestPostSoapIn">
+    <wsdl:part name="parameters" element="tns:TestPost"/>
+  </wsdl:message>
+  <wsdl:message name="TestPostSoapOut">
+    <wsdl:part name="parameters" element="tns:TestPostResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="LoginSoapIn">
+    <wsdl:part name="parameters" element="tns:Login"/>
+  </wsdl:message>
+  <wsdl:message name="LoginSoapOut">
+    <wsdl:part name="parameters" element="tns:LoginResponse"/>
+  </wsdl:message>
+
+  <wsdl:portType name="IntegracaoFinanceiraServiceSoap">
+    <wsdl:operation name="RegistrarMovimentacoes">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Registra as movimentações recebidas do sistema financeiro</wsdl:documentation>
+      <wsdl:input message="tns:RegistrarMovimentacoesSoapIn"/>
+      <wsdl:output message="tns:RegistrarMovimentacoesSoapOut"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="Login">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Efetua a autenticação do usuário para executar os métodos do serviço</wsdl:documentation>
+      <wsdl:input message="tns:LoginSoapIn"/>
+      <wsdl:output message="tns:LoginSoapOut"/>
+    </wsdl:operation>
+
+    <!-- Operação de teste -->
+    <wsdl:operation name="TestPost">
+      <wsdl:documentation>Operação de teste simples</wsdl:documentation>
+      <wsdl:input message="tns:TestPostSoapIn"/>
+      <wsdl:output message="tns:TestPostSoapOut"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <wsdl:binding name="IntegracaoFinanceiraServiceSoap" type="tns:IntegracaoFinanceiraServiceSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="RegistrarMovimentacoes">
+      <soap:operation soapAction="http://Benner.Saude.Service.IntegracaoFinanceira.DataContracts/2011/01/RegistrarMovimentacoes" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="Login">
+      <soap:operation soapAction="http://Benner.Saude.Service.IntegracaoFinanceira.DataContracts/2011/01/Login" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <!-- Binding para TestPost (SOAP 1.1) -->
+    <wsdl:operation name="TestPost">
+      <soap:operation soapAction="http://Benner.Saude.Service.IntegracaoFinanceira.DataContracts/2011/01/TestPost" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+  </wsdl:binding>
+
+  <wsdl:binding name="IntegracaoFinanceiraServiceSoap12" type="tns:IntegracaoFinanceiraServiceSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/wsdl/soap/http"/>
+    <wsdl:operation name="RegistrarMovimentacoes">
+      <soap12:operation soapAction="http://Benner.Saude.Service.IntegracaoFinanceira.DataContracts/2011/01/RegistrarMovimentacoes" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="Login">
+      <soap12:operation soapAction="http://Benner.Saude.Service.IntegracaoFinanceira.DataContracts/2011/01/Login" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <!-- Binding para TestPost (SOAP 1.2) -->
+    <wsdl:operation name="TestPost">
+      <soap12:operation soapAction="http://Benner.Saude.Service.IntegracaoFinanceira.DataContracts/2011/01/TestPost" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+  </wsdl:binding>
+
+  <wsdl:service name="IntegracaoFinanceiraService">
+    <wsdl:port name="IntegracaoFinanceiraServiceSoap" binding="tns:IntegracaoFinanceiraServiceSoap">
+      <soap:address location="http://mga-apl004/WebAppDESENVAGSQL/NonAuthenticatedServiceHost/integracaofinanceira.asmx"/>
+    </wsdl:port>
+    <wsdl:port name="IntegracaoFinanceiraServiceSoap12" binding="tns:IntegracaoFinanceiraServiceSoap12">
+      <soap12:address location="http://mga-apl004/WebAppDESENVAGSQL/NonAuthenticatedServiceHost/integracaofinanceira.asmx"/>
+    </wsdl:port>
+  </wsdl:service>
 </wsdl:definitions>
