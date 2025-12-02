@@ -26,9 +26,7 @@
                 expression:
                   simple:
                     id: simple-7d08
-                    expression: >-
-                      ${header.SOAPAction} ==
-                      "http://Benner.Saude.Service.IntegracaoFinanceira.DataContracts/2011/01/TestPost"
+                    expression: ${header.Teste} == "teste"
                 steps:
                   - removeHeaders:
                       id: removeHeaders-cd99
@@ -40,22 +38,74 @@
                         constant:
                           id: constant-5c88
                           expression: Bearer mocked-token-12345
-                  - setBody:
-                      id: setBody-800d
+                  - setHeader:
+                      id: setHeader-43f1
+                      name: Teste
                       expression:
                         constant:
-                          id: constant-24b0
-                          expression: "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\r\n    <soap:Body>\r\n        <web:Integrar xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:web=\"http://Benner.Corporativo.WebServices.DataContracts/2010/10\">\r\n            <web:request>\r\n                <web:Identificador>ID-REQUISICAO-123</web:Identificador>\r\n                <web:Documentos>\r\n                    <web:DocumentoLayout>\r\n                        <web:Campos>\r\n                            <web:CampoLayout>\r\n                                <web:Nome>TipoDocumento</web:Nome>\r\n                                <web:Valor>NF</web:Valor>\r\n                            </web:CampoLayout>\r\n                            <web:CampoLayout>\r\n                                <web:Nome>ValorTotal</web:Nome>\r\n                                <web:Valor>1500.00</web:Valor>\r\n                                <web:AtributoNovoObrigatorio>123123</web:AtributoNovoObrigatorio>\r\n                            </web:CampoLayout>\r\n                        </web:Campos>\r\n                        <web:Identificador>DOC-001</web:Identificador>\r\n                        <web:DeveDesbloquearAposInclusao>true</web:DeveDesbloquearAposInclusao>\r\n                    </web:DocumentoLayout>\r\n                </web:Documentos>\r\n                <web:PodeExecutarParcial>true</web:PodeExecutarParcial>\r\n            </web:request>\r\n        </web:Integrar>\r\n    </soap:Body>\r\n</soap:Envelope>"
-                  - toD:
-                      id: to-e193
-                      uri: http
-                      parameters:
-                        httpMethod: POST
-                        logHttpActivity: true
-                        bridgeEndpoint: true
-                        httpUri: host.docker.internal:8088/financeiro
+                          id: constant-6e5f
+                          expression: teste
+                  - choice:
+                      id: choice-813b
+                      when:
+                        - id: when-52a9
+                          expression:
+                            xpath:
+                              id: xpath-a05f
+                              expression: //tns:mensagem = 'POST ok'
+                              namespace:
+                                - key: tns
+                                  value: >-
+                                    http://Benner.Saude.Service.IntegracaoFinanceira.DataContracts/2011/01
+                          steps:
+                            - log:
+                                id: log-db44
+                                message: Body com sucesso
+                                loggingLevel: INFO
+                            - setBody:
+                                id: setBody-800d
+                                expression:
+                                  constant:
+                                    id: constant-24b0
+                                    expression: "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\r\n    <soap:Body>\r\n        <web:Integrar xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:web=\"http://Benner.Corporativo.WebServices.DataContracts/2010/10\">\r\n            <web:request>\r\n                <web:Identificador>ID-REQUISICAO-123</web:Identificador>\r\n                <web:Documentos>\r\n                    <web:DocumentoLayout>\r\n                        <web:Campos>\r\n                            <web:CampoLayout>\r\n                                <web:Nome>TipoDocumento</web:Nome>\r\n                                <web:Valor>NF</web:Valor>\r\n                            </web:CampoLayout>\r\n                            <web:CampoLayout>\r\n                                <web:Nome>ValorTotal</web:Nome>\r\n                                <web:Valor>1500.00</web:Valor>\r\n                                <web:AtributoNovoObrigatorio>123123</web:AtributoNovoObrigatorio>\r\n                            </web:CampoLayout>\r\n                        </web:Campos>\r\n                        <web:Identificador>DOC-001</web:Identificador>\r\n                        <web:DeveDesbloquearAposInclusao>true</web:DeveDesbloquearAposInclusao>\r\n                    </web:DocumentoLayout>\r\n                </web:Documentos>\r\n                <web:PodeExecutarParcial>true</web:PodeExecutarParcial>\r\n            </web:request>\r\n        </web:Integrar>\r\n    </soap:Body>\r\n</soap:Envelope>"
+                            - toD:
+                                id: to-e193
+                                description: Chama erp
+                                uri: http
+                                parameters:
+                                  httpMethod: POST
+                                  logHttpActivity: true
+                                  bridgeEndpoint: true
+                                  httpUri: host.docker.internal:8088/financeiro
+                      otherwise:
+                        id: otherwise-ef6c
+                        description: Precisa transform
+                        steps:
+                          - log:
+                              id: log-e599
+                              message: Body sem sucesso, necessario transformar
+                              loggingLevel: WARN
+                          - setBody:
+                              id: setBody-9fa1
+                              expression:
+                                constant:
+                                  id: constant-86e4
+                                  expression: "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\r\n    <soap:Body>\r\n        <web:Integrar xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:web=\"http://Benner.Corporativo.WebServices.DataContracts/2010/10\">\r\n            <web:request>\r\n                <web:Identificador>ID-REQUISICAO-123</web:Identificador>\r\n                <web:Documentos>\r\n                    <web:DocumentoLayout>\r\n                        <web:Campos>\r\n                            <web:CampoLayout>\r\n                                <web:Nome>TipoDocumento</web:Nome>\r\n                                <web:Valor>NF</web:Valor>\r\n                            </web:CampoLayout>\r\n                            <web:CampoLayout>\r\n                                <web:Nome>ValorTotal</web:Nome>\r\n                                <web:Valor>1500.00</web:Valor>\r\n                            </web:CampoLayout>\r\n                        </web:Campos>\r\n                        <web:Identificador>DOC-001</web:Identificador>\r\n                        <web:DeveDesbloquearAposInclusao>true</web:DeveDesbloquearAposInclusao>\r\n                    </web:DocumentoLayout>\r\n                </web:Documentos>\r\n                <web:PodeExecutarParcial>true</web:PodeExecutarParcial>\r\n            </web:request>\r\n        </web:Integrar>\r\n    </soap:Body>\r\n</soap:Envelope>"
+                          - toD:
+                              id: toD-4383
+                              description: Chama Integrador
+                              uri: http
+                              parameters:
+                                httpMethod: POST
+                                logHttpActivity: true
+                                bridgeEndpoint: true
+                                httpUri: host.docker.internal:8088/financeiro
             otherwise:
               id: otherwise-e19b
+              steps:
+                - log:
+                    id: log-e19c
+                    message: Caminho default
         - log:
             id: log-6ebd
             message: ${body}
