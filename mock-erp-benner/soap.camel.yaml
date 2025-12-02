@@ -19,6 +19,53 @@
             uri: direct
             parameters:
               name: auth
+        - choice:
+            id: choice-0953
+            when:
+              - id: when-39e7
+                expression:
+                  simple:
+                    id: simple-5210
+                    expression: ${header.Teste} == "teste"
+                steps:
+                  - choice:
+                      id: choice-c915
+                      when:
+                        - id: when-a76d
+                          expression:
+                            xpath:
+                              id: xpath-cace
+                              expression: //web:AtributoNovoObrigatorio
+                              namespace:
+                                - key: web
+                                  value: >-
+                                    http://Benner.Corporativo.WebServices.DataContracts/2010/10
+                          steps:
+                            - log:
+                                id: log-e9e0
+                                message: Tudo certo com payload obrigatorio
+                      otherwise:
+                        id: otherwise-f42a
+                        steps:
+                          - log:
+                              id: log-84c5
+                              message: Payload obrigatorio ERRADO
+                          - setBody:
+                              id: setBody-edf3
+                              expression:
+                                constant:
+                                  id: constant-0b89
+                                  expression: >-
+                                    <soap:Fault
+                                    xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><faultcode>soap:Client</faultcode><faultstring>Campo
+                                    obrigatorio
+                                    inexistente</faultstring></soap:Fault>
+            otherwise:
+              id: otherwise-9a18
+              steps:
+                - log:
+                    id: log-acc5
+                    message: Sem header, caminho default
         - log:
             id: log-e2ad
             message: ${body}
