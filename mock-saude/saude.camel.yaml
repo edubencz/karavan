@@ -1,0 +1,55 @@
+- route:
+    id: route-a3b8
+    nodePrefixId: route-a0f
+    from:
+      id: from-983d
+      uri: cxf
+      parameters:
+        address: http://0.0.0.0:8080/saude
+        dataFormat: PAYLOAD
+        loggingFeatureEnabled: true
+        wsdlURL: saude.wsdl
+        serviceName: >-
+          {http://Benner.Saude.Service.IntegracaoFinanceira.DataContracts/2011/01}IntegracaoFinanceiraService
+        endpointName: >-
+          {http://Benner.Saude.Service.IntegracaoFinanceira.DataContracts/2011/01}IntegracaoFinanceiraServiceSoap
+      steps:
+        - to:
+            id: to-5463
+            uri: direct
+            parameters:
+              name: auth
+        - log:
+            id: log-6ebd
+            message: ${body}
+- route:
+    id: route-7f61
+    nodePrefixId: route-6f9
+    from:
+      id: from-d3a6
+      uri: direct
+      parameters:
+        name: auth
+      steps:
+        - choice:
+            id: choice-9e05
+            when:
+              - id: when-c54b
+                expression:
+                  simple:
+                    id: simple-0501
+                    expression: ${header.Authorization} == 'Bearer mocked-token-12345'
+            otherwise:
+              id: otherwise-2203
+              steps:
+                - setBody:
+                    id: setBody-ed8b
+                    expression:
+                      constant:
+                        id: constant-7e80
+                        expression: >-
+                          <soap:Fault
+                          xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><faultcode>soap:Client</faultcode><faultstring>Authorization
+                          header is missing</faultstring></soap:Fault>
+                - stop:
+                    id: stop-89b6
