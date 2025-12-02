@@ -40,7 +40,7 @@
             expression:
               simple:
                 id: simple-6831
-                expression: "INSERT INTO movimentacao (id, descricao, valor,origem, destino, status) VALUES (\r\n'${exchangeId}',\r\n'${body[descricao]}',\r\n${body[valor]},\r\n'${body[origem]}',\r\n'${body[destino]}',\r\n'${body[status]}')"
+                expression: "INSERT INTO movimentacao (id, descricao, origem, destino, status) VALUES (\r\n'${exchangeId}',\r\n'${body[descricao]}',\r\n'${body[origem]}',\r\n'${body[destino]}',\r\n'${body[status]}')"
         - to:
             id: to-9c7d
             uri: jdbc

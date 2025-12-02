@@ -24,7 +24,6 @@ data DATE
 CREATE TABLE IF NOT EXISTS movimentacao (
     id VARCHAR(100) PRIMARY KEY,
     descricao VARCHAR(255),
-    valor DECIMAL(12,2),
     origem VARCHAR(100), -- Ex: "Hospital X"
     destino VARCHAR(100), -- Ex: "Convênio Y"
     status VARCHAR(50) -- Ex: "pendente", "processado", "erro"
