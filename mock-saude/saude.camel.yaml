@@ -125,7 +125,9 @@
                 expression:
                   simple:
                     id: simple-0501
-                    expression: ${header.Authorization} == 'Bearer mocked-token-12345'
+                    expression: >-
+                      ${header.Authorization} == 'Bearer
+                      mocked-token-12345-saude'
             otherwise:
               id: otherwise-2203
               steps:
