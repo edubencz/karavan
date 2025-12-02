@@ -28,11 +28,9 @@
                     id: simple-7d08
                     expression: ${header.Teste} == "teste"
                 steps:
-                  - removeHeaders:
-                      id: removeHeaders-cd99
-                      pattern: "*"
                   - setHeader:
                       id: setHeader-601c
+                      description: Set Auth
                       name: Authorization
                       expression:
                         constant:
@@ -40,6 +38,7 @@
                           expression: Bearer mocked-token-12345
                   - setHeader:
                       id: setHeader-43f1
+                      description: Set header teste
                       name: Teste
                       expression:
                         constant:
